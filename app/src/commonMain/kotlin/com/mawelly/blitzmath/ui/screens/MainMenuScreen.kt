@@ -1,4 +1,5 @@
 package com.mawelly.blitzmath.ui.screens
+import kotlin.math.pow
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
