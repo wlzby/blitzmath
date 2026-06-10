@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.BlitzMath" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+    </style>
+
+    <style name="Theme.App.Starting" parent="Theme.SplashScreen">
+        <!-- Arka plan rengini canlı gradyanın başlangıç rengiyle eşliyoruz -->
+        <item name="windowSplashScreenBackground">#0f0c29</item>
+        <!-- Hazırladığımız dairesel/katmanlı ikonu kullanıyoruz, böylece kare/çirkin görünmez -->
+        <item name="windowSplashScreenAnimatedIcon">@drawable/splash_icon</item>
+        <!-- Splash bittikten sonra hangi temaya geçeceğini belirtiyoruz -->
+        <item name="postSplashScreenTheme">@style/Theme.BlitzMath</item>
+    </style>
+</resources>

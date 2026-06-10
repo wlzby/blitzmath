@@ -1,0 +1,8 @@
+<objectAnimator xmlns:android="http://schemas.android.com/apk/res/android"
+    android:propertyName="strokeAlpha"
+    android:duration="1500"
+    android:valueFrom="0.5"
+    android:valueTo="1.0"
+    android:interpolator="@android:anim/linear_interpolator"
+    android:repeatCount="infinite"
+    android:repeatMode="reverse" />

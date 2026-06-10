@@ -1,0 +1,113 @@
+﻿Invalid username! (3-15 chars, special chars not allowed)
+Username contains inappropriate words!
+SETTINGS
+Music
+Sound Effects
+Voice Feedback
+Voices questions and results
+Vibration
+Get tactile feedback on mistakes.
+Vibration Intensity
+TEST VIBRATION
+Auto Theme
+Changes automatically based on time
+Theme
+Swipe to select
+Language
+Contact us, we would be happy to help you.
+Chat on WhatsApp
+Send Email
+CHALLENGE
+Our Other Games
+Checkpoint
+CHECK
+SCORE
+STREAK
+NEW CARD UNLOCKED!
+Bonus
+CHECKPOINT COMPLETE!
+COLLECTION
+Question
+Level
+Score
+GLOBAL LEADERBOARD
+Your Rank
+Congratulations!
+NEXT LEVEL
+RETRY
+SECOND CHANCE
+Watch Ad to Refill Lives
+No, Thanks
+You must enter a name to continue!
+Select Language
+TIME
+GAME OVER
+FINAL SCORE
+NEW RECORD!
+MENU
+Watch Ad & Continue
+Share Score
+I scored $score points on BlitzMath! Checkpoint: $cp. Are you ready to show your intelligence? Download now and challenge me! g���⚡\n\nPlay Store: $link
+LEADERBOARD
+DAILY REWARD
+Come back every day to collect more stars!
+STARS
+OUT OF LIVES!
+Wait to refill or watch an ad to refill all lives instantly!
+Watch Ad & Get 5 Lives
+CLAIM
+CONTINUE
+PLAY AS GUEST
+OR
+Enter Name
+HIGH SCORES
+No scores found yet!
+Date
+CLEAR ALL
+Hint: Split numbers into tens in your mind.
+Hint: Subtract tens first, then ones.
+Hint: Remember the multiplication table!
+Hint: Think of it as the reverse of multiplication.
+Addition
+Subtraction
+Multiplication
+Division
+Mixed
+CLASSIC MODE
+MIXED MODE
+CHALLENGE MODE
+OK
+g�?� $count Ads
+Usage Rights
+Refill: $count Ads
+UPDATE REQUIRED
+Math Lab Updated! g���⚡ Scientists are now more powerful and our energy system is fully revamped. Download the latest version to keep competing at the highest level!
+UPDATE NOW
+Exit
+Would you like to try our other games before leaving?
+Yes, Check
+No, Exit
+STORE
+EQUIP
+REMOVE
+Points
+Equipped Abilities
+No abilities equipped yet.
+Adds +5 seconds to the timer when used.
+Freezes time completely for that question.
+Adds 25% extra points to your current score instantly.
+Eliminates one wrong answer as a hint.
+Provides a one-time life shield (no life lost on mistake).
+Slows down the flow of time to help you break speed records.
+Skips the question and counts it as correctly answered.
+Zaps away 1 definitely wrong answer (50/50 chance).
+Enjoying Blitz Math?
+Would you like to leave a quick review to help us grow? 1000 Stars will be our gift to you!
+Welcome Gift!
+Welcome to the BlitzMath family! In honor of your first game, we are gifting you the Pythagoras card. You can equip it from the Collection screen!
+Rate Now
+Privacy Policy
+Extra Time Earned
+Total Play Time
+Watch Ad to Play Again
+You've used all challenge attempts for today!

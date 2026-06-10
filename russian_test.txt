@@ -1,0 +1,194 @@
+﻿
+{"step_index":333,"source":"MODEL","type":"VIEW_FILE","status":"DONE","created_at":"2026-06-01T22:40:01Z","content":"Cr
+eated At: 2026-06-01T22:40:01Z\nCompleted At: 2026-06-01T22:40:01Z\nFile Path: `file:///c:/Users/ozbayv/AndroidStudioPr
+ojects/blitzmath/app/src/main/java/com/mawelly/blitzmath/localization/Strings.kt`\nTotal Lines: 1795\nTotal Bytes: 9253
+5\nShowing lines 1 to 800\nThe following code has been modified to include a line number before every line, in the form
+at: <line_number>: <original_line>. Please note that any changes targeting the original code should remove the line num
+ber, colon, and leading space.\n1: package com.mawelly.blitzmath.localization\n2: \n3: import androidx.compose.runtime.
+getValue\n4: import androidx.compose.runtime.mutableStateOf\n5: import androidx.compose.runtime.setValue\n6: import kot
+linx.coroutines.flow.MutableStateFlow\n7: import kotlinx.coroutines.flow.StateFlow\n8: import kotlinx.coroutines.flow.a
+sStateFlow\n9: \n10: object Strings {\n11: \n12:     private val _currentLanguage = MutableStateFlow(AppLanguage.TURKIS
+H)\n13:     val currentLanguageFlow: StateFlow<AppLanguage> = _currentLanguage.asStateFlow()\n14: \n15:     var current
+Language: AppLanguage by mutableStateOf(AppLanguage.TURKISH)\n16:         private set\n17: \n18:     fun setLanguage(la
+ng: AppLanguage) { currentLanguage = lang; _currentLanguage.value = lang }\n19: \n20:     val bannedWords = listOf(\"pi
+ç\", \"pic\", \"amk\", \"ananı\", \"göt\", \"oç\", \"orospu\", \"yarrak\", \"sik\", \"amcık\", \"meme\", \"mal\", \"sal
+ak\")\n21: \n22:     val menuClassic: String get() = when (currentLanguage) {\n23:         AppLanguage.TURKISH -> \"KLA
+SİK MOD\"\n24:         AppLanguage.ENGLISH -> \"CLASSIC MODE\"\n25:         AppLanguage.SPANISH -> \"MODO CLÁSICO\"\n26
+:         AppLanguage.GERMAN -> \"KLASSISCHER MODUS\"\n27:         AppLanguage.FRENCH -> \"MODE CLASSIQUE\"\n28:       
+  AppLanguage.ITALIAN -> \"MODALITÀ CLASSICA\"\n29:         AppLanguage.PORTUGUESE -> \"MODO CLÁSSICO\"\n30:         Ap
+pLanguage.HINDI -> \"क्लासिक मोड\"\n31:         AppLanguage.CHINESE -> \"经典模式\"\n32:         AppLanguage.RUSSIAN -> \"К
+ЛАССИЧЕСКИЙ РЕЖИМ\"\n33:         else -> \"CLASSIC MODE\n<truncated 37815 bytes>\nопрос — это победа! 🏆\",\n768:      
+   \"Пусть начнется тренировка мозга! 🧘\",\n769:         \"Стань мастером вычислений! 🎓\",\n770:         \"Танцуй с ц
+ифрами! 💃\",\n771:         \"Испытай границы своего разума! 🔥\",\n772:         \"Скорость и точность в одном флакоne!
+ ⚡\"\n773:     )\n774: \n775:     val slogan: String get() = when (currentLanguage) {\n776:         AppLanguage.TURKISH
+ -> turkishSlogans.random()\n777:         AppLanguage.ENGLISH -> englishSlogans.random()\n778:         AppLanguage.SPAN
+ISH -> spanishSlogans.random()\n779:         AppLanguage.GERMAN -> germanSlogans.random()\n780:         AppLanguage.FRE
+NCH -> frenchSlogans.random()\n781:         AppLanguage.ITALIAN -> italianSlogans.random()\n782:         AppLanguage.PO
+RTUGUESE -> portugueseSlogans.random()\n783:         AppLanguage.HINDI -> hindiSlogans.random()\n784:         AppLangua
+ge.CHINESE -> chineseSlogans.random()\n785:         AppLanguage.RUSSIAN -> russianSlogans.random()\n786:         else -
+> englishSlogans.random()\n787:     }\n788: \n789:     val otherGames: String get() = when (currentLanguage) {\n790:   
+      AppLanguage.TURKISH -> \"Diğer Oyunlarımız\"\n791:         AppLanguage.ENGLISH -> \"Our Other Games\"\n792:      
+   AppLanguage.SPANISH -> \"Nuestros otros juegos\"\n793:         AppLanguage.GERMAN -> \"Unsere anderen Spiele\"\n794:
+         AppLanguage.FRENCH -> \"Nos autres jeux\"\n795:         AppLanguage.ITALIAN -> \"Altri nostri giochi\"\n796:  
+       AppLanguage.PORTUGUESE -> \"Nossos outros jogos\"\n797:         AppLanguage.HINDI -> \"हमारे अन्य खेल\"\n798:   
+      AppLanguage.CHINESE -> \"我们的其他游戏\"\n799:         AppLanguage.RUSSIAN -> \"Наши другие игры\"\n800:         else -
+> \"Our Other Games\"\nThe above content does NOT show the entire file contents. If you need to view any lines of the f
+ile which were not shown to complete your task, call this tool again to view those lines.\n"}
+{"step_index":359,"source":"MODEL","type":"RUN_COMMAND","status":"DONE","created_at":"2026-06-01T22:42:20Z","content":"
+Created At: 2026-06-01T22:42:20Z\nCompleted At: 2026-06-01T22:43:05Z\n\n\t\t\t\tThe command completed successfully.\n\t
+\t\t\tOutput:\n\t\t\t\t            else -> \"Skips the question and counts it as correct.\" \r\n        }\r\n        el
+se -> when(currentLanguage) { \r\n            AppLanguage.TURKISH -> \"�-zel yetenek.\"\r\n            AppLanguage.ENGL
+ISH -> \"Special ability.\"\r\n            AppLanguage.SPANISH -> \"Habilidad especial.\"\r\n            AppLanguage.GE
+RMAN -> \"Spezialf�higkeit.\"\r\n            AppLanguage.FRENCH -> \"CapacitǸ spǸciale.\"\r\n            AppLanguage.IT
+ALIAN -> \"Abilit� speciale.\"\r\n            AppLanguage.PORTUGUESE -> \"Habilidade especial.\"\r\n            AppLang
+uage.HINDI -> \"�Ϩ�Ņ� �\u0007�?�ϩ�υ�\"\r\n            AppLanguage.CHINESE -> \"�%�S�f�S>�?'\"\r\n            AppLanguag
+e.RUSSIAN -> \"�?�?�? �?�?�񦫦�?�'�O.\"\r\n            else -> \"Special ability.\" \r\n        }\r\n    }\r\n\r\n    fu
+n isValidUsername(name: String): Boolean = name.length in 3..15 && name.all { it.isLetterOrDigit() }\r\n    fun isUsern
+ameBanned(name: String): Boolean = bannedWords.any { name.lowercase().contains(it) }\r\n}\r\n\n"}
+{"step_index":361,"source":"MODEL","type":"PLANNER_RESPONSE","status":"DONE","created_at":"2026-06-01T22:43:05Z","think
+ing":"**Prioritizing Tool Usage**\n\nI'm now focusing on tool selection, emphasizing specific tools over general ones w
+here possible. The goal is to optimize efficiency by leveraging tools tailored to particular tasks, like viewing files.
+ This strategy promises a more targeted and less error-prone approach to problem-solving, which I will continue to refi
+ne and implement moving forward.\n\n\n**Refining Tool Choices**\n\nI'm now implementing the rules about tool usage, spe
+cifically avoiding `cat` for file creation and `grep` within bash. My focus is on using specialized tools like `grep_se
+arch` and `multi_replace_file_content` instead. I've considered that I need to find the appropriate line to start appen
+ding to a file. I will use the dedicated tool, `multi_replace_file_content` targeting `Strings.kt`.\n\n\n","tool_calls"
+:[{"name":"multi_replace_file_content","args":{"Description":"\"Add VS Mode Strings\"","Instruction":"\"Add localizatio
+n variables for Rematch, MatchedBannerView, and VsGameOverView to Strings.kt\"","ReplacementChunks":"[{\"AllowMultiple\
+":false,\"EndLine\":1795,\"ReplacementContent\":\"    val vsMatchedTitle: String get() = when (currentLanguage) {\\n   
+     AppLanguage.TURKISH -> \\\"RAKİP BULUNDU!\\\"\\n        AppLanguage.ENGLISH -> \\\"OPPONENT FOUND!\\\"\\n        A
+ppLanguage.SPANISH -> \\\"¡OPONENTE ENCONTRADO!\\\"\\n        AppLanguage.GERMAN -> \\\"GEGNER GEFUNDEN!\\\"\\n        
+AppLanguage.FRENCH -> \\\"ADVERSAIRE TROUVÉ!\\\"\\n        AppLanguage.ITALIAN -> \\\"AVVERSARIO TROVATO!\\\"\\n       
+ AppLanguage.PORTUGUESE -> \\\"OPONENTE ENCONTRADO!\\\"\\n        AppLanguage.HINDI -> \\\"विरोधी मिल गया!\\\"\\n      
+  AppLanguage.CHINESE -> \\\"找到对手！\\\"\\n        AppLanguage.RUSSIAN -> \\\"ПРОТИВНИК НАЙДЕН!\\\"\\n        else -> \\\
+"OPPONENT FOUND!\\\"\\n    }\\n\\n    val vsPreparingText: String get() = when (currentLanguage) {\\n        AppLanguag
+e.TURKISH -> \\\"Düello Başlıyor...\\\"\\n        AppLanguage.ENGLISH -> \\\"Duel starting...\\\"\\n        AppLanguage
+.SPANISH -> \\\"Duelo comenzando...\\\"\\n        AppLanguage.GERMAN -> \\\"Duell beginnt...\\\"\\n        AppLanguage.
+FRENCH -> \\\"Le duel commence...\\\"\\n        AppLanguage.ITALIAN -> \\\"Duello in arrivo...\\\"\\n        AppLanguag
+e.PORTUGUESE -> \\\"Duelo começando...\\\"\\n        AppLanguage.HINDI -> \\\"द्वंद्वयुद्ध शुरू हो रहा है...\\\"\\n    
+    AppLanguage.CHINESE -> \\\"决斗即将开始...\\\"\\n        AppLanguage.RUSSIAN -> \\\"Дуэль начинается...\\\"\\n        els
+e -> \\\"Duel starting...\\\"\\n    }\\n\\n    val vsYou: String get() = when (currentLanguage) {\\n        AppLanguage
+.TURKISH -> \\\"SEN\\\"\\n        AppLanguage.ENGLISH -> \\\"YOU\\\"\\n        AppLanguage.SPANISH -> \\\"TÚ\\\"\\n    
+    AppLanguage.GERMAN -> \\\"DU\\\"\\n        AppLanguage.FRENCH -> \\\"TOI\\\"\\n        AppLanguage.ITALIAN -> \\\"T
+U\\\"\\n        AppLanguage.PORTUGUESE -> \\\"VOCÊ\\\"\\n        AppLanguage.HINDI -> \\\"आप\\\"\\n        AppLanguage.
+CHINESE -> \\\"你\\\"\\n        AppLanguage.RUSSIAN -> \\\"ТЫ\\\"\\n        else -> \\\"YOU\\\"\\n    }\\n\\n    val vsG
+ameOverVictory: String get() = when (currentLangu\n<truncated 7279 bytes>","TargetFile":"\"c:\\\\Users\\\\ozbayv\\\\And
+roidStudioProjects\\\\blitzmath\\\\app\\\\src\\\\main\\\\java\\\\com\\\\mawelly\\\\blitzmath\\\\localization\\\\Strings
+.kt\"","toolAction":"\"Adding VS localized strings\"","toolSummary":"\"Update Strings.kt\""}}]}
+{"step_index":362,"source":"MODEL","type":"CODE_ACTION","status":"DONE","created_at":"2026-06-01T22:43:30Z","content":"
+Created At: 2026-06-01T22:43:30Z\nCompleted At: 2026-06-01T22:43:30Z\nThe following changes were made by the multi_repl
+ace_file_content tool to: c:\\Users\\ozbayv\\AndroidStudioProjects\\blitzmath\\app\\src\\main\\java\\com\\mawelly\\blit
+zmath\\localization\\Strings.kt. If relevant, proactively run terminal commands to execute this code for the USER. Don'
+t ask for permission.\n[diff_block_start]\n@@ -1789,6 +1789,188 @@\n         }\n     }\n \n+    val vsMatchedTitle: Str
+ing get() = when (currentLanguage) {\n+        AppLanguage.TURKISH -> \"RAKİP BULUNDU!\"\n+        AppLanguage.ENGLISH 
+-> \"OPPONENT FOUND!\"\n+        AppLanguage.SPANISH -> \"¡OPONENTE ENCONTRADO!\"\n+        AppLanguage.GERMAN -> \"GEG
+NER GEFUNDEN!\"\n+        AppLanguage.FRENCH -> \"ADVERSAIRE TROUVÉ!\"\n+        AppLanguage.ITALIAN -> \"AVVERSARIO TR
+OVATO!\"\n+        AppLanguage.PORTUGUESE -> \"OPONENTE ENCONTRADO!\"\n+        AppLanguage.HINDI -> \"विरोधी मिल गया!\
+"\n+        AppLanguage.CHINESE -> \"找到对手！\"\n+        AppLanguage.RUSSIAN -> \"ПРОТИВНИК НАЙДЕН!\"\n+        else -> \
+"OPPONENT FOUND!\"\n+    }\n+\n+    val vsPreparingText: String get() = when (currentLanguage) {\n+        AppLanguage.
+TURKISH -> \"Düello Başlıyor...\"\n+        AppLanguage.ENGLISH -> \"Duel starting...\"\n+        AppLanguage.SPANISH -
+> \"Duelo comenzando...\"\n+        AppLanguage.GERMAN -> \"Duell beginnt...\"\n+        AppLanguage.FRENCH -> \"Le due
+l commence...\"\n+        AppLanguage.ITALIAN -> \"Duello in arrivo...\"\n+        AppLanguage.PORTUGUESE -> \"Duelo co
+meçando...\"\n+        AppLanguage.HINDI -> \"द्वंद्वयुद्ध शुरू हो रहा है...\"\n+        AppLanguage.CHINESE -> \"决斗即将开
+始...\"\n+        AppLanguage.RUSSIAN -> \"Дуэль начинается...\"\n+        else -> \"Duel starting...\"\n+    }\n+\n+   
+ val vsYou: String get() = when (currentLanguage) {\n+        AppLanguage.TURKISH -> \"SEN\"\n+        AppLanguage.ENGL
+ISH -> \"YOU\"\n+        AppLanguage.SPANISH -> \"TÚ\"\n+        AppLanguage.GERMAN -> \"DU\"\n+        AppLanguage.FRE
+N\n<truncated 5308 bytes>\n \"Aceitar revanche\"\n+        AppLanguage.HINDI -> \"रीमैच स्वीकार करें\"\n+        AppLan
+guage.CHINESE -> \"接受重赛\"\n+        AppLanguage.RUSSIAN -> \"Принять реванш\"\n+        else -> \"Accept Rematch\"\n+  
+  }\n+\n+    val vsPlayAgain: String get() = when (currentLanguage) {\n+        AppLanguage.TURKISH -> \"Yeni Rakip Bul
+\"\n+        AppLanguage.ENGLISH -> \"Find New Opponent\"\n+        AppLanguage.SPANISH -> \"Buscar nuevo oponente\"\n+
+        AppLanguage.GERMAN -> \"Neuen Gegner finden\"\n+        AppLanguage.FRENCH -> \"Trouver un nouvel adversaire\"\
+n+        AppLanguage.ITALIAN -> \"Trova nuovo avversario\"\n+        AppLanguage.PORTUGUESE -> \"Encontrar novo oponen
+te\"\n+        AppLanguage.HINDI -> \"नया प्रतिद्वंद्वी खोजें\"\n+        AppLanguage.CHINESE -> \"寻找新对手\"\n+        Ap
+pLanguage.RUSSIAN -> \"Найти нового противника\"\n+        else -> \"Find New Opponent\"\n+    }\n+\n+    val vsMenu: S
+tring get() = when (currentLanguage) {\n+        AppLanguage.TURKISH -> \"Menüye Dön\"\n+        AppLanguage.ENGLISH ->
+ \"Back to Menu\"\n+        AppLanguage.SPANISH -> \"Volver al menú\"\n+        AppLanguage.GERMAN -> \"Zurück zum Menü
+\"\n+        AppLanguage.FRENCH -> \"Retour au menu\"\n+        AppLanguage.ITALIAN -> \"Torna al menu\"\n+        AppL
+anguage.PORTUGUESE -> \"Voltar ao menu\"\n+        AppLanguage.HINDI -> \"मेनू पर वापस जाएं\"\n+        AppLanguage.CHI
+NESE -> \"返回菜单\"\n+        AppLanguage.RUSSIAN -> \"В меню\"\n+        else -> \"Back to Menu\"\n+    }\n+\n     fun is
+ValidUsername(name: String): Boolean = name.length in 3..15 && name.all { it.isLetterOrDigit() }\n     fun isUsernameBa
+nned(name: String): Boolean = bannedWords.any { name.lowercase().contains(it) }\n }\n[diff_block_end]\n\nPlease note th
+at the above snippet only shows the MODIFIED lines from the last change. It shows up to 3 lines of unchanged lines befo
+re and after the modified lines. The actual file contents may have many more lines not shown."}
+{"step_index":544,"source":"MODEL","type":"RUN_COMMAND","status":"DONE","created_at":"2026-06-02T05:29:01Z","content":"
+Created At: 2026-06-02T05:29:01Z\nCompleted At: 2026-06-02T05:29:17Z\n\n\t\t\t\tThe command completed successfully.\n\t
+\t\t\tOutput:\n\t\t\t\t<truncated 398 lines>\n carta di Pitagora.\"\r\n          AppLanguage.PORTUGUESE -> \"Bem-vindo 
+� fam�lia BlitzMath! Em honra ao seu primeiro jogo, estamos lhe presente\r\nando com a carta de Pit�goras.\"\r\n       
+   AppLanguage.HINDI -> \"BlitzMath ?????? ??? ???? ??????? ??! ???? ???? ??? ?? ??????? ???, ?? ???? ????????? ?\r\n??
+??? ????? ??? ?? ??? ????\"\r\n          AppLanguage.CHINESE -> \"??????? BlitzMath ??????????????????,????????????????
+\"\r\n>         AppLanguage.RUSSIAN -> \"????????? ?????????????????? ?? ????????? BlitzMath! ?? ??????? ????????? ????
+???????\r\n ?????? ??? ????????? ?????? ??????? ??????????????.\"\r\n          else -> \"Welcome to the BlitzMath famil
+y! In honor of your first game, we are gifting you the Pythagoras card\r\n.\"\r\n      }\r\n  \r\n      val ok: String 
+get() = when (currentLanguage) {\r\n          AppLanguage.TURKISH -> \"Tamam\"\r\n          AppLanguage.ENGLISH -> \"OK
+\"\r\n          AppLanguage.SPANISH -> \"Aceptar\"\r\n          AppLanguage.GERMAN -> \"OK\"\r\n          AppLanguage.F
+RENCH -> \"OK\"\r\n          AppLanguage.ITALIAN -> \"OK\"\r\n          AppLanguage.PORTUGUESE -> \"OK\"\r\n          A
+ppLanguage.HINDI -> \"??? ??\"\r\n          AppLanguage.CHINESE -> \"??\"\r\n>         AppLanguage.RUSSIAN -> \"????\"\
+r\n          else -> \"OK\"\r\n      }\r\n  \r\n      val statScore: String get() = when (currentLanguage) {\r\n       
+   AppLanguage.TURKISH -> \"PUAN\"\r\n          AppLanguage.ENGLISH -> \"SCORE\"\r\n          AppLanguage.SPANISH -> \"
+PUNTOS\"\r\n          AppLanguage.GERMAN -> \"PUNKTE\"\r\n          AppLanguage.FRENCH -> \"SCORE\"\r\n          AppLan
+guage.ITALIAN -> \"PUNTEGGIO\"\r\n          AppLanguage.PORTUGUESE -> \"PONTOS\"\r\n          AppLanguage.HINDI -> \"??
+????\"\r\n          AppLanguage.CHINESE -> \"??\"\r\n>         AppLanguage.RUSSIAN -> \"????????\"\r\n          else ->
+ \"SCORE\"\r\n      }\r\n  \r\n      val statSpeed: String get() = when (currentLanguage) {\r\n          AppLanguage.TU
+RKISH -> \"HIZ\"\r\n          AppLanguage.ENGLISH -> \"SPEED\n<truncated 4194 bytes>\n0\\u093f\\u0924\"\r\n          Ap
+pLanguage.CHINESE -> \"\\u6df7\\u5408\"\r\n>         AppLanguage.RUSSIAN -> \"\\u0421\\u043c\\u0435\\u0448\\u0430\\u043
+d\\u043d\\u044b\\u0439\"\r\n          else -> \"Mixed\"\r\n      }\r\n  \r\n      val checkpointLabel: String get() = w
+hen (currentLanguage) {\r\n          AppLanguage.TURKISH -> \"Seviye\"\r\n          AppLanguage.ENGLISH -> \"Checkpoint
+\"\r\n          AppLanguage.SPANISH -> \"Punto de control\"\r\n          AppLanguage.GERMAN -> \"Kontrollpunkt\"\r\n   
+       AppLanguage.FRENCH -> \"Point de passage\"\r\n          AppLanguage.ITALIAN -> \"Punto di controllo\"\r\n       
+   AppLanguage.PORTUGUESE -> \"Ponto de controle\"\r\n          AppLanguage.HINDI -> \"????????\"\r\n          AppLangu
+age.CHINESE -> \"????\"\r\n>         AppLanguage.RUSSIAN -> \"??????????????????? ????????\"\r\n          else -> \"Che
+ckpoint\"\r\n      }\r\n  \r\n      val congratulations: String get() = when (currentLanguage) {\r\n          AppLangua
+ge.TURKISH -> \"Tebrikler!\"\r\n          AppLanguage.ENGLISH -> \"Congratulations!\"\r\n          AppLanguage.SPANISH 
+-> \"�Felicidades!\"\r\n          AppLanguage.GERMAN -> \"Gl�ckwunsch!\"\r\n          AppLanguage.FRENCH -> \"F�licitat
+ions !\"\r\n          AppLanguage.ITALIAN -> \"Congratulazioni!\"\r\n          AppLanguage.PORTUGUESE -> \"Parab�ns!\"\
+r\n          AppLanguage.HINDI -> \"???? ??!\"\r\n          AppLanguage.CHINESE -> \"??????\"\r\n>         AppLanguage.
+RUSSIAN -> \"?????????????????????!\"\r\n          else -> \"Congratulations!\"\r\n      }\r\n  \r\n      val nextLevel
+: String get() = when (currentLanguage) {\r\n          AppLanguage.TURKISH -> \"Sonraki Seviye\"\r\n          AppLangua
+ge.ENGLISH -> \"Next Level\"\r\n          AppLanguage.SPANISH -> \"Siguiente nivel\"\r\n          AppLanguage.GERMAN ->
+ \"N�chstes Level\"\r\n          AppLanguage.FRENCH -> \"Niveau suivant\"\r\n          AppLanguage.ITALIAN -> \"Prossim
+o livello\"\r\n          AppLanguage.PORTUGUESE -> \"Pr�ximo n�vel\"\r\n          AppLanguage.HINDI -> \"???? ?????\"\r
+\n          AppLanguage.CHINESE -> \"???\"\r\n>         AppLanguage.RUSSIAN -> \"???????????????? ???????????\"\r\n    
+      else -> \"Next Level\"\r\n\r\n\r\n\n"}
+{"step_index":553,"source":"MODEL","type":"RUN_COMMAND","status":"DONE","created_at":"2026-06-02T05:30:06Z","content":"
+Created At: 2026-06-02T05:30:06Z\nCompleted At: 2026-06-02T05:30:16Z\n\n\t\t\t\tThe command completed successfully.\n\t
+\t\t\tOutput:\n\t\t\t\t\r\nC:\\Users\\ozbayv\\.gemini\\antigravity\\brain\\328fb58b-6869-435c-b974-793c047ccd76\\.syste
+m_generated\\logs\\transcript.jsonl:\r\n326:{\"step_index\":330,\"source\":\"MODEL\",\"type\":\"RUN_COMMAND\",\"status\
+":\"DONE\",\"created_at\":\"2026-06-01T22:39:46Z\",\"conten\r\nt\":\"Created At: 2026-06-01T22:39:46Z\\nCompleted At: 2
+026-06-01T22:39:54Z\\n\\n\\t\\t\\t\\tThe command completed successfully.\r\n\\n\\t\\t\\t\\tOutput:\\n\\t\\t\\t\\t\\r\\n
+Path                                                                                    \r\n                           
+    \\r\\n----                                                                                \r\n                     
+              \\r\\nC:\\\\Users\\\\ozbayv\\\\AndroidStudioProjects\\\\blitzmath\\\\app\\\\src\\\\main\\\\java\\\\com\\\
+\\r\nmawelly\\\\blitzmath\\\\LanguageManager.kt             \\r\\nC:\\\\Users\\\\ozbayv\\\\AndroidStudioProjects\\\\bli
+tzmath\\\\app\\\\src\\\\m\r\nain\\\\java\\\\com\\\\mawelly\\\\blitzmath\\\\MainActivity.kt                \\r\\nC:\\\\U
+sers\\\\ozbayv\\\\AndroidStudioProjects\\\\blitzm\r\nath\\\\app\\\\src\\\\main\\\\java\\\\com\\\\mawelly\\\\blitzmath\\
+\\audio\\\\VoiceManager.kt          \\r\\nC:\\\\Users\\\\ozbayv\\\\AndroidStudi\r\noProjects\\\\blitzmath\\\\app\\\\src
+\\\\main\\\\java\\\\com\\\\mawelly\\\\blitzmath\\\\data\\\\GameDataStore.kt          \\r\\nC:\\\\Users\\\\ozb\r\nayv\\\
+\AndroidStudioProjects\\\\blitzmath\\\\app\\\\src\\\\main\\\\java\\\\com\\\\mawelly\\\\blitzmath\\\\game\\\\GameState.k
+t              \\\r\nr\\nC:\\\\Users\\\\ozbayv\\\\AndroidStudioProjects\\\\blitzmath\\\\app\\\\src\\\\main\\\\java\\\\c
+om\\\\mawelly\\\\blitzmath\\\\game\\\\MathQuotes\r\nData.kt         \\r\\nC:\\\\Users\\\\ozbayv\\\\AndroidStudioProject
+s\\\\blitzmath\\\\app\\\\src\\\\main\\\\java\\\\com\\\\mawelly\\\\blitzmath\\\r\n\\game\\\\ScientistCard.kt          \\
+r\\nC:\\\\Users\\\\ozbayv\\\\AndroidStudioProjects\\\\blitzmath\\\\app\\\\src\\\\main\\\\java\\\\com\\\\ma\r\nwelly\\\\
+blitzmath\\\\localization\\\\AppLanguage.kt    \\r\\nC:\\\\Users\\\\ozbayv\\\\AndroidStudioProjects\\\\blitzmath\\\\app
+\\\\src\\\\ma\r\nin\\\\java\\\\com\\\\mawelly\\\\blitzmath\\\\localization\\\\Strings.kt        \\r\\nC:\\\\Users\\\\oz
+bayv\\\\AndroidStudioPro\n<truncated 3270 bytes>\nN\\n<truncated 5308 bytes>\\n \\\"Aceitar revanche\\\"\\n+        App
+Language.HINDI -> \\\"????? ??????? ????\\\"\\n+        Ap\r\npLanguage.CHINESE -> \\\"????\\\"\\n+        AppLanguage.
+RUSSIAN -> \\\"??????? ??????\\\"\\n+        else -> \\\"Accept Rematch\\\"\\\r\nn+    }\\n+\\n+    val vsPlayAgain: St
+ring get() = when (currentLanguage) {\\n+        AppLanguage.TURKISH -> \\\"Yeni Rakip\r\n Bul\\\"\\n+        AppLangua
+ge.ENGLISH -> \\\"Find New Opponent\\\"\\n+        AppLanguage.SPANISH -> \\\"Buscar nuevo oponente\\\r\n\"\\n+        
+AppLanguage.GERMAN -> \\\"Neuen Gegner finden\\\"\\n+        AppLanguage.FRENCH -> \\\"Trouver un nouvel adversair\r\ne
+\\\"\\n+        AppLanguage.ITALIAN -> \\\"Trova nuovo avversario\\\"\\n+        AppLanguage.PORTUGUESE -> \\\"Encontra
+r novo op\r\nonente\\\"\\n+        AppLanguage.HINDI -> \\\"??? ????????????? ?????\\\"\\n+        AppLanguage.CHINESE 
+-> \\\"?????\\\"\\n+      \r\n  AppLanguage.RUSSIAN -> \\\"????? ?????? ??????????\\\"\\n+        else -> \\\"Find New 
+Opponent\\\"\\n+    }\\n+\\n+    val vsMen\r\nu: String get() = when (currentLanguage) {\\n+        AppLanguage.TURKISH
+ -> \\\"Men�ye D�n\\\"\\n+        AppLanguage.ENGLIS\r\nH -> \\\"Back to Menu\\\"\\n+        AppLanguage.SPANISH -> \\\
+"Volver al men�\\\"\\n+        AppLanguage.GERMAN -> \\\"Zur�ck zum \r\nMen�\\\"\\n+        AppLanguage.FRENCH -> \\\"R
+etour au menu\\\"\\n+        AppLanguage.ITALIAN -> \\\"Torna al menu\\\"\\n+        \r\nAppLanguage.PORTUGUESE -> \\\"
+Voltar ao menu\\\"\\n+        AppLanguage.HINDI -> \\\"???? ?? ???? ????\\\"\\n+        AppLanguage\r\n.CHINESE -> \\\"
+????\\\"\\n+        AppLanguage.RUSSIAN -> \\\"? ????\\\"\\n+        else -> \\\"Back to Menu\\\"\\n+    }\\n+\\n     f
+u\r\nn isValidUsername(name: String): Boolean = name.length in 3..15 && name.all { it.isLetterOrDigit() }\\n     fun is
+Userna\r\nmeBanned(name: String): Boolean = bannedWords.any { name.lowercase().contains(it) }\\n }\\n[diff_block_end]\\
+n\\nPlease not\r\ne that the above snippet only shows the MODIFIED lines from the last change. It shows up to 3 lines o
+f unchanged lines \r\nbefore and after the modified lines. The actual file contents may have many more lines not shown.
+\"}\r\n\r\n\r\n\n"}
+
+

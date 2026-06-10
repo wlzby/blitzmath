@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "928128727716",
+    "project_id": "blitz-math-challenge",
+    "storage_bucket": "blitz-math-challenge.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:928128727716:android:db50880e0b3e47ad394431",
+        "android_client_info": {
+          "package_name": "com.mawelly.blitzmath"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBJfQl_ze9VsL_gQLMC5zFyje-wq3T8_IQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

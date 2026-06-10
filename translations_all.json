@@ -1,0 +1,567 @@
+{
+  "Invalid username! (3-15 chars, special chars not allowed)": {
+    "HINDI": "अमान्य उपयोगकर्ता नाम! (3-15 वर्ण, विशेष वर्णों की अनुमति नहीं है)",
+    "CHINESE": "无效的用户名！（3-15个字符，不允许使用特殊字符）",
+    "RUSSIAN": "Недействительное имя пользователя! (3-15 символов, специальные символы не допускаются)"
+  },
+  "Username contains inappropriate words!": {
+    "HINDI": "उपयोगकर्ता नाम में अनुचित शब्द हैं!",
+    "CHINESE": "用户名包含不当词汇！",
+    "RUSSIAN": "Имя пользователя содержит недопустимые слова!"
+  },
+  "SETTINGS": {
+    "HINDI": "सेटिंग्स",
+    "CHINESE": "设置",
+    "RUSSIAN": "НАСТРОЙКИ"
+  },
+  "Music": {
+    "HINDI": "संगीत",
+    "CHINESE": "音乐",
+    "RUSSIAN": "Музыка"
+  },
+  "Sound Effects": {
+    "HINDI": "ध्वनि प्रभाव",
+    "CHINESE": "音效",
+    "RUSSIAN": "Звуковые эффекты"
+  },
+  "Voice Feedback": {
+    "HINDI": "वॉयस फीडबैक",
+    "CHINESE": "语音反馈",
+    "RUSSIAN": "Голосовая обратная связь"
+  },
+  "Voices questions and results": {
+    "HINDI": "प्रश्नों और परिणामों को आवाज देता है",
+    "CHINESE": "朗读问题和结果",
+    "RUSSIAN": "Озвучивает вопросы и результаты"
+  },
+  "Vibration": {
+    "HINDI": "कंपन",
+    "CHINESE": "振动",
+    "RUSSIAN": "Вибрация"
+  },
+  "Get tactile feedback on mistakes.": {
+    "HINDI": "गलतियों पर स्पर्श प्रतिक्रिया प्राप्त करें।",
+    "CHINESE": "在犯错时获取触觉反馈。",
+    "RUSSIAN": "Получайте тактильную отдачу при ошибках."
+  },
+  "Vibration Intensity": {
+    "HINDI": "कंपन की तीव्रता",
+    "CHINESE": "振动强度",
+    "RUSSIAN": "Интенсивность вибрации"
+  },
+  "TEST VIBRATION": {
+    "HINDI": "कंपन का परीक्षण करें",
+    "CHINESE": "测试振动",
+    "RUSSIAN": "ТЕСТ ВИБРАЦИИ"
+  },
+  "Auto Theme": {
+    "HINDI": "ऑटो थीम",
+    "CHINESE": "自动主题",
+    "RUSSIAN": "Авто-тема"
+  },
+  "Changes automatically based on time": {
+    "HINDI": "समय के आधार पर स्वचालित रूप से बदलता है",
+    "CHINESE": "根据时间自动更改",
+    "RUSSIAN": "Изменяется автоматически в зависимости от времени"
+  },
+  "Theme": {
+    "HINDI": "थीम",
+    "CHINESE": "主题",
+    "RUSSIAN": "Тема"
+  },
+  "Swipe to select": {
+    "HINDI": "चुनने के लिए स्वाइप करें",
+    "CHINESE": "滑动选择",
+    "RUSSIAN": "Смахните для выбора"
+  },
+  "Language": {
+    "HINDI": "भाषा",
+    "CHINESE": "语言",
+    "RUSSIAN": "Язык"
+  },
+  "Contact us, we would be happy to help you.": {
+    "HINDI": "हमसे संपर्क करें, हमें आपकी मदद करने में खुशी होगी।",
+    "CHINESE": "联系我们，我们将很乐意为您提供帮助。",
+    "RUSSIAN": "Свяжитесь с нами, мы будем рады вам помочь."
+  },
+  "Chat on WhatsApp": {
+    "HINDI": "WhatsApp पर चैट करें",
+    "CHINESE": "在 WhatsApp 上聊天",
+    "RUSSIAN": "Чат в WhatsApp"
+  },
+  "Send Email": {
+    "HINDI": "ईमेल भेजें",
+    "CHINESE": "发送电子邮件",
+    "RUSSIAN": "Отправить email"
+  },
+  "CHALLENGE": {
+    "HINDI": "चुनौती",
+    "CHINESE": "挑战",
+    "RUSSIAN": "ИСПЫТАНИЕ"
+  },
+  "Our Other Games": {
+    "HINDI": "हमारे अन्य खेल",
+    "CHINESE": "我们的其他游戏",
+    "RUSSIAN": "Наши другие игры"
+  },
+  "Checkpoint": {
+    "HINDI": "चेकपॉइंट",
+    "CHINESE": "检查点",
+    "RUSSIAN": "Контрольная точка"
+  },
+  "CHECK": {
+    "HINDI": "चेक",
+    "CHINESE": "检查",
+    "RUSSIAN": "ПРОВЕРКА"
+  },
+  "STAT_SCORE": {
+    "HINDI": "स्कोर",
+    "CHINESE": "分数",
+    "RUSSIAN": "СЧЕТ"
+  },
+  "STREAK": {
+    "HINDI": "स्ट्रीक",
+    "CHINESE": "连胜",
+    "RUSSIAN": "СЕРИЯ"
+  },
+  "NEW CARD UNLOCKED!": {
+    "HINDI": "नया कार्ड अनलॉक किया गया!",
+    "CHINESE": "解锁新卡片！",
+    "RUSSIAN": "ОТКРЫТА НОВАЯ КАРТА!"
+  },
+  "Bonus": {
+    "HINDI": "बोनस",
+    "CHINESE": "奖励",
+    "RUSSIAN": "Бонус"
+  },
+  "CHECKPOINT COMPLETE!": {
+    "HINDI": "चेकपॉइंट पूरा हुआ!",
+    "CHINESE": "检查点完成！",
+    "RUSSIAN": "КОНТРОЛЬНАЯ ТОЧКА ПРОЙДЕНА!"
+  },
+  "COLLECTION": {
+    "HINDI": "संग्रह",
+    "CHINESE": "收藏",
+    "RUSSIAN": "КОЛЛЕКЦИЯ"
+  },
+  "Question": {
+    "HINDI": "प्रश्न",
+    "CHINESE": "问题",
+    "RUSSIAN": "Вопрос"
+  },
+  "Level": {
+    "HINDI": "स्तर",
+    "CHINESE": "关卡",
+    "RUSSIAN": "Уровень"
+  },
+  "NORMAL_SCORE": {
+    "HINDI": "स्कोर",
+    "CHINESE": "分数",
+    "RUSSIAN": "Счет"
+  },
+  "GLOBAL LEADERBOARD": {
+    "HINDI": "ग्लोबल लीडरबोर्ड",
+    "CHINESE": "全球排行榜",
+    "RUSSIAN": "ГЛОБАЛЬНАЯ ТАБЛИЦА ЛИДЕРОВ"
+  },
+  "Your Rank": {
+    "HINDI": "आपकी रैंक",
+    "CHINESE": "你的排名",
+    "RUSSIAN": "Ваш рейтинг"
+  },
+  "Congratulations!": {
+    "HINDI": "बधाई हो!",
+    "CHINESE": "恭喜！",
+    "RUSSIAN": "Поздравляем!"
+  },
+  "NEXT LEVEL": {
+    "HINDI": "अगला स्तर",
+    "CHINESE": "下一关",
+    "RUSSIAN": "СЛЕДУЮЩИЙ УРОВЕНЬ"
+  },
+  "RETRY": {
+    "HINDI": "पुनः प्रयास करें",
+    "CHINESE": "重试",
+    "RUSSIAN": "ПОВТОРИТЬ"
+  },
+  "SECOND CHANCE": {
+    "HINDI": "दूसरा मौका",
+    "CHINESE": "第二次机会",
+    "RUSSIAN": "ВТОРОЙ ШАНС"
+  },
+  "Watch Ad to Refill Lives": {
+    "HINDI": "लाइव्स भरने के लिए विज्ञापन देखें",
+    "CHINESE": "观看广告恢复生命",
+    "RUSSIAN": "Посмотрите рекламу, чтобы восполнить жизни"
+  },
+  "No, Thanks": {
+    "HINDI": "नहीं, धन्यवाद",
+    "CHINESE": "不，谢谢",
+    "RUSSIAN": "Нет, спасибо"
+  },
+  "You must enter a name to continue!": {
+    "HINDI": "जारी रखने के लिए आपको एक नाम दर्ज करना होगा!",
+    "CHINESE": "您必须输入姓名才能继续！",
+    "RUSSIAN": "Вы должны ввести имя, чтобы продолжить!"
+  },
+  "Select Language": {
+    "HINDI": "भाषा चुनें",
+    "CHINESE": "选择语言",
+    "RUSSIAN": "Выберите язык"
+  },
+  "TIME": {
+    "HINDI": "समय",
+    "CHINESE": "时间",
+    "RUSSIAN": "ВРЕМЯ"
+  },
+  "GAME OVER": {
+    "HINDI": "गेम ओवर",
+    "CHINESE": "游戏结束",
+    "RUSSIAN": "ИГРА ОКОНЧЕНА"
+  },
+  "FINAL SCORE": {
+    "HINDI": "अंतिम स्कोर",
+    "CHINESE": "最终得分",
+    "RUSSIAN": "ИТОГОВЫЙ СЧЕТ"
+  },
+  "NEW RECORD!": {
+    "HINDI": "नया रिकॉर्ड!",
+    "CHINESE": "新记录！",
+    "RUSSIAN": "НОВЫЙ РЕКОРД!"
+  },
+  "MENU": {
+    "HINDI": "मेनू",
+    "CHINESE": "菜单",
+    "RUSSIAN": "МЕНЮ"
+  },
+  "Watch Ad & Continue": {
+    "HINDI": "विज्ञापन देखें और जारी रखें",
+    "CHINESE": "观看广告并继续",
+    "RUSSIAN": "Посмотреть рекламу и продолжить"
+  },
+  "Share Score": {
+    "HINDI": "स्कोर साझा करें",
+    "CHINESE": "分享分数",
+    "RUSSIAN": "Поделиться счетом"
+  },
+  "I scored $score points on BlitzMath! Checkpoint: $cp. Are you ready to show your intelligence? Download now and challenge me! \u26A1\n\nPlay Store: $link": {
+    "HINDI": "मैंने BlitzMath पर $score अंक बनाए! चेकपॉइंट: $cp. क्या आप अपनी बुद्धिमत्ता दिखाने के लिए तैयार हैं? अभी डाउनलोड करें और मुझे चुनौती दें! \u26A1\n\nPlay Store: $link",
+    "CHINESE": "我在 BlitzMath 上获得了 $score 分！检查点：$cp。你准备好展示你的智慧了吗？立即下载并挑战我！ \u26A1\n\nPlay Store: $link",
+    "RUSSIAN": "Я набрал $score очков в BlitzMath! Контрольная точка: $cp. Готовы показать свой интеллект? Скачайте сейчас и бросьте мне вызов! \u26A1\n\nPlay Store: $link"
+  },
+  "LEADERBOARD": {
+    "HINDI": "लीडरबोर्ड",
+    "CHINESE": "排行榜",
+    "RUSSIAN": "ТАБЛИЦА ЛИДЕРОВ"
+  },
+  "DAILY REWARD": {
+    "HINDI": "दैनिक इनाम",
+    "CHINESE": "每日奖励",
+    "RUSSIAN": "ЕЖЕДНЕВНАЯ НАГРАДА"
+  },
+  "Come back every day to collect more stars!": {
+    "HINDI": "और सितारे इकट्ठा करने के लिए हर दिन वापस आएं!",
+    "CHINESE": "每天回来收集更多星星！",
+    "RUSSIAN": "Возвращайтесь каждый день, чтобы собрать больше звезд!"
+  },
+  "STARS": {
+    "HINDI": "सितारे",
+    "CHINESE": "星星",
+    "RUSSIAN": "ЗВЕЗДЫ"
+  },
+  "OUT OF LIVES!": {
+    "HINDI": "लाइव्स खत्म!",
+    "CHINESE": "生命耗尽！",
+    "RUSSIAN": "ЖИЗНИ ЗАКОНЧИЛИСЬ!"
+  },
+  "Wait to refill or watch an ad to refill all lives instantly!": {
+    "HINDI": "भरने की प्रतीक्षा करें या तुरंत सभी लाइव्स भरने के लिए विज्ञापन देखें!",
+    "CHINESE": "等待恢复或观看广告立即恢复所有生命！",
+    "RUSSIAN": "Подождите восстановления или посмотрите рекламу, чтобы восполнить все жизни мгновенно!"
+  },
+  "Watch Ad & Get 5 Lives": {
+    "HINDI": "विज्ञापन देखें और 5 लाइव्स प्राप्त करें",
+    "CHINESE": "观看广告并获得5条生命",
+    "RUSSIAN": "Посмотреть рекламу и получить 5 жизней"
+  },
+  "CLAIM": {
+    "HINDI": "दावा करें",
+    "CHINESE": "领取",
+    "RUSSIAN": "ПОЛУЧИТЬ"
+  },
+  "CONTINUE": {
+    "HINDI": "जारी रखें",
+    "CHINESE": "继续",
+    "RUSSIAN": "ПРОДОЛЖИТЬ"
+  },
+  "PLAY AS GUEST": {
+    "HINDI": "अतिथि के रूप में खेलें",
+    "CHINESE": "作为访客游玩",
+    "RUSSIAN": "ИГРАТЬ КАК ГОСТЬ"
+  },
+  "OR": {
+    "HINDI": "या",
+    "CHINESE": "或",
+    "RUSSIAN": "ИЛИ"
+  },
+  "Enter Name": {
+    "HINDI": "नाम दर्ज करें",
+    "CHINESE": "输入姓名",
+    "RUSSIAN": "Введите имя"
+  },
+  "HIGH SCORES": {
+    "HINDI": "उच्च स्कोर",
+    "CHINESE": "最高分",
+    "RUSSIAN": "РЕКОРДЫ"
+  },
+  "No scores found yet!": {
+    "HINDI": "अभी तक कोई स्कोर नहीं मिला!",
+    "CHINESE": "暂无得分记录！",
+    "RUSSIAN": "Счета еще не найдены!"
+  },
+  "Date": {
+    "HINDI": "तिथि",
+    "CHINESE": "日期",
+    "RUSSIAN": "Дата"
+  },
+  "CLEAR ALL": {
+    "HINDI": "सभी साफ़ करें",
+    "CHINESE": "清除全部",
+    "RUSSIAN": "ОЧИСТИТЬ ВСЕ"
+  },
+  "Hint: Split numbers into tens in your mind.": {
+    "HINDI": "संकेत: संख्याओं को अपने दिमाग में दसियों में विभाजित करें।",
+    "CHINESE": "提示：在脑海中将数字分成十位数。",
+    "RUSSIAN": "Подсказка: разбейте числа на десятки в уме."
+  },
+  "Hint: Subtract tens first, then ones.": {
+    "HINDI": "संकेत: पहले दहाई घटाएं, फिर इकाई।",
+    "CHINESE": "提示：先减去十位数，再减去个位数。",
+    "RUSSIAN": "Подсказка: сначала вычитайте десятки, затем единицы."
+  },
+  "Hint: Remember the multiplication table!": {
+    "HINDI": "संकेत: गुणन तालिका याद रखें!",
+    "CHINESE": "提示：记住乘法表！",
+    "RUSSIAN": "Подсказка: вспомните таблицу умножения!"
+  },
+  "Hint: Think of it as the reverse of multiplication.": {
+    "HINDI": "संकेत: इसे गुणन के विपरीत के रूप में सोचें।",
+    "CHINESE": "提示：可以把它想作是乘法的逆运算。",
+    "RUSSIAN": "Подсказка: думайте об этом как об обратном умножению."
+  },
+  "Addition": {
+    "HINDI": "जोड़",
+    "CHINESE": "加法",
+    "RUSSIAN": "Сложение"
+  },
+  "Subtraction": {
+    "HINDI": "घटाव",
+    "CHINESE": "减法",
+    "RUSSIAN": "Вычитание"
+  },
+  "Multiplication": {
+    "HINDI": "गुणा",
+    "CHINESE": "乘法",
+    "RUSSIAN": "Умножение"
+  },
+  "Division": {
+    "HINDI": "भाग",
+    "CHINESE": "除法",
+    "RUSSIAN": "Деление"
+  },
+  "Mixed": {
+    "HINDI": "मिश्रित",
+    "CHINESE": "混合",
+    "RUSSIAN": "Смешанный"
+  },
+  "CLASSIC MODE": {
+    "HINDI": "क्लासिक मोड",
+    "CHINESE": "经典模式",
+    "RUSSIAN": "КЛАССИЧЕСКИЙ РЕЖИМ"
+  },
+  "MIXED MODE": {
+    "HINDI": "मिश्रित मोड",
+    "CHINESE": "混合模式",
+    "RUSSIAN": "СМЕШАННЫЙ РЕЖИМ"
+  },
+  "CHALLENGE MODE": {
+    "HINDI": "चुनौती मोड",
+    "CHINESE": "挑战模式",
+    "RUSSIAN": "РЕЖИМ ИСПЫТАНИЯ"
+  },
+  "OK": {
+    "HINDI": "ठीक है",
+    "CHINESE": "确定",
+    "RUSSIAN": "ОК"
+  },
+  "g??? $count Ads": {
+    "HINDI": "g??? $count विज्ञापन",
+    "CHINESE": "g??? $count 个广告",
+    "RUSSIAN": "g??? $count рекламы"
+  },
+  "Usage Rights": {
+    "HINDI": "उपयोग अधिकार",
+    "CHINESE": "使用权",
+    "RUSSIAN": "Права использования"
+  },
+  "Refill: $count Ads": {
+    "HINDI": "पुनर्भरण: $count विज्ञापन",
+    "CHINESE": "补充：$count 个广告",
+    "RUSSIAN": "Восполнить: $count рекламы"
+  },
+  "UPDATE REQUIRED": {
+    "HINDI": "अद्यतन आवश्यक",
+    "CHINESE": "需要更新",
+    "RUSSIAN": "ТРЕБУЕТСЯ ОБНОВЛЕНИЕ"
+  },
+  "Math Lab Updated! g???? Scientists are now more powerful and our energy system is fully revamped. Download the latest version to keep competing at the highest level!": {
+    "HINDI": "मैथ लैब अपडेट हो गया! g???? वैज्ञानिक अब अधिक शक्तिशाली हैं और हमारी ऊर्जा प्रणाली पूरी तरह से सुधार दी गई है। उच्चतम स्तर पर प्रतिस्पर्धा जारी रखने के लिए नवीनतम संस्करण डाउनलोड करें!",
+    "CHINESE": "数学实验室已更新！g???? 科学家们现在更加强大，我们的能量系统已全面改版。下载最新版本，在最高水平上继续竞争！",
+    "RUSSIAN": "Math Lab обновлен! g???? Ученые теперь еще сильнее, а наша энергетическая система полностью переработана. Скачайте последнюю версию, чтобы продолжать соревноваться на высшем уровне!"
+  },
+  "UPDATE NOW": {
+    "HINDI": "अभी अपडेट करें",
+    "CHINESE": "立即更新",
+    "RUSSIAN": "ОБНОВИТЬ СЕЙЧАС"
+  },
+  "Exit": {
+    "HINDI": "बाहर निकलें",
+    "CHINESE": "退出",
+    "RUSSIAN": "Выход"
+  },
+  "Would you like to try our other games before leaving?": {
+    "HINDI": "क्या आप जाने से पहले हमारे अन्य खेलों को आजमाना चाहेंगे?",
+    "CHINESE": "您想在离开前尝试一下我们的其他游戏吗？",
+    "RUSSIAN": "Не хотели бы вы попробовать наши другие игры перед уходом?"
+  },
+  "Yes, Check": {
+    "HINDI": "हाँ, चेक करें",
+    "CHINESE": "是的，查看",
+    "RUSSIAN": "Да, проверить"
+  },
+  "No, Exit": {
+    "HINDI": "नहीं, बाहर निकलें",
+    "CHINESE": "否，退出",
+    "RUSSIAN": "Нет, выйти"
+  },
+  "STORE": {
+    "HINDI": "स्टोर",
+    "CHINESE": "商店",
+    "RUSSIAN": "МАГАЗИН"
+  },
+  "EQUIP": {
+    "HINDI": "सुसज्जित करें",
+    "CHINESE": "装备",
+    "RUSSIAN": "НАДЕТЬ"
+  },
+  "REMOVE": {
+    "HINDI": "हटाएं",
+    "CHINESE": "移除",
+    "RUSSIAN": "СНЯТЬ"
+  },
+  "Points": {
+    "HINDI": "अंक",
+    "CHINESE": "点数",
+    "RUSSIAN": "Очки"
+  },
+  "Equipped Abilities": {
+    "HINDI": "सुसज्जित क्षमताएं",
+    "CHINESE": "已装备技能",
+    "RUSSIAN": "Экипированные способности"
+  },
+  "No abilities equipped yet.": {
+    "HINDI": "अभी तक कोई क्षमताएं सुसज्जित नहीं हैं।",
+    "CHINESE": "尚未装备任何技能。",
+    "RUSSIAN": "Способности еще не экипированы."
+  },
+  "Adds +5 seconds to the timer when used.": {
+    "HINDI": "उपयोग करने पर टाइमर में +5 सेकंड जोड़ता है।",
+    "CHINESE": "使用时计时器增加+5秒。",
+    "RUSSIAN": "Добавляет +5 секунд к таймеру при использовании."
+  },
+  "Freezes time completely for that question.": {
+    "HINDI": "उस प्रश्न के लिए समय पूरी तरह से रोक देता है।",
+    "CHINESE": "该问题的时间完全冻结。",
+    "RUSSIAN": "Полностью замораживает время для этого вопроса."
+  },
+  "Adds 25% extra points to your current score instantly.": {
+    "HINDI": "आपके वर्तमान स्कोर में तुरंत 25% अतिरिक्त अंक जोड़ता है।",
+    "CHINESE": "立刻为您的当前分数增加25%的额外积分。",
+    "RUSSIAN": "Мгновенно добавляет 25% дополнительных очков к вашему текущему счету."
+  },
+  "Eliminates one wrong answer as a hint.": {
+    "HINDI": "एक संकेत के रूप में एक गलत उत्तर हटा देता है।",
+    "CHINESE": "消除一个错误答案作为提示。",
+    "RUSSIAN": "Исключает один неправильный ответ в качестве подсказки."
+  },
+  "Provides a one-time life shield (no life lost on mistake).": {
+    "HINDI": "एक बार का जीवन ढाल प्रदान करता है (गलती पर कोई जीवन नहीं खोता)।",
+    "CHINESE": "提供一次性生命护盾（失误时不扣除生命）。",
+    "RUSSIAN": "Дает одноразовый щит жизни (жизнь не теряется при ошибке)."
+  },
+  "Slows down the flow of time to help you break speed records.": {
+    "HINDI": "गति रिकॉर्ड तोड़ने में आपकी मदद करने के लिए समय के प्रवाह को धीमा करता है।",
+    "CHINESE": "减缓时间流逝，帮助您打破速度记录。",
+    "RUSSIAN": "Замедляет течение времени, чтобы помочь вам побить рекорды скорости."
+  },
+  "Skips the question and counts it as correctly answered.": {
+    "HINDI": "प्रश्न छोड़ देता है और इसे सही उत्तर के रूप में गिनता है।",
+    "CHINESE": "跳过问题并计为回答正确。",
+    "RUSSIAN": "Пропускает вопрос и засчитывает его как правильный ответ."
+  },
+  "Zaps away 1 definitely wrong answer (50/50 chance).": {
+    "HINDI": "1 निश्चित रूप से गलत उत्तर (50/50 मौका) को हटा देता है।",
+    "CHINESE": "消灭1个绝对错误的答案（50/50几率）。",
+    "RUSSIAN": "Уничтожает 1 заведомо неверный ответ (шанс 50/50)."
+  },
+  "Enjoying Blitz Math?": {
+    "HINDI": "ब्लिट्ज मैथ का आनंद ले रहे हैं?",
+    "CHINESE": "喜欢 Blitz Math 吗？",
+    "RUSSIAN": "Нравится Blitz Math?"
+  },
+  "Would you like to leave a quick review to help us grow? 1000 Stars will be our gift to you!": {
+    "HINDI": "क्या आप हमारी मदद करने के लिए एक त्वरित समीक्षा छोड़ना चाहेंगे? 1000 सितारे आपको हमारा उपहार होगा!",
+    "CHINESE": "您想留下一条简短的评论帮助我们成长吗？我们将会送您1000颗星星作为礼物！",
+    "RUSSIAN": "Не хотели бы вы оставить краткий отзыв, чтобы помочь нам расти? 1000 Звезд станут нашим подарком вам!"
+  },
+  "Welcome Gift!": {
+    "HINDI": "स्वागत उपहार!",
+    "CHINESE": "欢迎礼物！",
+    "RUSSIAN": "Приветственный подарок!"
+  },
+  "Welcome to the BlitzMath family! In honor of your first game, we are gifting you the Pythagoras card. You can equip it from the Collection screen!": {
+    "HINDI": "BlitzMath परिवार में आपका स्वागत है! आपके पहले खेल के सम्मान में, हम आपको पाइथागोरस कार्ड उपहार में दे रहे हैं। आप इसे संग्रह स्क्रीन से सुसज्जित कर सकते हैं!",
+    "CHINESE": "欢迎来到 BlitzMath 家族！为了庆祝您的第一次游戏，我们赠送您毕达哥拉斯卡片。您可以从收藏屏幕装备它！",
+    "RUSSIAN": "Добро пожаловать в семью BlitzMath! В честь вашей первой игры мы дарим вам карту Пифагора. Вы можете надеть ее на экране Коллекции!"
+  },
+  "Rate Now": {
+    "HINDI": "अभी दर दें",
+    "CHINESE": "立即评价",
+    "RUSSIAN": "Оценить сейчас"
+  },
+  "Privacy Policy": {
+    "HINDI": "गोपनीयता नीति",
+    "CHINESE": "隐私政策",
+    "RUSSIAN": "Политика конфиденциальности"
+  },
+  "Extra Time Earned": {
+    "HINDI": "अतिरिक्त समय अर्जित",
+    "CHINESE": "获得额外时间",
+    "RUSSIAN": "Заработано доп. время"
+  },
+  "Total Play Time": {
+    "HINDI": "कुल खेलने का समय",
+    "CHINESE": "总游戏时间",
+    "RUSSIAN": "Общее время игры"
+  },
+  "Watch Ad to Play Again": {
+    "HINDI": "फिर से खेलने के लिए विज्ञापन देखें",
+    "CHINESE": "观看广告再玩一次",
+    "RUSSIAN": "Смотреть рекламу, чтобы играть снова"
+  },
+  "You've used all challenge attempts for today!": {
+    "HINDI": "आपने आज के लिए सभी चुनौती प्रयास उपयोग कर लिए हैं!",
+    "CHINESE": "您已用完今天的全部挑战尝试次数！",
+    "RUSSIAN": "Вы использовали все попытки испытаний на сегодня!"
+  }
+}

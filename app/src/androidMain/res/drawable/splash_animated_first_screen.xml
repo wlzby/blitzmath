@@ -1,0 +1,14 @@
+<animated-vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:drawable="@drawable/splash_vector_logo">
+
+    <!-- 1. Rotate the Loading Ring (Loading Feel) -->
+    <target
+        android:name="loading_ring"
+        android:animation="@drawable/splash_ring_rotate" />
+
+    <!-- 2. Pulse the Bolt (Blitz Feel) -->
+    <target
+        android:name="bolt"
+        android:animation="@drawable/splash_bolt_pulse" />
+
+</animated-vector>

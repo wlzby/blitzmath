@@ -1,0 +1,31 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="160dp"
+    android:height="160dp"
+    android:viewportWidth="160"
+    android:viewportHeight="160">
+
+    <!-- 1. Background Circle -->
+    <path
+        android:name="background_circle"
+        android:pathData="M80,80m-60,0a60,60 0,1 1,120 0a60,60 0,1 1,-120 0"
+        android:fillColor="#1a1a2e" />
+
+    <!-- 2. Stylized Lightning Bolt (The 'Blitz') -->
+    <group
+        android:name="bolt"
+        android:pivotX="80"
+        android:pivotY="80">
+        <path
+            android:pathData="M80,40 L65,75 L80,75 L70,120 L105,65 L85,65 L100,40 Z"
+            android:fillColor="#00d9ff" />
+    </group>
+
+    <!-- 3. Full Ring (Matching Compose UI) -->
+    <path
+        android:name="loading_ring"
+        android:pathData="M80,10a70,70 0,1 1,-0.1 0"
+        android:strokeColor="#00d9ff"
+        android:strokeWidth="4"
+        android:strokeLineCap="round" />
+
+</vector>
