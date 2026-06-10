@@ -1,0 +1,13 @@
+workflows:
+  kmp-ios-framework:
+    name: KMP iOS Framework Build
+    instance_type: mac_mini_m1
+    max_build_duration: 60
+    environment:
+      java: 17
+    scripts:
+      - name: Set up executable permissions
+        script: chmod +x ./gradlew
+      - name: Build iOS Framework (KMP)
+        script: |
+          ./gradlew :app:linkDebugFrameworkIosSimulatorArm64
