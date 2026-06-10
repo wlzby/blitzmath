@@ -116,39 +116,27 @@ fun FloatingSymbolsBackground(
             }
         }
 
-        val textPaint = remember {
-            android.graphics.Paint().apply {
-                color = android.graphics.Color.WHITE
-                textAlign = android.graphics.Paint.Align.CENTER
-                isAntiAlias = true
-                typeface = android.graphics.Typeface.create(android.graphics.Typeface.DEFAULT, android.graphics.Typeface.BOLD)
-            }
-        }
+        val textMeasurer = androidx.compose.ui.text.rememberTextMeasurer()
 
         Canvas(modifier = Modifier.fillMaxSize()) {
             symbolStates.forEach { state ->
-                drawContext.canvas.nativeCanvas.save()
-                
                 val finalX = state.x + state.touchOffsetX
                 val finalY = state.y + state.touchOffsetY
                 
-                drawContext.canvas.nativeCanvas.rotate(
-                    state.rotation,
-                    finalX,
-                    finalY
-                )
-                
-                textPaint.textSize = state.size * density
-                textPaint.alpha = (state.baseAlpha * 255).toInt()
-                
-                drawContext.canvas.nativeCanvas.drawText(
-                    state.symbol,
-                    finalX,
-                    finalY,
-                    textPaint
-                )
-                
-                drawContext.canvas.nativeCanvas.restore()
+                androidx.compose.ui.graphics.drawscope.withTransform({
+                    translate(left = finalX, top = finalY)
+                    rotate(degrees = state.rotation)
+                }) {
+                    androidx.compose.ui.text.drawText(
+                        textMeasurer = textMeasurer,
+                        text = state.symbol,
+                        style = androidx.compose.ui.text.TextStyle(
+                            color = Color.White.copy(alpha = state.baseAlpha),
+                            fontSize = (state.size).sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    )
+                }
             }
         }
     }

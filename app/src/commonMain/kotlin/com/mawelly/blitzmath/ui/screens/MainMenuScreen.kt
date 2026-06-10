@@ -47,7 +47,7 @@ import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.res.painterResource
+
 import com.mawelly.blitzmath.ui.theme.LocalBlitzMathColors
 import com.mawelly.blitzmath.localization.Strings
 import com.mawelly.blitzmath.data.IGameDataStore
@@ -113,7 +113,7 @@ fun MainMenuScreen(
     var lastLossTime by remember(savedLossTime) { mutableLongStateOf(savedLossTime ?: 0L) }
     var showNoLivesDialog by remember { mutableStateOf(false) }
 
-    val xpForNextLevel = Math.pow(pLevel.toDouble(), 2.0).toInt() * 100
+    val xpForNextLevel = pLevel.toDouble().pow(2.0).toInt() * 100
 
     // Constant for refill time: 15 minutes
     val REFILL_TIME_MS = 15 * 60 * 1000L
@@ -139,7 +139,7 @@ fun MainMenuScreen(
     LaunchedEffect(currentLives, lastLossTime) {
         // Safety check: if missing lives but no timestamp, initialize it
         if (currentLives < MAX_LIVES && lastLossTime <= 0L) {
-            val now = System.currentTimeMillis()
+            val now = platformServices.getCurrentTimeMillis()
             lastLossTime = now
             scope.launch {
                 dataStore.saveLastLifeLossTime(now)
@@ -147,7 +147,7 @@ fun MainMenuScreen(
         }
 
         while (currentLives < MAX_LIVES && lastLossTime > 0) {
-            val now = System.currentTimeMillis()
+            val now = platformServices.getCurrentTimeMillis()
             val timePassed = now - lastLossTime
             val livesToRefill = (timePassed / REFILL_TIME_MS).toInt()
 
@@ -167,7 +167,7 @@ fun MainMenuScreen(
                 val remainingMs = REFILL_TIME_MS - (timePassed % REFILL_TIME_MS)
                 val minutes = (remainingMs / 1000 / 60)
                 val seconds = (remainingMs / 1000 % 60)
-                timeLeftToRefill = String.format("%02d:%02d", minutes, seconds)
+                timeLeftToRefill = minutes.toString().padStart(2, '0') + ":" + seconds.toString().padStart(2, '0')
             }
             delay(1000)
         }
@@ -529,7 +529,7 @@ fun MainMenuScreen(
                     scope.launch {
                         val newStreak = DailyRewardManager.calculateNewStreak(streak, lastClaimTime, platformServices.getCurrentTimeMillis())
                         val rewardStars = DailyRewardManager.getStarReward(newStreak)
-                        dataStore.saveDailyReward(newStreak, System.currentTimeMillis(), rewardStars)
+                        dataStore.saveDailyReward(newStreak, platformServices.getCurrentTimeMillis(), rewardStars)
                         showRewardDialog = false
                     }
                 },
