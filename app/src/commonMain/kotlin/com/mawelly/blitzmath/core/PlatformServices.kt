@@ -18,6 +18,11 @@ interface IHapticManager {
 
 interface IAnalyticsManager {
     fun logEvent(eventName: String, params: Map<String, Any> = emptyMap())
+    fun logScreenView(screenName: String)
+    fun logModeSelection(modeName: String)
+    fun logRefillLivesClick(source: String)
+    fun logAdClick(adUnitName: String)
+    fun logAdReward(adUnitName: String)
 }
 
 interface IShareManager {
@@ -31,6 +36,7 @@ interface IAdController {
 
 // A unified container for all platform-specific services
 interface PlatformServices {
+    fun getCurrentTimeMillis(): Long
     val soundManager: ISoundManager
     val hapticManager: IHapticManager
     val analyticsManager: IAnalyticsManager

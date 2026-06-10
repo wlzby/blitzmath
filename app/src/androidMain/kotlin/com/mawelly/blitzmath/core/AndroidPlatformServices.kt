@@ -12,9 +12,9 @@ import java.util.Date
 import java.util.Locale
 
 class AndroidSoundManager(private val soundManager: SoundManager) : ISoundManager {
-    override fun playClick() = soundManager.playClick()
-    override fun playSuccess() = soundManager.playSuccess()
-    override fun playError() = soundManager.playError()
+    override fun playClick() = soundManager.playCorrect()
+    override fun playSuccess() = soundManager.playLevelUp()
+    override fun playError() = soundManager.playWrong()
     override fun playGameOver() = soundManager.playGameOver()
     override fun setEnabled(enabled: Boolean) {
         if (enabled) soundManager.resumeBGM() else soundManager.stopBGM()
@@ -22,25 +22,30 @@ class AndroidSoundManager(private val soundManager: SoundManager) : ISoundManage
 }
 
 class AndroidHapticManager(private val context: Context) : IHapticManager {
-    override fun triggerLightImpact() = HapticManager.triggerLightImpact(context)
-    override fun triggerMediumImpact() = HapticManager.triggerMediumImpact(context)
-    override fun triggerHeavyImpact() = HapticManager.triggerHeavyImpact(context)
-    override fun triggerError() = HapticManager.triggerError(context)
-    override fun triggerSuccess() = HapticManager.triggerSuccess(context)
+    private val hapticManager = HapticManager(context)
+    override fun triggerLightImpact() = hapticManager.vibrateTick(true, 0.3f)
+    override fun triggerMediumImpact() = hapticManager.vibrateTick(true, 0.6f)
+    override fun triggerHeavyImpact() = hapticManager.vibrateTick(true, 1.0f)
+    override fun triggerError() = hapticManager.vibrateWrong(true, 1.0f)
+    override fun triggerSuccess() = hapticManager.vibrateTick(true, 1.0f)
 }
 
 class AndroidAnalyticsManager(private val analyticsManager: AnalyticsManager) : IAnalyticsManager {
     override fun logEvent(eventName: String, params: Map<String, Any>) {
-        // Simple mapping, actual implementation might vary
-        analyticsManager.logEvent(eventName)
+        analyticsManager.logScreenView(eventName)
     }
+    override fun logScreenView(screenName: String) = analyticsManager.logScreenView(screenName)
+    override fun logModeSelection(modeName: String) = analyticsManager.logModeSelection(modeName)
+    override fun logRefillLivesClick(source: String) = analyticsManager.logRefillLivesClick(source)
+    override fun logAdClick(adUnitName: String) = analyticsManager.logAdClick(adUnitName)
+    override fun logAdReward(adUnitName: String) = analyticsManager.logAdReward(adUnitName)
 }
 
 class AndroidShareManager(private val context: Context) : IShareManager {
     override fun shareScore(score: Int) {
         val intent = Intent(Intent.ACTION_SEND).apply {
             type = "text/plain"
-            putExtra(Intent.EXTRA_TEXT, "I just scored $score in BlitzMath!")
+            putExtra(Intent.EXTRA_TEXT, "I just scored \$score in BlitzMath!")
         }
         context.startActivity(Intent.createChooser(intent, "Share Score"))
     }
@@ -72,6 +77,7 @@ class AndroidPlatformServices(
     override val soundManager: ISoundManager = AndroidSoundManager(soundManager)
     override val hapticManager: IHapticManager = AndroidHapticManager(context)
     override val analyticsManager: IAnalyticsManager = AndroidAnalyticsManager(analyticsManager)
+    override fun getCurrentTimeMillis(): Long = System.currentTimeMillis()
     override val shareManager: IShareManager = AndroidShareManager(context)
     override val adController: IAdController = AndroidAdController(activity, adManager)
 

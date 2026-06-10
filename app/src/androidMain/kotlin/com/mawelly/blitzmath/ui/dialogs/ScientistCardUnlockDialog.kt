@@ -71,13 +71,17 @@ fun ScientistCardUnlockDialog(
                         .border(1.dp, Color.White.copy(alpha = 0.2f), CircleShape),
                     contentAlignment = Alignment.Center
                 ) {
-                    if (card.imageResId != null) {
-                        androidx.compose.foundation.Image(
-                            painter = androidx.compose.ui.res.painterResource(id = card.imageResId),
-                            contentDescription = card.name,
-                            modifier = Modifier.fillMaxSize().clip(CircleShape),
-                            contentScale = androidx.compose.ui.layout.ContentScale.Crop
-                        )
+                    if (card.id.isNotEmpty()) {
+                        val context = androidx.compose.ui.platform.LocalContext.current
+                        val resId = remember(card.id) { context.resources.getIdentifier(card.id, "drawable", context.packageName) }
+                        if (resId != 0) {
+                            androidx.compose.foundation.Image(
+                                painter = androidx.compose.ui.res.painterResource(id = resId),
+                                contentDescription = card.name,
+                                modifier = Modifier.fillMaxSize().clip(CircleShape),
+                                contentScale = androidx.compose.ui.layout.ContentScale.Crop
+                            )
+                        }
                     } else {
                         Text(
                             text = card.name.take(1),

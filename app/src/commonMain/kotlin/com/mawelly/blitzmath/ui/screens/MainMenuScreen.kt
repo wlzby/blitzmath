@@ -50,7 +50,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.res.painterResource
 import com.mawelly.blitzmath.ui.theme.LocalBlitzMathColors
 import com.mawelly.blitzmath.localization.Strings
-import com.mawelly.blitzmath.data.GameDataStore
+import com.mawelly.blitzmath.data.IGameDataStore
 import com.mawelly.blitzmath.localization.AppLanguage
 import com.mawelly.blitzmath.game.DailyRewardManager
 import com.mawelly.blitzmath.game.DailyRewardStatus
@@ -66,7 +66,7 @@ import androidx.compose.foundation.interaction.collectIsPressedAsState
 
 @Composable
 fun MainMenuScreen(
-    dataStore: GameDataStore,
+    dataStore: IGameDataStore,
     onPlayClick: () -> Unit,
     onMixedModeClick: () -> Unit,
     onChallengeClick: () -> Unit,
@@ -127,7 +127,8 @@ fun MainMenuScreen(
     // Check for daily reward on launch
     LaunchedEffect(Unit) {
         analyticsManager.logScreenView("MainMenu")
-        val rewardStatus = DailyRewardManager.getRewardStatus(lastClaimTime)
+        val currentTime = platformServices.getCurrentTimeMillis()
+        val rewardStatus = DailyRewardManager.getRewardStatus(lastClaimTime, currentTime)
         if (rewardStatus == DailyRewardStatus.AVAILABLE || 
             rewardStatus == DailyRewardStatus.STREAK_RESET) {
             showRewardDialog = false
@@ -521,12 +522,12 @@ fun MainMenuScreen(
         }
         
         if (showRewardDialog) {
-            DailyRewardDialog(
+            DailyRewardDialog(currentTime = platformServices.getCurrentTimeMillis(),
                 streak = streak,
                 lastClaimTime = lastClaimTime,
                 onClaim = {
                     scope.launch {
-                        val newStreak = DailyRewardManager.calculateNewStreak(streak, lastClaimTime)
+                        val newStreak = DailyRewardManager.calculateNewStreak(streak, lastClaimTime, platformServices.getCurrentTimeMillis())
                         val rewardStars = DailyRewardManager.getStarReward(newStreak)
                         dataStore.saveDailyReward(newStreak, System.currentTimeMillis(), rewardStars)
                         showRewardDialog = false
@@ -748,6 +749,7 @@ fun MainMenuScreen(
 
 @Composable
 fun DailyRewardDialog(
+    currentTime: Long,
     streak: Int,
     lastClaimTime: Long,
     onClaim: () -> Unit,
@@ -792,7 +794,7 @@ fun DailyRewardDialog(
                     fontSize = 16.sp
                 )
 
-                val nextStreak = DailyRewardManager.calculateNewStreak(streak, lastClaimTime)
+                val nextStreak = DailyRewardManager.calculateNewStreak(streak, lastClaimTime, currentTime)
                 val rewardAmount = DailyRewardManager.getStarReward(nextStreak)
 
                 Spacer(modifier = Modifier.height(16.dp))

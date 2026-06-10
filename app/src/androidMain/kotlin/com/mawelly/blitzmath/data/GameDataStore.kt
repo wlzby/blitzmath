@@ -12,7 +12,7 @@ import kotlinx.coroutines.flow.map
 
 val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "game_settings")
 
-class GameDataStore(private val context: Context) {
+class GameDataStore(private val context: Context) : IGameDataStore {
 
     companion object {
         val MUSIC_VOLUME = floatPreferencesKey("music_volume")
@@ -48,24 +48,24 @@ class GameDataStore(private val context: Context) {
     }
 
     // Ses Ayarları
-    val musicVolume: Flow<Float> = context.dataStore.data.map { it[MUSIC_VOLUME] ?: 0.05f }
-    val sfxVolume: Flow<Float> = context.dataStore.data.map { it[SFX_VOLUME] ?: 0.8f }
+    override val musicVolume: Flow<Float> = context.dataStore.data.map { it[MUSIC_VOLUME] ?: 0.05f }
+    override val sfxVolume: Flow<Float> = context.dataStore.data.map { it[SFX_VOLUME] ?: 0.8f }
 
     // Level Kayıtları
-    val classicLevel: Flow<Int> = context.dataStore.data.map { it[CLASSIC_LEVEL] ?: 1 }
-    val mixedLevel: Flow<Int> = context.dataStore.data.map { it[MIXED_LEVEL] ?: 1 }
-    val highScore: Flow<Int> = context.dataStore.data.map { it[HIGH_SCORE] ?: 0 }
-    val mixedHighScore: Flow<Int> = context.dataStore.data.map { it[MIXED_HIGH_SCORE] ?: 0 }
-    val challengeHighScore: Flow<Int> = context.dataStore.data.map { it[CHALLENGE_HIGH_SCORE] ?: 0 }
-    val lastChallengePlayTime: Flow<Long> = context.dataStore.data.map { it[LAST_CHALLENGE_PLAY_TIME] ?: 0L }
-    val challengePlaysToday: Flow<Int> = context.dataStore.data.map { it[CHALLENGE_PLAYS_TODAY] ?: 0 }
-    val lastChallengeDate: Flow<String> = context.dataStore.data.map { it[LAST_CHALLENGE_DATE] ?: "" }
-    val lastKnownClassicRank: Flow<Int> = context.dataStore.data.map { it[LAST_KNOWN_CLASSIC_RANK] ?: 0 }
-    val lastKnownMixedRank: Flow<Int> = context.dataStore.data.map { it[LAST_KNOWN_MIXED_RANK] ?: 0 }
-    val lastKnownChallengeRank: Flow<Int> = context.dataStore.data.map { it[LAST_KNOWN_CHALLENGE_RANK] ?: 0 }
+    override val classicLevel: Flow<Int> = context.dataStore.data.map { it[CLASSIC_LEVEL] ?: 1 }
+    override val mixedLevel: Flow<Int> = context.dataStore.data.map { it[MIXED_LEVEL] ?: 1 }
+    override val highScore: Flow<Int> = context.dataStore.data.map { it[HIGH_SCORE] ?: 0 }
+    override val mixedHighScore: Flow<Int> = context.dataStore.data.map { it[MIXED_HIGH_SCORE] ?: 0 }
+    override val challengeHighScore: Flow<Int> = context.dataStore.data.map { it[CHALLENGE_HIGH_SCORE] ?: 0 }
+    override val lastChallengePlayTime: Flow<Long> = context.dataStore.data.map { it[LAST_CHALLENGE_PLAY_TIME] ?: 0L }
+    override val challengePlaysToday: Flow<Int> = context.dataStore.data.map { it[CHALLENGE_PLAYS_TODAY] ?: 0 }
+    override val lastChallengeDate: Flow<String> = context.dataStore.data.map { it[LAST_CHALLENGE_DATE] ?: "" }
+    override val lastKnownClassicRank: Flow<Int> = context.dataStore.data.map { it[LAST_KNOWN_CLASSIC_RANK] ?: 0 }
+    override val lastKnownMixedRank: Flow<Int> = context.dataStore.data.map { it[LAST_KNOWN_MIXED_RANK] ?: 0 }
+    override val lastKnownChallengeRank: Flow<Int> = context.dataStore.data.map { it[LAST_KNOWN_CHALLENGE_RANK] ?: 0 }
 
     // Dil
-    val language: Flow<AppLanguage> = context.dataStore.data.map {
+    override val language: Flow<AppLanguage> = context.dataStore.data.map {
         when (it[LANGUAGE]) {
             "en" -> AppLanguage.ENGLISH
             "es" -> AppLanguage.SPANISH
@@ -81,7 +81,7 @@ class GameDataStore(private val context: Context) {
     }
 
     // Tema
-    val theme: Flow<AppTheme> = context.dataStore.data.map {
+    override val theme: Flow<AppTheme> = context.dataStore.data.map {
         when (it[THEME]) {
             "cyberpunk" -> AppTheme.CYBERPUNK
             "forest" -> AppTheme.FOREST
@@ -96,26 +96,26 @@ class GameDataStore(private val context: Context) {
         }
     }
 
-    val autoTheme: Flow<Boolean> = context.dataStore.data.map { it[AUTO_THEME] ?: false }
-    val streakCount: Flow<Int> = context.dataStore.data.map { it[STREAK_COUNT] ?: 0 }
-    val lastClaimTime: Flow<Long> = context.dataStore.data.map { it[LAST_CLAIM_TIME] ?: 0L }
-    val starCount: Flow<Int> = context.dataStore.data.map { it[STAR_COUNT] ?: 0 }
-    val unlockedCards: Flow<Set<String>> = context.dataStore.data.map { preferences ->
+    override val autoTheme: Flow<Boolean> = context.dataStore.data.map { it[AUTO_THEME] ?: false }
+    override val streakCount: Flow<Int> = context.dataStore.data.map { it[STREAK_COUNT] ?: 0 }
+    override val lastClaimTime: Flow<Long> = context.dataStore.data.map { it[LAST_CLAIM_TIME] ?: 0L }
+    override val starCount: Flow<Int> = context.dataStore.data.map { it[STAR_COUNT] ?: 0 }
+    override val unlockedCards: Flow<Set<String>> = context.dataStore.data.map { preferences ->
         preferences[UNLOCKED_CARDS]?.split(",")?.filter { it.isNotEmpty() }?.toSet() ?: emptySet()
     }
-    val equippedCards: Flow<Set<String>> = context.dataStore.data.map { preferences ->
+    override val equippedCards: Flow<Set<String>> = context.dataStore.data.map { preferences ->
         val unlocked = preferences[UNLOCKED_CARDS]?.split(",")?.filter { it.isNotEmpty() }?.toSet() ?: emptySet()
         val equipped = preferences[EQUIPPED_CARDS]?.split(",")?.filter { it.isNotEmpty() }?.toSet() ?: emptySet()
         equipped.intersect(unlocked)
     }
-    val voiceEnabled: Flow<Boolean> = context.dataStore.data.map { it[VOICE_ENABLED] ?: true }
-    val vibrationEnabled: Flow<Boolean> = context.dataStore.data.map { it[VIBRATION_ENABLED] ?: true }
-    val vibrationStrength: Flow<Float> = context.dataStore.data.map { it[VIBRATION_STRENGTH] ?: 1.0f }
-    val livesCount: Flow<Int> = context.dataStore.data.map { it[LIVES_COUNT] ?: 5 }
-    val lastLifeLossTime: Flow<Long> = context.dataStore.data.map { it[LAST_LIFE_LOSS_TIME] ?: 0L }
+    override val voiceEnabled: Flow<Boolean> = context.dataStore.data.map { it[VOICE_ENABLED] ?: true }
+    override val vibrationEnabled: Flow<Boolean> = context.dataStore.data.map { it[VIBRATION_ENABLED] ?: true }
+    override val vibrationStrength: Flow<Float> = context.dataStore.data.map { it[VIBRATION_STRENGTH] ?: 1.0f }
+    override val livesCount: Flow<Int> = context.dataStore.data.map { it[LIVES_COUNT] ?: 5 }
+    override val lastLifeLossTime: Flow<Long> = context.dataStore.data.map { it[LAST_LIFE_LOSS_TIME] ?: 0L }
 
     /** Returns a map of cardId -> remaining charges from DataStore */
-    val cardCharges: Flow<Map<String, Int>> = context.dataStore.data.map { preferences ->
+    override val cardCharges: Flow<Map<String, Int>> = context.dataStore.data.map { preferences ->
         val raw = preferences[CARD_CHARGES] ?: ""
         if (raw.isEmpty()) emptyMap()
         else raw.split(",").mapNotNull {
@@ -125,7 +125,7 @@ class GameDataStore(private val context: Context) {
     }
 
     /** Returns a map of cardId -> last use timestamp from DataStore */
-    val cardLastUseTime: Flow<Map<String, Long>> = context.dataStore.data.map { preferences ->
+    override val cardLastUseTime: Flow<Map<String, Long>> = context.dataStore.data.map { preferences ->
         val raw = preferences[CARD_LAST_USE_TIME] ?: ""
         if (raw.isEmpty()) emptyMap()
         else raw.split(",").mapNotNull {
@@ -134,23 +134,23 @@ class GameDataStore(private val context: Context) {
         }.toMap()
     }
 
-    suspend fun saveMusicVolume(volume: Float) {
+    override suspend fun saveMusicVolume(volume: Float) {
         context.dataStore.edit { it[MUSIC_VOLUME] = volume }
     }
 
-    suspend fun saveSfxVolume(volume: Float) {
+    override suspend fun saveSfxVolume(volume: Float) {
         context.dataStore.edit { it[SFX_VOLUME] = volume }
     }
 
-    suspend fun saveClassicLevel(level: Int) {
+    override suspend fun saveClassicLevel(level: Int) {
         context.dataStore.edit { it[CLASSIC_LEVEL] = level }
     }
 
-    suspend fun saveMixedLevel(level: Int) {
+    override suspend fun saveMixedLevel(level: Int) {
         context.dataStore.edit { it[MIXED_LEVEL] = level }
     }
 
-    suspend fun saveHighScore(score: Int, mode: com.mawelly.blitzmath.game.GameMode = com.mawelly.blitzmath.game.GameMode.CLASSIC) {
+    override suspend fun saveHighScore(score: Int, mode: com.mawelly.blitzmath.game.GameMode) {
         context.dataStore.edit {
             val key = when (mode) {
                 com.mawelly.blitzmath.game.GameMode.CLASSIC -> HIGH_SCORE
@@ -163,11 +163,11 @@ class GameDataStore(private val context: Context) {
         }
     }
 
-    suspend fun saveChallengeHighScore(score: Int) {
+    override suspend fun saveChallengeHighScore(score: Int) {
         context.dataStore.edit { it[CHALLENGE_HIGH_SCORE] = score }
     }
 
-    suspend fun saveChallengePlayInfo(playsToday: Int, dateStr: String) {
+    override suspend fun saveChallengePlayInfo(playsToday: Int, dateStr: String) {
         context.dataStore.edit {
             it[CHALLENGE_PLAYS_TODAY] = playsToday
             it[LAST_CHALLENGE_DATE] = dateStr
@@ -175,12 +175,12 @@ class GameDataStore(private val context: Context) {
         }
     }
 
-    suspend fun saveLastChallengePlayTime(time: Long) {
+    override suspend fun saveLastChallengePlayTime(time: Long) {
         context.dataStore.edit { it[LAST_CHALLENGE_PLAY_TIME] = time }
     }
 
 
-    suspend fun saveLanguage(language: AppLanguage) {
+    override suspend fun saveLanguage(language: AppLanguage) {
         context.dataStore.edit {
             it[LANGUAGE] = when (language) {
                 AppLanguage.TURKISH -> "tr"
@@ -197,7 +197,7 @@ class GameDataStore(private val context: Context) {
         }
     }
 
-    suspend fun saveTheme(theme: AppTheme) {
+    override suspend fun saveTheme(theme: AppTheme) {
         context.dataStore.edit {
             it[THEME] = when (theme) {
                 AppTheme.MIDNIGHT -> "midnight"
@@ -214,21 +214,21 @@ class GameDataStore(private val context: Context) {
         }
     }
 
-    suspend fun saveAutoTheme(enabled: Boolean) {
+    override suspend fun saveAutoTheme(enabled: Boolean) {
         context.dataStore.edit {
             it[AUTO_THEME] = enabled
         }
     }
 
-    suspend fun saveStreakCount(count: Int) {
+    override suspend fun saveStreakCount(count: Int) {
         context.dataStore.edit { it[STREAK_COUNT] = count }
     }
 
-    suspend fun saveLastClaimTime(time: Long) {
+    override suspend fun saveLastClaimTime(time: Long) {
         context.dataStore.edit { it[LAST_CLAIM_TIME] = time }
     }
 
-    suspend fun saveDailyReward(streak: Int, time: Long, starsToAdd: Int) {
+    override suspend fun saveDailyReward(streak: Int, time: Long, starsToAdd: Int) {
         context.dataStore.edit {
             it[STREAK_COUNT] = streak
             it[LAST_CLAIM_TIME] = time
@@ -237,11 +237,11 @@ class GameDataStore(private val context: Context) {
         }
     }
 
-    suspend fun saveStarCount(count: Int) {
+    override suspend fun saveStarCount(count: Int) {
         context.dataStore.edit { it[STAR_COUNT] = count }
     }
     
-    suspend fun spendStars(amount: Int): Boolean {
+    override suspend fun spendStars(amount: Int): Boolean {
         var success = false
         context.dataStore.edit { preferences ->
             val currentStars = preferences[STAR_COUNT] ?: 0
@@ -253,14 +253,14 @@ class GameDataStore(private val context: Context) {
         return success
     }
 
-    suspend fun addStars(amount: Int) {
+    override suspend fun addStars(amount: Int) {
         context.dataStore.edit { preferences ->
             val current = preferences[STAR_COUNT] ?: 0
             preferences[STAR_COUNT] = current + amount
         }
     }
 
-    suspend fun unlockCard(cardId: String) {
+    override suspend fun unlockCard(cardId: String) {
         context.dataStore.edit { preferences ->
             val current = preferences[UNLOCKED_CARDS] ?: ""
             val list = current.split(",").filter { it.isNotEmpty() }.toMutableSet()
@@ -270,7 +270,7 @@ class GameDataStore(private val context: Context) {
         }
     }
     
-    suspend fun toggleEquipCard(cardId: String) {
+    override suspend fun toggleEquipCard(cardId: String) {
         context.dataStore.edit { preferences ->
             val current = preferences[EQUIPPED_CARDS] ?: ""
             val list = current.split(",").filter { it.isNotEmpty() }.toMutableSet()
@@ -286,56 +286,56 @@ class GameDataStore(private val context: Context) {
         }
     }
 
-    suspend fun saveVoiceEnabled(enabled: Boolean) {
+    override suspend fun saveVoiceEnabled(enabled: Boolean) {
         context.dataStore.edit { it[VOICE_ENABLED] = enabled }
     }
 
-    suspend fun saveVibrationEnabled(enabled: Boolean) {
+    override suspend fun saveVibrationEnabled(enabled: Boolean) {
         context.dataStore.edit { it[VIBRATION_ENABLED] = enabled }
     }
 
-    suspend fun saveVibrationStrength(strength: Float) {
+    override suspend fun saveVibrationStrength(strength: Float) {
         context.dataStore.edit { it[VIBRATION_STRENGTH] = strength }
     }
 
     /** Saves the entire card charges map. Format: "cardId1:3,cardId2:1" */
-    suspend fun saveCardCharges(charges: Map<String, Int>) {
+    override suspend fun saveCardCharges(charges: Map<String, Int>) {
         context.dataStore.edit { preferences ->
             preferences[CARD_CHARGES] = charges.entries.joinToString(",") { "${it.key}:${it.value}" }
         }
     }
 
     /** Saves the card last use time map. Format: "cardId1:timestamp,cardId2:timestamp" */
-    suspend fun saveCardLastUseTime(useTimes: Map<String, Long>) {
+    override suspend fun saveCardLastUseTime(useTimes: Map<String, Long>) {
         context.dataStore.edit { preferences ->
             preferences[CARD_LAST_USE_TIME] = useTimes.entries.joinToString(",") { "${it.key}:${it.value}" }
         }
     }
 
-    val gamesPlayed: Flow<Int> = context.dataStore.data.map { it[GAMES_PLAYED] ?: 0 }
+    override val gamesPlayed: Flow<Int> = context.dataStore.data.map { it[GAMES_PLAYED] ?: 0 }
 
-    suspend fun incrementGamesPlayed() {
+    override suspend fun incrementGamesPlayed() {
         context.dataStore.edit { preferences ->
             val current = preferences[GAMES_PLAYED] ?: 0
             preferences[GAMES_PLAYED] = current + 1
         }
     }
 
-    suspend fun saveLives(count: Int) {
+    override suspend fun saveLives(count: Int) {
         context.dataStore.edit { it[LIVES_COUNT] = count }
     }
 
-    suspend fun saveLastLifeLossTime(time: Long) {
+    override suspend fun saveLastLifeLossTime(time: Long) {
         context.dataStore.edit { it[LAST_LIFE_LOSS_TIME] = time }
     }
 
-    val isReviewed: Flow<Boolean> = context.dataStore.data.map { it[IS_REVIEWED] ?: false }
+    override val isReviewed: Flow<Boolean> = context.dataStore.data.map { it[IS_REVIEWED] ?: false }
 
-    suspend fun saveIsReviewed(reviewed: Boolean) {
+    override suspend fun saveIsReviewed(reviewed: Boolean) {
         context.dataStore.edit { it[IS_REVIEWED] = reviewed }
     }
 
-    suspend fun saveLastKnownRank(mode: String, rank: Int) {
+    override suspend fun saveLastKnownRank(mode: String, rank: Int) {
         context.dataStore.edit {
             val key = when (mode.lowercase()) {
                 "mixed" -> LAST_KNOWN_MIXED_RANK

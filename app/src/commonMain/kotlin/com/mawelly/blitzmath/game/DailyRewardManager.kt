@@ -1,47 +1,41 @@
 package com.mawelly.blitzmath.game
 
-import java.util.Calendar
-
 object DailyRewardManager {
 
     /**
      * Günlük ödül durumunu kontrol eder.
      * @param lastClaimTime Son ödül alma zamanı (ms)
-     * @return DailyRewardStatus
+     * @param currentTime Şu anki zaman (ms)
      */
-    fun getRewardStatus(lastClaimTime: Long): DailyRewardStatus {
+    fun getRewardStatus(lastClaimTime: Long, currentTime: Long): DailyRewardStatus {
         if (lastClaimTime == 0L) return DailyRewardStatus.AVAILABLE
 
-        val now = System.currentTimeMillis()
-        val lastClaimCal = Calendar.getInstance().apply { timeInMillis = lastClaimTime }
-        val nowCal = Calendar.getInstance().apply { timeInMillis = now }
+        // Basit gün hesaplaması (UTC)
+        // 1 gün = 24 * 60 * 60 * 1000 = 86400000 ms
+        val DAY_MS = 86400000L
+        val currentDay = currentTime / DAY_MS
+        val lastClaimDay = lastClaimTime / DAY_MS
 
-        // Aynı gün mü?
-        if (isSameDay(lastClaimCal, nowCal)) {
+        if (currentDay == lastClaimDay) {
             return DailyRewardStatus.CLAIMED
         }
 
-        // Dün mü?
-        val yesterdayCal = Calendar.getInstance().apply { 
-            timeInMillis = now
-            add(Calendar.DAY_OF_YEAR, -1)
+        if (currentDay - lastClaimDay == 1L) {
+            return DailyRewardStatus.AVAILABLE
         }
 
-        return if (isSameDay(lastClaimCal, yesterdayCal)) {
-            DailyRewardStatus.AVAILABLE
-        } else {
-            DailyRewardStatus.STREAK_RESET
-        }
+        return DailyRewardStatus.STREAK_RESET
     }
 
     /**
      * Yeni seri sayısını hesaplar.
      * @param currentStreak Mevcut seri
      * @param lastClaimTime Son ödül alma zamanı
+     * @param currentTime Şu anki zaman (ms)
      * @return Yeni seri sayısı
      */
-    fun calculateNewStreak(currentStreak: Int, lastClaimTime: Long): Int {
-        val status = getRewardStatus(lastClaimTime)
+    fun calculateNewStreak(currentStreak: Int, lastClaimTime: Long, currentTime: Long): Int {
+        val status = getRewardStatus(lastClaimTime, currentTime)
         return when (status) {
             DailyRewardStatus.AVAILABLE -> currentStreak + 1
             DailyRewardStatus.STREAK_RESET -> 1
@@ -66,11 +60,6 @@ object DailyRewardManager {
             7 -> 100 // Mega Bonus
             else -> 10
         }
-    }
-
-    private fun isSameDay(cal1: Calendar, cal2: Calendar): Boolean {
-        return cal1.get(Calendar.YEAR) == cal2.get(Calendar.YEAR) &&
-                cal1.get(Calendar.DAY_OF_YEAR) == cal2.get(Calendar.DAY_OF_YEAR)
     }
 }
 

@@ -267,7 +267,7 @@ fun BlitzMathApp() {
     // Initialize PlatformServices
     val platformServices = remember(adMobManager, analyticsManager, soundManager) {
         AndroidPlatformServices(
-            activity = context as? android.app.Activity,
+            activity = context as android.app.Activity,
             context = context,
             adManager = adMobManager,
             analyticsManager = analyticsManager ?: AnalyticsManager.getInstance(context),

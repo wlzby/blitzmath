@@ -489,15 +489,19 @@ fun GameScreen(
                 },
                 text = {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        welcomeCard?.imageResId?.let { resId ->
-                            Image(
-                                painter = painterResource(id = resId),
-                                contentDescription = null,
-                                modifier = Modifier
-                                    .size(120.dp)
-                                    .clip(RoundedCornerShape(16.dp))
-                                    .border(2.dp, Color(0xFFFFD700), RoundedCornerShape(16.dp))
-                            )
+                        welcomeCard?.id?.let { imageId ->
+                            val context = androidx.compose.ui.platform.LocalContext.current
+                            val resId = remember(imageId) { context.resources.getIdentifier(imageId, "drawable", context.packageName) }
+                            if (resId != 0) {
+                                Image(
+                                    painter = painterResource(id = resId),
+                                    contentDescription = null,
+                                    modifier = Modifier
+                                        .size(120.dp)
+                                        .clip(RoundedCornerShape(16.dp))
+                                        .border(2.dp, Color(0xFFFFD700), RoundedCornerShape(16.dp))
+                                )
+                            }
                             Spacer(modifier = Modifier.height(16.dp))
                         }
                         Text(
@@ -1342,19 +1346,23 @@ private fun JokerSkillBar(
                                 .alpha(if (canUse) 1f else 0.45f),
                             contentAlignment = Alignment.Center
                         ) {
-                            if (card.imageResId != null) {
+                            if (card.id.isNotEmpty()) {
                                 Box(
                                     modifier = Modifier
                                         .fillMaxSize()
                                         .padding(4.dp) // Yüzün kenarlara yapışmasını ve kesilmesini önlemek için boşluk
                                         .clip(CircleShape)
                                 ) {
-                                    Image(
-                                        painter = painterResource(id = card.imageResId),
-                                        contentDescription = card.name,
-                                        modifier = Modifier.fillMaxSize(),
-                                        contentScale = ContentScale.Fit // Fit kullanarak tüm yüzün görünmesini sağlıyoruz
-                                    )
+                                    val context = androidx.compose.ui.platform.LocalContext.current
+                                    val resId = remember(card.id) { context.resources.getIdentifier(card.id, "drawable", context.packageName) }
+                                    if (resId != 0) {
+                                        Image(
+                                            painter = painterResource(id = resId),
+                                            contentDescription = card.name,
+                                            modifier = Modifier.fillMaxSize(),
+                                            contentScale = ContentScale.Fit // Fit kullanarak tüm yüzün görünmesini sağlıyoruz
+                                        )
+                                    }
                                 }
                                 
                                 // Neon Çerçeve (Ring)

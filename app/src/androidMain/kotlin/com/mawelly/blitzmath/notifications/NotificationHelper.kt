@@ -144,7 +144,7 @@ class NotificationHelper(private val context: Context) {
         }
         return quotes.random()
     }
-    fun showScientistEngagementNotification(language: AppLanguage, cardName: String, imageResId: Int?, isUnlocked: Boolean) {
+    fun showScientistEngagementNotification(language: AppLanguage, cardName: String, imageId: String?, isUnlocked: Boolean) {
         val messages = if (isUnlocked) {
             when (language) {
                 AppLanguage.TURKISH -> listOf(
@@ -270,14 +270,17 @@ class NotificationHelper(private val context: Context) {
             .setContentIntent(pendingIntent)
             .setAutoCancel(true)
         
-        if (imageResId != null) {
-            val largeIcon = android.graphics.BitmapFactory.decodeResource(context.resources, imageResId)
-            builder.setLargeIcon(largeIcon)
-            builder.setStyle(NotificationCompat.BigPictureStyle().bigPicture(largeIcon).bigLargeIcon(null as android.graphics.Bitmap?))
+        if (imageId != null) {
+            val resId = context.resources.getIdentifier(imageId, "drawable", context.packageName)
+            if (resId != 0) {
+                val largeIcon = android.graphics.BitmapFactory.decodeResource(context.resources, resId)
+                builder.setLargeIcon(largeIcon)
+                builder.setStyle(NotificationCompat.BigPictureStyle().bigPicture(largeIcon).bigLargeIcon(null as android.graphics.Bitmap?))
+            }
         }
         
         val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         notificationManager.notify(cardName.hashCode(), builder.build())
     }
-}
 
+}

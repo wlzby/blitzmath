@@ -26,7 +26,7 @@ class EngagementWorker(
             NotificationHelper(applicationContext).showScientistEngagementNotification(
                 language = language,
                 cardName = randomCard.name,
-                imageResId = randomCard.imageResId,
+                imageId = randomCard.id,
                 isUnlocked = isUnlocked
             )
         } else {
