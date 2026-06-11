@@ -19,7 +19,6 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -32,7 +31,6 @@ import blitzmath.app.generated.resources.Res
 import blitzmath.app.generated.resources.blitzmath_logo
 import org.jetbrains.compose.resources.painterResource
 import kotlinx.coroutines.launch
-import java.util.UUID
 
 enum class SetupStep {
     LANGUAGE_SELECTION,
@@ -173,8 +171,8 @@ private fun LanguageStep(onSelect: (AppLanguage) -> Unit) {
 
     val animatedText = Strings.getSelectLanguage(languages[activeLangIndex])
 
-    val deviceLanguage = java.util.Locale.getDefault().language
-    val deviceCountry = java.util.Locale.getDefault().country
+    val deviceLanguage = ""
+    val deviceCountry = ""
 
     val languageOptions = remember {
         listOf(

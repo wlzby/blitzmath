@@ -2,8 +2,6 @@ package com.mawelly.blitzmath.ui.screens
 
 import com.mawelly.blitzmath.core.LocalPlatformServices
 
-import android.content.Intent
-import android.net.Uri
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -28,7 +26,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -151,7 +148,7 @@ fun SettingsScreen(
             val vibrationStrengthState by dataStore.vibrationStrength.collectAsState(initial = 1.0f)
             val hapticManager = platformServices.hapticManager
             var sliderValue by remember(vibrationStrengthState) { mutableFloatStateOf(vibrationStrengthState) }
-            var lastVibrationTime by remember { mutableLongStateOf(0L) }
+            var lastVibrationMark by remember { mutableStateOf(kotlin.time.TimeSource.Monotonic.markNow()) }
             
             SettingsItem(
                 icon = Icons.Default.Vibration,
@@ -159,12 +156,12 @@ fun SettingsScreen(
                 volume = sliderValue,
                 onVolumeChange = { newStrength ->
                     sliderValue = newStrength
-                    val currentTime = System.currentTimeMillis()
+                    val now = kotlin.time.TimeSource.Monotonic.markNow()
                     
                     // Sürükleme sırasında her 150ms'de bir titreşim (önizleme için her zaman aktif)
-                    if (currentTime - lastVibrationTime > 150L) {
+                    if ((now - lastVibrationMark).inWholeMilliseconds > 150L) {
                         hapticManager.triggerMediumImpact()
-                        lastVibrationTime = currentTime
+                        lastVibrationMark = now
                     }
                 },
                 onValueChangeFinished = {
@@ -397,8 +394,7 @@ fun SettingsScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clickable {
-                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://mawellystudio.com/privacy"))
-                        platformServices.openUrl("https://play.google.com/store/apps/details?id=com.mawelly.blitzmath")
+                        platformServices.openUrl("https://mawellystudio.com/privacy")
                     }
                     .padding(vertical = 8.dp),
                 textAlign = androidx.compose.ui.text.style.TextAlign.Center
