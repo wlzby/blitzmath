@@ -70,7 +70,8 @@ fun CollectionScreen(
         if (needsRecharge) {
             while (true) {
                 kotlinx.coroutines.delay(1000)
-                val currentTime = kotlin.time.TimeSource.Monotonic.markNow().elapsedNow().inWholeMilliseconds
+                val platformServices = LocalPlatformServices.current
+                val currentTime = platformServices.getCurrentTimeMillis()
                 var anyUpdate = false
                 
                 allCards.forEach { card ->
@@ -354,7 +355,8 @@ fun ScientistStoreItem(
                         
                         if (isRecharging) {
                             val durationMs = card.rechargeDurationMinutes * 60 * 1000L
-                            val remainingMs = (lastUseTime + durationMs - kotlin.time.TimeSource.Monotonic.markNow().elapsedNow().inWholeMilliseconds).coerceAtLeast(0)
+                            val platformServices2 = LocalPlatformServices.current
+                            val remainingMs = (lastUseTime + durationMs - platformServices2.getCurrentTimeMillis()).coerceAtLeast(0)
                             val seconds = (remainingMs / 1000) % 60
                             val minutes = (remainingMs / (1000 * 60)) % 60
                             val hours = (remainingMs / (1000 * 60 * 60))

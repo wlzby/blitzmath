@@ -148,7 +148,7 @@ fun SettingsScreen(
             val vibrationStrengthState by dataStore.vibrationStrength.collectAsState(initial = 1.0f)
             val hapticManager = platformServices.hapticManager
             var sliderValue by remember(vibrationStrengthState) { mutableFloatStateOf(vibrationStrengthState) }
-            var lastVibrationMark by remember { mutableStateOf(kotlin.time.TimeSource.Monotonic.markNow()) }
+            var lastVibrationTime by remember { mutableLongStateOf(0L) }
             
             SettingsItem(
                 icon = Icons.Default.Vibration,
@@ -156,12 +156,12 @@ fun SettingsScreen(
                 volume = sliderValue,
                 onVolumeChange = { newStrength ->
                     sliderValue = newStrength
-                    val now = kotlin.time.TimeSource.Monotonic.markNow()
+                    val currentTime = platformServices.getCurrentTimeMillis()
                     
                     // Sürükleme sırasında her 150ms'de bir titreşim (önizleme için her zaman aktif)
-                    if ((now - lastVibrationMark).inWholeMilliseconds > 150L) {
+                    if (currentTime - lastVibrationTime > 150L) {
                         hapticManager.triggerMediumImpact()
-                        lastVibrationMark = now
+                        lastVibrationTime = currentTime
                     }
                 },
                 onValueChangeFinished = {
