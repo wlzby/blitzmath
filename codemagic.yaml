@@ -1,4 +1,4 @@
-﻿workflows:
+workflows:
   ios-build:
     name: iOS Build
     environment:
@@ -11,10 +11,14 @@
     scripts:
       - name: Set up local properties
         script: |
-          echo "sdk.dir=\C:\Users\ozbayv/Library/Android/sdk" > local.properties
+          echo "sdk.dir=$HOME/Library/Android/sdk" > local.properties
       - name: Build iOS
         script: |
           cd iosApp
-          xcodebuild build -project iosApp.xcodeproj -scheme iosApp -sdk iphonesimulator -destination 'platform=iOS Simulator,name=iPhone 15,OS=latest' | xcpretty
+          xcodebuild build -project iosApp.xcodeproj -scheme iosApp -sdk iphonesimulator -destination 'platform=iOS Simulator,name=iPhone 15,OS=latest' CONFIGURATION_BUILD_DIR=../build/ios/iphonesimulator CODE_SIGNING_ALLOWED=NO | xcpretty
+      - name: Package App for Appetize
+        script: |
+          cd build/ios/iphonesimulator
+          zip -r blitzmath.app.zip *.app
     artifacts:
-      - build/ios/iphonesimulator/**/*.app
+      - build/ios/iphonesimulator/blitzmath.app.zip
