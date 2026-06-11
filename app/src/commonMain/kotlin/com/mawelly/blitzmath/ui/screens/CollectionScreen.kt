@@ -47,6 +47,7 @@ fun CollectionScreen(
 ) {
     val colors = LocalBlitzMathColors.current
     val allCards = ScientistCards.cards
+    val platformServices = LocalPlatformServices.current
 
     // Local state for charges and timers to allow UI updates without GameState
     val currentCharges = remember { mutableStateMapOf<String, Int>() }
@@ -70,7 +71,6 @@ fun CollectionScreen(
         if (needsRecharge) {
             while (true) {
                 kotlinx.coroutines.delay(1000)
-                val platformServices = LocalPlatformServices.current
                 val currentTime = platformServices.getCurrentTimeMillis()
                 var anyUpdate = false
                 
@@ -257,6 +257,7 @@ fun ScientistStoreItem(
     onToggleEquip: () -> Unit,
     accentColor: Color
 ) {
+    val platformServices = LocalPlatformServices.current
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -291,7 +292,6 @@ fun ScientistStoreItem(
                     contentAlignment = Alignment.Center
                 ) {
                     if (card.id.isNotEmpty()) {
-                        val platformServices = LocalPlatformServices.current
                         val res = com.mawelly.blitzmath.ui.components.ScientistResources.getPortrait(card.id)
                         if (res != null) {
                             androidx.compose.foundation.Image(
@@ -355,8 +355,7 @@ fun ScientistStoreItem(
                         
                         if (isRecharging) {
                             val durationMs = card.rechargeDurationMinutes * 60 * 1000L
-                            val platformServices2 = LocalPlatformServices.current
-                            val remainingMs = (lastUseTime + durationMs - platformServices2.getCurrentTimeMillis()).coerceAtLeast(0)
+                            val remainingMs = (lastUseTime + durationMs - platformServices.getCurrentTimeMillis()).coerceAtLeast(0)
                             val seconds = (remainingMs / 1000) % 60
                             val minutes = (remainingMs / (1000 * 60)) % 60
                             val hours = (remainingMs / (1000 * 60 * 60))
