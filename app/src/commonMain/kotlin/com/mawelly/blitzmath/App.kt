@@ -23,6 +23,9 @@ import com.mawelly.blitzmath.data.IGameDataStore
 import com.mawelly.blitzmath.data.AppTheme
 import com.mawelly.blitzmath.localization.Strings
 import com.mawelly.blitzmath.localization.AppLanguage
+import kotlin.math.floor
+import kotlin.math.sqrt
+import kotlin.math.pow
 import com.mawelly.blitzmath.ui.screens.*
 import com.mawelly.blitzmath.ui.theme.BlitzMathTheme
 import com.mawelly.blitzmath.ui.theme.LocalBlitzMathColors
@@ -113,12 +116,12 @@ fun App(dataStore: IGameDataStore) {
                         val playerXp by dataStore.playerXp.collectAsState(initial = 0)
                         
                         // Calculate Level
-                        val calculatedLevel = Math.floor(Math.sqrt(playerXp / 100.0)).toInt() + 1
+                        val calculatedLevel = floor(sqrt(playerXp / 100.0)).toInt() + 1
                         val level = calculatedLevel.coerceIn(1, 100)
                         
                         // Calculate Progress
-                        val xpForCurrentLevel = Math.pow((level - 1).toDouble(), 2.0).toInt() * 100
-                        val xpForNextLevel = Math.pow(level.toDouble(), 2.0).toInt() * 100
+                        val xpForCurrentLevel = (level - 1).toDouble().pow(2.0).toInt() * 100
+                        val xpForNextLevel = level.toDouble().pow(2.0).toInt() * 100
                         val progress = if (level >= 100) 1f else ((playerXp - xpForCurrentLevel).toFloat() / (xpForNextLevel - xpForCurrentLevel).toFloat()).coerceIn(0f, 1f)
                         
                         MainMenuScreen(

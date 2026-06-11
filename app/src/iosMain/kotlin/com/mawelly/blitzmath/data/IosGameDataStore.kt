@@ -51,6 +51,7 @@ class IosGameDataStore : IGameDataStore {
             GameMode.CLASSIC -> if (score > highScore.value) highScore.value = score
             GameMode.MIXED -> if (score > mixedHighScore.value) mixedHighScore.value = score
             GameMode.CHALLENGE -> if (score > challengeHighScore.value) challengeHighScore.value = score
+            else -> {}
         }
     }
     
