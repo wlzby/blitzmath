@@ -36,6 +36,9 @@ interface IGameDataStore {
     val cardLastUseTime: Flow<Map<String, Long>>
     val gamesPlayed: Flow<Int>
     val isReviewed: Flow<Boolean>
+    val playerName: Flow<String>
+    val playerId: Flow<String>
+    val playerXp: Flow<Int>
 
     suspend fun saveMusicVolume(volume: Float)
     suspend fun saveSfxVolume(volume: Float)
@@ -66,4 +69,9 @@ interface IGameDataStore {
     suspend fun saveLastLifeLossTime(time: Long)
     suspend fun saveIsReviewed(reviewed: Boolean)
     suspend fun saveLastKnownRank(mode: String, rank: Int)
+    suspend fun savePlayerName(name: String)
+    suspend fun saveLoginType(type: String)
+    suspend fun setFirstLaunchCompleted()
+    suspend fun savePlayerId(id: String)
+    suspend fun savePlayerXp(xp: Int)
 }

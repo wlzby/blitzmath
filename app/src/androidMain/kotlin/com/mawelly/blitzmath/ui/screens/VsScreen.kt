@@ -76,13 +76,12 @@ fun getFlagEmojiForCountryCode(countryCode: String): String {
 }
 
 @Composable
-fun VsScreen(
-    soundManager: SoundManager,
-    languageManager: LanguageManager,
-    onBackToMenu: () -> Unit
-) {
+actual fun VsScreen(onBackToMenu: () -> Unit) {
     val context = LocalContext.current
     val db = remember { FirebaseFirestore.getInstance() }
+    
+    val soundManager = androidx.compose.runtime.remember { com.mawelly.blitzmath.audio.SoundManager(context) }
+    val languageManager = androidx.compose.runtime.remember { com.mawelly.blitzmath.LanguageManager(context) }
     val scope = rememberCoroutineScope()
     
     var currentState by remember { mutableStateOf(VsState.ENTER_NAME) }

@@ -434,7 +434,7 @@ fun BlitzMathApp() {
                     })
                 }
                 Screen.LANGUAGE_SELECTION -> {
-                    LanguageSelectionScreen(
+                    LanguageSelectionScreen(dataStore = dataStore,
                         onLanguageSelected = {
                             scope.launch {
                                 dataStore.saveLanguage(Strings.currentLanguage)
@@ -547,7 +547,7 @@ fun BlitzMathApp() {
                     )
                 }
                 Screen.SETTINGS -> {
-                    SettingsScreen(
+                    SettingsScreen(dataStore = dataStore,
                         onBackToMenu = {
                             scope.launch {
                                 val savedLang = dataStore.language.first()
@@ -597,8 +597,8 @@ fun BlitzMathApp() {
                 }
                 Screen.VS_SCREEN -> {
                     com.mawelly.blitzmath.ui.screens.VsScreen(
-                        soundManager = soundManager,
-                        languageManager = languageManager,
+                        
+                        
                         onBackToMenu = { currentScreen = Screen.MAIN_MENU }
                     )
                 }

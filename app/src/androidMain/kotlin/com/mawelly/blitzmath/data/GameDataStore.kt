@@ -345,4 +345,27 @@ class GameDataStore(private val context: Context) : IGameDataStore {
             it[key] = rank
         }
     }
+    override val playerName: Flow<String> = context.dataStore.data.map { it[stringPreferencesKey("player_name")] ?: "" }
+    override val playerId: Flow<String> = context.dataStore.data.map { it[stringPreferencesKey("player_id")] ?: "" }
+    override val playerXp: Flow<Int> = context.dataStore.data.map { it[intPreferencesKey("player_xp")] ?: 0 }
+
+    override suspend fun savePlayerName(name: String) {
+        context.dataStore.edit { it[stringPreferencesKey("player_name")] = name }
+    }
+
+    override suspend fun saveLoginType(type: String) {
+        context.dataStore.edit { it[stringPreferencesKey("login_type")] = type }
+    }
+
+    override suspend fun setFirstLaunchCompleted() {
+        context.dataStore.edit { it[booleanPreferencesKey("first_launch")] = true }
+    }
+
+    override suspend fun savePlayerId(id: String) {
+        context.dataStore.edit { it[stringPreferencesKey("player_id")] = id }
+    }
+
+    override suspend fun savePlayerXp(xp: Int) {
+        context.dataStore.edit { it[intPreferencesKey("player_xp")] = xp }
+    }
 }

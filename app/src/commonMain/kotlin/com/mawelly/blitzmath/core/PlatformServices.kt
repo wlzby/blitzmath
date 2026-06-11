@@ -35,6 +35,8 @@ interface IAdController {
 }
 
 // A unified container for all platform-specific services
+val LocalPlatformServices = androidx.compose.runtime.staticCompositionLocalOf<PlatformServices> { error("No PlatformServices provided") }
+
 interface PlatformServices {
     fun getCurrentTimeMillis(): Long
     val soundManager: ISoundManager
@@ -43,4 +45,5 @@ interface PlatformServices {
     val shareManager: IShareManager
     val adController: IAdController
     fun getCurrentDateString(): String
+    fun openUrl(url: String)
 }

@@ -40,7 +40,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @Composable
-fun LeaderboardPopup(
+actual fun LeaderboardPopup(
     mode: String,
     onDismiss: () -> Unit
 ) {

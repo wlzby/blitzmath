@@ -81,6 +81,12 @@ class AndroidPlatformServices(
     override val shareManager: IShareManager = AndroidShareManager(context)
     override val adController: IAdController = AndroidAdController(activity, adManager)
 
+    override fun openUrl(url: String) {
+        val intent = android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(url))
+        intent.addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
+        context.startActivity(intent)
+    }
+
     override fun getCurrentDateString(): String {
         return SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
     }

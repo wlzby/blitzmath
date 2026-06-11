@@ -35,9 +35,9 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @Composable
-fun GlobalLeaderboardScreen(
-    initialMode: String = "classic",
-    scrollToPlayerId: String? = null,
+actual fun GlobalLeaderboardScreen(
+    initialMode: String,
+    scrollToPlayerId: String?,
     onBackToMenu: () -> Unit
 ) {
     val context = LocalContext.current
