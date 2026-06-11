@@ -16,7 +16,7 @@ workflows:
         script: |
           set -o pipefail
           cd iosApp
-          xcodebuild build -project iosApp.xcodeproj -scheme iosApp -sdk iphonesimulator -destination 'platform=iOS Simulator,name=iPhone 15,OS=latest' -derivedDataPath ../build_output CODE_SIGNING_ALLOWED=NO
+          xcodebuild build -project iosApp.xcodeproj -scheme iosApp -sdk iphonesimulator -destination 'platform=iOS Simulator,name=iPhone 17,OS=latest' -derivedDataPath ../build_output CODE_SIGNING_ALLOWED=NO
       - name: Package App for Appetize
         script: |
           APP_PATH=$(find . -name "*.app" -type d | head -n 1)
