@@ -15,6 +15,7 @@ workflows:
       - name: Build iOS
         script: |
           set -o pipefail
+          chmod +x gradlew
           cd iosApp
           xcodebuild build -project iosApp.xcodeproj -scheme iosApp -sdk iphonesimulator -destination 'platform=iOS Simulator,name=iPhone 17,OS=latest' -derivedDataPath ../build_output CODE_SIGNING_ALLOWED=NO
       - name: Package App for Appetize
