@@ -26,6 +26,7 @@ import com.mawelly.blitzmath.localization.AppLanguage
 import kotlin.math.floor
 import kotlin.math.sqrt
 import kotlin.math.pow
+import com.mawelly.blitzmath.game.GameMode
 import com.mawelly.blitzmath.ui.screens.*
 import com.mawelly.blitzmath.ui.theme.BlitzMathTheme
 import com.mawelly.blitzmath.ui.theme.LocalBlitzMathColors
@@ -162,25 +163,29 @@ fun App(dataStore: IGameDataStore) {
                             currentXp = playerXp
                         )
                     }
-                    AppScreen.GAME_CLASSIC, AppScreen.GAME_MIXED, AppScreen.GAME_CHALLENGE -> {
-                        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                            Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(24.dp)) {
-                                Text(
-                                    text = "Game Mode is coming soon to iOS!",
-                                    color = Color.White,
-                                    fontSize = 20.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    textAlign = androidx.compose.ui.text.style.TextAlign.Center
-                                )
-                                Spacer(modifier = Modifier.height(16.dp))
-                                Button(
-                                    onClick = { currentScreen = AppScreen.MAIN_MENU },
-                                    colors = ButtonDefaults.buttonColors(containerColor = LocalBlitzMathColors.current.accent)
-                                ) {
-                                    Text("Back to Menu", color = Color.White)
-                                }
-                            }
-                        }
+                    AppScreen.GAME_CLASSIC -> {
+                        IosGameScreen(
+                            mode = GameMode.CLASSIC,
+                            startLevel = currentLevel,
+                            dataStore = dataStore,
+                            onBackToMenu = { currentScreen = AppScreen.MAIN_MENU }
+                        )
+                    }
+                    AppScreen.GAME_MIXED -> {
+                        IosGameScreen(
+                            mode = GameMode.MIXED,
+                            startLevel = currentLevel,
+                            dataStore = dataStore,
+                            onBackToMenu = { currentScreen = AppScreen.MAIN_MENU }
+                        )
+                    }
+                    AppScreen.GAME_CHALLENGE -> {
+                        IosGameScreen(
+                            mode = GameMode.CHALLENGE,
+                            startLevel = 1,
+                            dataStore = dataStore,
+                            onBackToMenu = { currentScreen = AppScreen.MAIN_MENU }
+                        )
                     }
                     AppScreen.SETTINGS -> {
                         SettingsScreen(
