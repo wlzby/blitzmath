@@ -70,7 +70,7 @@ fun CollectionScreen(
         if (needsRecharge) {
             while (true) {
                 kotlinx.coroutines.delay(1000)
-                val currentTime = System.currentTimeMillis()
+                val currentTime = kotlin.time.TimeSource.Monotonic.markNow().elapsedNow().inWholeMilliseconds
                 var anyUpdate = false
                 
                 allCards.forEach { card ->
@@ -354,13 +354,14 @@ fun ScientistStoreItem(
                         
                         if (isRecharging) {
                             val durationMs = card.rechargeDurationMinutes * 60 * 1000L
-                            val remainingMs = (lastTime@ (lastUseTime + durationMs) - System.currentTimeMillis()).coerceAtLeast(0)
+                            val remainingMs = (lastUseTime + durationMs - kotlin.time.TimeSource.Monotonic.markNow().elapsedNow().inWholeMilliseconds).coerceAtLeast(0)
                             val seconds = (remainingMs / 1000) % 60
                             val minutes = (remainingMs / (1000 * 60)) % 60
                             val hours = (remainingMs / (1000 * 60 * 60))
                             
-                            val timerText = if (hours > 0) String.format("%02d:%02d:%02d", hours, minutes, seconds)
-                                            else String.format("%02d:%02d", minutes, seconds)
+                            fun pad2(n: Long) = n.toString().padStart(2, '0')
+                            val timerText = if (hours > 0) "${pad2(hours)}:${pad2(minutes)}:${pad2(seconds)}"
+                                            else "${pad2(minutes)}:${pad2(seconds)}"
                             
                             Text(
                                 text = "⏳ $timerText",
