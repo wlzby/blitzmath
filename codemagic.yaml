@@ -14,11 +14,18 @@ workflows:
           echo "sdk.dir=$HOME/Library/Android/sdk" > local.properties
       - name: Build iOS
         script: |
+          set -o pipefail
           cd iosApp
-          xcodebuild build -project iosApp.xcodeproj -scheme iosApp -sdk iphonesimulator -destination 'platform=iOS Simulator,name=iPhone 15,OS=latest' -derivedDataPath ../build_output CODE_SIGNING_ALLOWED=NO | xcpretty
+          xcodebuild build -project iosApp.xcodeproj -scheme iosApp -sdk iphonesimulator -destination 'platform=iOS Simulator,name=iPhone 15,OS=latest' -derivedDataPath ../build_output CODE_SIGNING_ALLOWED=NO
       - name: Package App for Appetize
         script: |
-          cd build_output/Build/Products/*-iphonesimulator
-          zip -r blitzmath.app.zip *.app
+          APP_PATH=$(find . -name "*.app" -type d | head -n 1)
+          if [ -z "$APP_PATH" ]; then
+            echo "Error: No .app found! Check xcodebuild logs above."
+            exit 1
+          fi
+          echo "Found app at $APP_PATH"
+          cd "$(dirname "$APP_PATH")"
+          zip -r $CM_BUILD_DIR/blitzmath.app.zip "$(basename "$APP_PATH")"
     artifacts:
-      - build_output/Build/Products/*-iphonesimulator/blitzmath.app.zip
+      - blitzmath.app.zip
