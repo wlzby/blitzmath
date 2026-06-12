@@ -25,7 +25,7 @@ class IosSoundManager : ISoundManager {
             ?: NSBundle.mainBundle.pathForResource(fileName, type)
         if (path != null) {
             val url = NSURL.fileURLWithPath(path)
-            val player = AVAudioPlayer(url, null)
+            val player = AVAudioPlayer(contentsOfURL = url, error = null)
             player.prepareToPlay()
             players[fileName] = player
             return player
@@ -65,15 +65,15 @@ class IosSoundManager : ISoundManager {
 
 class IosHapticManager : IHapticManager {
     override fun triggerLightImpact() {
-        UIImpactFeedbackGenerator(UIImpactFeedbackStyle.UIImpactFeedbackStyleLight).impactOccurred()
+        UIImpactFeedbackGenerator(style = UIImpactFeedbackStyle.UIImpactFeedbackStyleLight).impactOccurred()
     }
 
     override fun triggerMediumImpact() {
-        UIImpactFeedbackGenerator(UIImpactFeedbackStyle.UIImpactFeedbackStyleMedium).impactOccurred()
+        UIImpactFeedbackGenerator(style = UIImpactFeedbackStyle.UIImpactFeedbackStyleMedium).impactOccurred()
     }
 
     override fun triggerHeavyImpact() {
-        UIImpactFeedbackGenerator(UIImpactFeedbackStyle.UIImpactFeedbackStyleHeavy).impactOccurred()
+        UIImpactFeedbackGenerator(style = UIImpactFeedbackStyle.UIImpactFeedbackStyleHeavy).impactOccurred()
     }
 
     override fun triggerError() {
