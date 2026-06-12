@@ -234,10 +234,10 @@ fun GameScreen(
     // Oyun döngüsü
     LaunchedEffect(gameState, gameState.isGameOver, gameState.isCheckpointComplete, isAppPaused) {
         if (!gameState.isGameOver && !gameState.isCheckpointComplete && !isAppPaused) {
-            var lastTimeMs = System.currentTimeMillis()
+            var lastTimeMs = platformServices.getCurrentTimeMillis()
             while (!gameState.isGameOver && !gameState.isCheckpointComplete && !isAppPaused) {
                 kotlinx.coroutines.delay(16)
-                val currentTimeMs = System.currentTimeMillis()
+                val currentTimeMs = platformServices.getCurrentTimeMillis()
                 val deltaTime = (currentTimeMs - lastTimeMs) / 1000f
                 lastTimeMs = currentTimeMs
                 gameState.updateTimer(deltaTime)
@@ -299,19 +299,18 @@ fun GameScreen(
         colors = blitzColors.backgroundGradient
     )
 
-    // Ekran boyutunu tespit et (Daha global kullanım için)
-    val configuration = androidx.compose.ui.platform.LocalConfiguration.current
-    val screenHeight = configuration.screenHeightDp.dp
-    val isUltraSmall = screenHeight < 640.dp
-
-    Box(
+    BoxWithConstraints(
         modifier = Modifier
             .fillMaxSize()
             .background(gradientBrush)
-            .padding(if (isUltraSmall) 8.dp else 12.dp)
     ) {
+        val screenHeight = maxHeight
+        val isUltraSmall = screenHeight.value < 640f
+
         Column(
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(if (isUltraSmall) 8.dp else 12.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Top
         ) {
@@ -513,9 +512,9 @@ private fun GamePlayScreen(gameState: GameState) {
     ) {
         val screenWidth = maxWidth
         val screenHeight = maxHeight
-        val isLandscape = screenWidth > screenHeight && screenHeight < 600.dp
-        val isSmallScreen = screenHeight < 740.dp
-        val isUltraSmallScreen = screenHeight < 640.dp
+        val isLandscape = screenWidth.value > screenHeight.value && screenHeight.value < 600f
+        val isSmallScreen = screenHeight.value < 740f
+        val isUltraSmallScreen = screenHeight.value < 640f
         
         // Dinamik boyutlandırma hesaplamaları (Daha Esnek ve Responsive)
         // Slot tabanlı responsive hesaplamalar (Daha Dolgun Görünüm)
@@ -1633,7 +1632,7 @@ private fun SaveMeScreen(
     ) {
         val screenHeight = maxHeight
         val screenWidth = maxWidth
-        val isSmall = screenHeight < 650.dp
+        val isSmall = screenHeight.value < 650f
 
         // Premium Background Layer (Blurred)
         Box(
@@ -1710,7 +1709,7 @@ private fun SaveMeScreen(
                     )
                 },
                 modifier = Modifier
-                    .fillMaxWidth(if (screenWidth > 600.dp) 0.6f else 0.85f)
+                    .fillMaxWidth(if (screenWidth.value > 600f) 0.6f else 0.85f)
                     .height(if (isSmall) 55.dp else 64.dp)
                     .scale(pulseScale),
                 shape = RoundedCornerShape(20.dp),
@@ -1745,7 +1744,7 @@ private fun SaveMeScreen(
             TextButton(
                 onClick = { gameState.declineSaveMe() },
                 modifier = Modifier
-                    .fillMaxWidth(if (screenWidth > 600.dp) 0.4f else 0.6f)
+                    .fillMaxWidth(if (screenWidth.value > 600f) 0.4f else 0.6f)
                     .height(48.dp)
                     .background(Color.White.copy(alpha = 0.1f), RoundedCornerShape(16.dp))
                     .border(1.dp, Color.White.copy(alpha = 0.2f), RoundedCornerShape(16.dp))
@@ -1769,6 +1768,7 @@ fun HeartsHUD(
     playerLevel: Int = 1,
     playerProgress: Float = 0f
 ) {
+    val platformServices = LocalPlatformServices.current
     var isHeartsExpanded by remember { mutableStateOf(false) }
     
     // Auto collapse after 3.5 seconds
@@ -1836,7 +1836,7 @@ fun HeartsHUD(
                             .size(if (isCompact) 18.dp else 22.dp)
                             .graphicsLayer {
                                 if (isFilled && livesRemaining <= 2) {
-                                    val scale = 1f + (0.12f * kotlin.math.sin(System.currentTimeMillis() / 350.0).toFloat())
+                                    val scale = 1f + (0.12f * kotlin.math.sin(platformServices.getCurrentTimeMillis() / 350.0).toFloat())
                                     scaleX = scale
                                     scaleY = scale
                                 }
@@ -1854,7 +1854,7 @@ fun HeartsHUD(
                         .size(if (isCompact) 20.dp else 24.dp)
                         .graphicsLayer {
                             if (livesRemaining in 1..2) {
-                                val scale = 1f + (0.12f * kotlin.math.sin(System.currentTimeMillis() / 350.0).toFloat())
+                                val scale = 1f + (0.12f * kotlin.math.sin(platformServices.getCurrentTimeMillis() / 350.0).toFloat())
                                 scaleX = scale
                                 scaleY = scale
                             }
@@ -1972,7 +1972,7 @@ private fun GameOverScreen(
         // Calculate adaptive sizes relative to screen height/width
         val screenH = maxHeight
         val screenW = maxWidth
-        val isSmall = screenH < 650.dp
+        val isSmall = screenH.value < 650f
         val isMedium = screenH < 800.dp
         val titleSize = if (isSmall) 22.sp else if (isMedium) 26.sp else 32.sp
         val scoreSize = if (isSmall) 34.sp else if (isMedium) 40.sp else 46.sp

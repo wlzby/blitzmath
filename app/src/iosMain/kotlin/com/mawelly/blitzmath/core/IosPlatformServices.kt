@@ -7,7 +7,7 @@ import platform.Foundation.NSBundle
 import platform.UIKit.UIApplication
 import platform.Foundation.timeIntervalSince1970
 
-import platform.AVFoundation.AVAudioPlayer
+import platform.AVFAudio.AVAudioPlayer
 import platform.UIKit.UIImpactFeedbackGenerator
 import platform.UIKit.UIImpactFeedbackStyle
 import platform.UIKit.UINotificationFeedbackGenerator
