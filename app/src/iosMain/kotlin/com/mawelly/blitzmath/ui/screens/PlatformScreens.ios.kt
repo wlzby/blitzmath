@@ -63,3 +63,9 @@ actual fun LeaderboardPopup(
 ) {
     // No-op stub for iOS
 }
+
+@Composable
+actual fun AppLifecycleObserver(onPause: () -> Unit, onResume: () -> Unit) {
+    // No-op stub for iOS
+}
+

@@ -27,6 +27,7 @@ import kotlin.math.floor
 import kotlin.math.sqrt
 import kotlin.math.pow
 import com.mawelly.blitzmath.game.GameMode
+import com.mawelly.blitzmath.ui.GameScreen
 import com.mawelly.blitzmath.ui.screens.*
 import com.mawelly.blitzmath.ui.theme.BlitzMathTheme
 import com.mawelly.blitzmath.ui.theme.LocalBlitzMathColors
@@ -164,27 +165,46 @@ fun App(dataStore: IGameDataStore) {
                         )
                     }
                     AppScreen.GAME_CLASSIC -> {
-                        IosGameScreen(
+                        GameScreen(
                             mode = GameMode.CLASSIC,
                             startLevel = currentLevel,
                             dataStore = dataStore,
-                            onBackToMenu = { currentScreen = AppScreen.MAIN_MENU }
+                            onLevelComplete = { level ->
+                                currentLevel = level
+                            },
+                            onBackToMenu = { currentScreen = AppScreen.MAIN_MENU },
+                            onShowRanking = { modeName ->
+                                leaderboardInitialMode = modeName
+                                currentScreen = AppScreen.GLOBAL_LEADERBOARD
+                            }
                         )
                     }
                     AppScreen.GAME_MIXED -> {
-                        IosGameScreen(
+                        GameScreen(
                             mode = GameMode.MIXED,
                             startLevel = currentLevel,
                             dataStore = dataStore,
-                            onBackToMenu = { currentScreen = AppScreen.MAIN_MENU }
+                            onLevelComplete = { level ->
+                                currentLevel = level
+                            },
+                            onBackToMenu = { currentScreen = AppScreen.MAIN_MENU },
+                            onShowRanking = { modeName ->
+                                leaderboardInitialMode = modeName
+                                currentScreen = AppScreen.GLOBAL_LEADERBOARD
+                            }
                         )
                     }
                     AppScreen.GAME_CHALLENGE -> {
-                        IosGameScreen(
+                        GameScreen(
                             mode = GameMode.CHALLENGE,
                             startLevel = 1,
                             dataStore = dataStore,
-                            onBackToMenu = { currentScreen = AppScreen.MAIN_MENU }
+                            onLevelComplete = {},
+                            onBackToMenu = { currentScreen = AppScreen.MAIN_MENU },
+                            onShowRanking = { modeName ->
+                                leaderboardInitialMode = modeName
+                                currentScreen = AppScreen.GLOBAL_LEADERBOARD
+                            }
                         )
                     }
                     AppScreen.SETTINGS -> {

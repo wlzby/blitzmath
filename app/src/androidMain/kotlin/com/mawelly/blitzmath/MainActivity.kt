@@ -1,4 +1,7 @@
 package com.mawelly.blitzmath
+import com.mawelly.blitzmath.core.LocalPlatformServices
+import com.mawelly.blitzmath.leaderboard.ILeaderboardManager
+import androidx.compose.runtime.CompositionLocalProvider
 
 import android.os.Bundle
 import android.content.Intent
@@ -206,6 +209,7 @@ fun BlitzMathApp() {
     val dataStore = remember { GameDataStore(context) }
     val soundManager = remember { SoundManager(context) }
     val voiceManager = remember { VoiceManager(context) }
+    val leaderboardManager = remember { com.mawelly.blitzmath.leaderboard.LeaderboardManager() }
     
     // Ses Ayarları ve Seslendirme Dili Senkronizasyonu
     LaunchedEffect(Strings.currentLanguage) {
@@ -394,7 +398,8 @@ fun BlitzMathApp() {
         }
     }
 
-    BlitzMathTheme(themeType = currentTheme) {
+    CompositionLocalProvider(LocalPlatformServices provides platformServices) {
+        BlitzMathTheme(themeType = currentTheme) {
         val blitzColors = LocalBlitzMathColors.current
         
         Box(modifier = Modifier.fillMaxSize()) {
@@ -498,10 +503,9 @@ fun BlitzMathApp() {
                     GameScreen(
                         mode = GameMode.CLASSIC,
                         startLevel = currentLevel,
-                        soundManager = soundManager,
-                        voiceManager = voiceManager,
                         dataStore = dataStore,
-                        adMobManager = adMobManager,
+                        voiceManager = voiceManager,
+                        leaderboardManager = leaderboardManager,
                         onLevelComplete = { nextLevel ->
                             currentLevel = nextLevel
                         },
@@ -516,10 +520,9 @@ fun BlitzMathApp() {
                     GameScreen(
                         mode = GameMode.MIXED,
                         startLevel = currentLevel,
-                        soundManager = soundManager,
-                        voiceManager = voiceManager,
                         dataStore = dataStore,
-                        adMobManager = adMobManager,
+                        voiceManager = voiceManager,
+                        leaderboardManager = leaderboardManager,
                         onLevelComplete = { nextLevel ->
                             currentLevel = nextLevel
                         },
@@ -534,10 +537,9 @@ fun BlitzMathApp() {
                     GameScreen(
                         mode = GameMode.CHALLENGE,
                         startLevel = 1,
-                        soundManager = soundManager,
-                        voiceManager = voiceManager,
                         dataStore = dataStore,
-                        adMobManager = adMobManager,
+                        voiceManager = voiceManager,
+                        leaderboardManager = leaderboardManager,
                         onLevelComplete = { },
                         onBackToMenu = {
                             soundManager.stopBGM()
@@ -609,6 +611,7 @@ fun BlitzMathApp() {
     // Show forced update dialog if needed - ALWAYS ON THE TOP OF EVERYTHING
         if (showUpdateDialog) {
             UpdateDialog()
+        }
         }
     }
 }

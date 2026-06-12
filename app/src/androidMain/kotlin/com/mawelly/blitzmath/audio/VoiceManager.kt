@@ -8,7 +8,7 @@ import android.speech.tts.Voice
 import com.mawelly.blitzmath.localization.AppLanguage
 import java.util.*
 
-class VoiceManager(private val context: Context) : TextToSpeech.OnInitListener {
+class VoiceManager(private val context: Context) : TextToSpeech.OnInitListener, IVoiceManager {
 
     private var tts: TextToSpeech? = null
     private var isInitialized = false
@@ -98,7 +98,7 @@ class VoiceManager(private val context: Context) : TextToSpeech.OnInitListener {
         }
     }
 
-    fun speak(text: String, speedMultiplier: Float = 1.0f, isProfessional: Boolean = false) {
+    override fun speak(text: String, speedMultiplier: Float, isProfessional: Boolean) {
         if (!isInitialized) {
             pendingText = text
             return
@@ -130,7 +130,7 @@ class VoiceManager(private val context: Context) : TextToSpeech.OnInitListener {
         tts?.speak(text, TextToSpeech.QUEUE_FLUSH, params, "msgID")
     }
 
-    fun speakQuestion(displayText: String) {
+    override fun speakQuestion(displayText: String) {
         val spokenText = translateMathSymbols(displayText)
         speak(spokenText)
     }
@@ -191,11 +191,11 @@ class VoiceManager(private val context: Context) : TextToSpeech.OnInitListener {
             .replace("÷", dividedBy)
     }
 
-    fun stop() {
+    override fun stop() {
         tts?.stop()
     }
 
-    fun release() {
+    override fun release() {
         tts?.stop()
         tts?.shutdown()
         tts = null

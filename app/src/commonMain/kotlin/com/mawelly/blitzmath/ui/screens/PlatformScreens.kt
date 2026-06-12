@@ -17,4 +17,5 @@ expect fun LeaderboardPopup(
     mode: String,
     onDismiss: () -> Unit
 )
-
+@Composable
+expect fun AppLifecycleObserver(onPause: () -> Unit, onResume: () -> Unit)

@@ -6,6 +6,7 @@ interface ISoundManager {
     fun playError()
     fun playGameOver()
     fun setEnabled(enabled: Boolean)
+    fun stopBGM() {}
 }
 
 interface IHapticManager {
@@ -23,6 +24,7 @@ interface IAnalyticsManager {
     fun logRefillLivesClick(source: String)
     fun logAdClick(adUnitName: String)
     fun logAdReward(adUnitName: String)
+    fun logGameEnd(mode: String, score: Long, success: Boolean)
 }
 
 interface IShareManager {
@@ -46,4 +48,7 @@ interface PlatformServices {
     val adController: IAdController
     fun getCurrentDateString(): String
     fun openUrl(url: String)
+    fun scheduleCardRecharge(cardId: String, delayMinutes: Long) {}
+    fun cancelCardRecharge(cardId: String) {}
+    fun showAppReview() {}
 }

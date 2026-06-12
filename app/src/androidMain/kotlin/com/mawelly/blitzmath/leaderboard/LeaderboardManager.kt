@@ -16,7 +16,7 @@ data class LeaderboardEntry(
     var timestamp: Date = Date()
 )
 
-class LeaderboardManager {
+class LeaderboardManager : ILeaderboardManager {
     
     private val db: FirebaseFirestore? by lazy {
         try {
@@ -53,13 +53,13 @@ class LeaderboardManager {
         return score <= generousLimit
     }
 
-    suspend fun submitScore(
+    override suspend fun submitScore(
         playerId: String,
         playerName: String,
         score: Long,
         level: Int,
-        country: String = "",
-        mode: String = "classic"
+        country: String,
+        mode: String
     ): Result<Unit> {
         if (playerId.isEmpty()) return Result.failure(Exception("Empty Player ID"))
 
@@ -108,7 +108,7 @@ class LeaderboardManager {
         }
     }
 
-    suspend fun getPlayerRank(playerId: String, mode: String = "classic"): Result<Int> {
+    override suspend fun getPlayerRank(playerId: String, mode: String): Result<Int> {
         return try {
             if (playerId.isEmpty()) return Result.success(0)
 

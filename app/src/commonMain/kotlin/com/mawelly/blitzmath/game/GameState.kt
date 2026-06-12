@@ -5,35 +5,43 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import com.mawelly.blitzmath.localization.AppLanguage
-import com.mawelly.blitzmath.LanguageManager
-import com.mawelly.blitzmath.audio.SoundManager
-import com.mawelly.blitzmath.audio.VoiceManager
-import com.mawelly.blitzmath.leaderboard.LeaderboardManager
+import com.mawelly.blitzmath.audio.IVoiceManager
+import com.mawelly.blitzmath.core.PlatformServices
+import com.mawelly.blitzmath.core.ISoundManager
+import com.mawelly.blitzmath.core.IHapticManager
+import com.mawelly.blitzmath.leaderboard.ILeaderboardManager
+import com.mawelly.blitzmath.data.IGameDataStore
 import com.mawelly.blitzmath.localization.Strings
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import java.util.Random
+import kotlin.random.Random
+import kotlin.math.sqrt
+import kotlin.math.floor
 
 class GameState(
-    private val soundManager: SoundManager,
-    private val voiceManager: VoiceManager? = null,
+    private val platformServices: PlatformServices,
+    private val voiceManager: IVoiceManager? = null,
     val isVoiceEnabled: Boolean = true,
     val mode: GameMode,
     startCheckpoint: Int = 1,
-    val languageManager: LanguageManager? = null,
-    private val leaderboardManager: LeaderboardManager? = null,
-    private val dataStore: com.mawelly.blitzmath.data.GameDataStore? = null,
+    private val dataStore: IGameDataStore? = null,
     val unlockedCards: Set<String> = emptySet(),
     val equippedCards: Set<String> = emptySet(),
-    private val hapticManager: com.mawelly.blitzmath.utils.HapticManager? = null,
     private val vibrationEnabled: Boolean = true,
     private val vibrationStrength: Float = 1.0f,
     private val onCardUnlocked: (ScientistCard) -> Unit = {},
     startingLives: Int = 5,
     lastLossTime: Long = 0L,
+    val playerXp: Int = 0,
+    val playerId: String = "",
+    val playerName: String = "",
+    private val leaderboardManager: ILeaderboardManager? = null,
     private val scope: CoroutineScope? = null
 ) {
+    private val soundManager: ISoundManager get() = platformServices.soundManager
+    private val hapticManager: IHapticManager get() = platformServices.hapticManager
+
     var livesRemaining by mutableIntStateOf(startingLives)
         private set
 
@@ -56,11 +64,12 @@ class GameState(
 
         // Safety check: If we have missing lives but no start time, set it to now
         if (lastLifeLossTime <= 0L) {
-            lastLifeLossTime = System.currentTimeMillis()
+            lastLifeLossTime = platformServices.getCurrentTimeMillis()
             saveLivesToDisk()
+            return
         }
 
-        val now = System.currentTimeMillis()
+        val now = platformServices.getCurrentTimeMillis()
         val timePassed = now - lastLifeLossTime
         
         if (timePassed >= REFILL_TIME_MS) {
@@ -88,6 +97,7 @@ class GameState(
             dataStore?.saveLastLifeLossTime(lastLifeLossTime)
         }
     }
+    
     var currentCheckpoint by mutableIntStateOf(startCheckpoint)
         private set
 
@@ -99,7 +109,6 @@ class GameState(
     // Soru geçmişi: Aynı soruların üst üste çıkmasını engeller
     private val questionHistory = mutableListOf<String>()
     private val maxHistorySize = 5
-
 
     var score by mutableIntStateOf(0)
         private set
@@ -167,7 +176,7 @@ class GameState(
         private set
     var gameDurationSeconds by mutableStateOf(0f)
         private set
-    private var gameStartTimeMillis: Long = System.currentTimeMillis()
+    private var gameStartTimeMillis: Long = platformServices.getCurrentTimeMillis()
 
     private var lastQuestionTimeLeft: Float = 30f
 
@@ -175,14 +184,15 @@ class GameState(
         private set
 
     init {
-        checkAndRefillLives()
+        resetTimer()
+        soundManager.setEnabled(true) // Start sound system if needed
     }
 
     /**
      * Synchronizes local charges with saved data and calculates time-based refills.
      */
     fun syncChargesWithTime(savedCharges: Map<String, Int>, lastUseTimes: Map<String, Long>) {
-        val currentTime = System.currentTimeMillis()
+        val currentTime = platformServices.getCurrentTimeMillis()
         
         // Ensure all equipped cards have an entry in use times to avoid potential NPEs
         equippedCards.forEach { id ->
@@ -229,31 +239,11 @@ class GameState(
         
         val durationMs = card.rechargeDurationMinutes * 60 * 1000L
         val targetTime = lastTime + durationMs
-        return (targetTime - System.currentTimeMillis()).coerceAtLeast(0L)
+        return (targetTime - platformServices.getCurrentTimeMillis()).coerceAtLeast(0L)
     }
 
     private fun getOperationForMixedMode(): OperationType {
         return listOf(OperationType.ADDITION, OperationType.SUBTRACTION, OperationType.MULTIPLICATION, OperationType.DIVISION).random()
-    }
-
-    private fun getNumberRangeForMixedMode(operation: OperationType): IntRange {
-        return when (currentCheckpoint) {
-            1 -> when (operation) {
-                OperationType.ADDITION -> 1..10
-                OperationType.SUBTRACTION -> 1..10
-                OperationType.MULTIPLICATION -> 2..5
-                OperationType.DIVISION -> 2..5
-                else -> 1..10
-            }
-            2 -> when (operation) {
-                OperationType.ADDITION -> 5..20
-                OperationType.SUBTRACTION -> 3..15
-                OperationType.MULTIPLICATION -> 2..7
-                OperationType.DIVISION -> 2..7
-                else -> 3..15
-            }
-            else -> 10..50 // Default fallback
-        }
     }
 
     val checkpointConfig: CheckpointConfig
@@ -264,21 +254,20 @@ class GameState(
                 GameMode.ENDLESS -> CheckpointManager.getOperationForCheckpoint(currentCheckpoint)
                 GameMode.CHALLENGE -> getOperationForMixedMode() // Challenge is mixed
             }
-            // STRICT LEVEL-BASED DIFFICULTY
-            val pLevel = languageManager?.getPlayerLevel() ?: 1
             
             // Dinamik Zorluk Ayarı: Kullanıcı üst üste hata yaparsa zorluğu geçici olarak düşür
-            var effectiveLevel = pLevel
+            var effectiveLevel = playerXp
             if (consecutiveMistakes >= 2) {
                 // Her 2 ardışık hatada zorluk %25 düşer. Maksimum %75 düşebilir.
                 val reduction = ((consecutiveMistakes / 2) * 0.25).coerceAtMost(0.75)
-                effectiveLevel = (pLevel * (1.0 - reduction)).toInt().coerceAtLeast(1)
+                effectiveLevel = (playerXp * (1.0 - reduction)).toInt().coerceAtLeast(1)
             }
             
+            val calculatedLevel = floor(sqrt(effectiveLevel / 100.0)).toInt() + 1
+            val pLevel = calculatedLevel.coerceIn(1, 100)
+            
             // Base range for Addition/Subtraction. Multiplication scales this down inside MathGenerator.
-            // Karekök büyüme: Seviye 100'e gelse bile (110 sayı bandı) oynanabilir kalır!
-            // Lv 1: 2..20, Lv 16: 8..50, Lv 100: 20..110
-            val levelMultiplier = Math.sqrt(effectiveLevel.toDouble())
+            val levelMultiplier = sqrt(pLevel.toDouble())
             val minVal = (levelMultiplier * 2).toInt().coerceAtLeast(1)
             val maxVal = 10 + (levelMultiplier * 10).toInt()
             val strictLevelRange = minVal..maxVal
@@ -292,11 +281,6 @@ class GameState(
                 numberRange = strictLevelRange
             )
         }
-
-    init {
-        resetTimer()
-        soundManager.startBGM()
-    }
 
     private fun generateQuestionForCheckpoint(): Question {
         var newQuestion: Question
@@ -365,7 +349,7 @@ class GameState(
             consecutiveMistakes = 0
             if (score > highScore) highScore = score
             
-            soundManager.playCorrect()
+            soundManager.playSuccess()
             
             // Decoupled Feedback
             val commentary = MotivationalMessages.getMessages(Strings.currentLanguage)
@@ -381,8 +365,8 @@ class GameState(
                 
                 val shouldSpeak = when {
                     isEliteStreak || isStreak || isSpeed -> true
-                    checkpointConfig.difficulty == DifficultyLevel.EASY -> Math.random() < 0.3
-                    checkpointConfig.difficulty == DifficultyLevel.NORMAL -> Math.random() < 0.5
+                    checkpointConfig.difficulty == DifficultyLevel.EASY -> Random.nextDouble() < 0.3
+                    checkpointConfig.difficulty == DifficultyLevel.NORMAL -> Random.nextDouble() < 0.5
                     else -> true
                 }
                 
@@ -393,7 +377,7 @@ class GameState(
                     shouldSpeak -> when (checkpointConfig.difficulty) {
                         DifficultyLevel.EASY -> commentary.correctEasy.random()
                         DifficultyLevel.NORMAL -> commentary.correctNormal.random()
-                        else -> commentary.correctHard.random() // HARD, EXPERT, MASTER
+                        else -> commentary.correctHard.random()
                     }
                     else -> null
                 }
@@ -419,7 +403,7 @@ class GameState(
         // Newton shield - EXTRA_LIFE active skill (pre-activated shield)
         if (shieldsRemaining > 0 && !isGameOver && !isCheckpointComplete) {
             shieldsRemaining--
-            soundManager.playCorrect()
+            soundManager.playSuccess()
             speedMessage = "🛡️ İKİNCİ ŞANS! ($shieldsRemaining kaldı)"
             if (isVoiceEnabled) voiceManager?.speak("Kalkan Seni Korudu!")
             speedBonus = 0
@@ -446,7 +430,7 @@ class GameState(
             val voiceNote = if (streak >= 4) {
                 commentary.recovery.random()
             } else {
-                speedMessage // Standard failure msg for voice if no streak
+                speedMessage
             }
             voiceManager?.speak(voiceNote)
         }
@@ -454,13 +438,15 @@ class GameState(
         if (streak >= 4) lastHighStreak = streak
         speedBonus = 0
         streak = 0
-        hapticManager?.vibrateWrong(vibrationEnabled, vibrationStrength)
-        soundManager.playWrong()
+        if (vibrationEnabled) {
+            hapticManager.triggerError()
+        }
+        soundManager.playError()
 
         // Consume one heart/life
         if (livesRemaining > 0) {
             if (livesRemaining == MAX_LIVES) {
-                lastLifeLossTime = System.currentTimeMillis()
+                lastLifeLossTime = platformServices.getCurrentTimeMillis()
             }
             livesRemaining--
             saveLivesToDisk()
@@ -482,7 +468,7 @@ class GameState(
 
     private fun completeCheckpoint() {
         isCheckpointComplete = true
-        soundManager.playLevelUp()
+        soundManager.playSuccess()
         if (isVoiceEnabled) {
             voiceManager?.speak(Strings.checkpointComplete)
         }
@@ -508,7 +494,7 @@ class GameState(
         streak = 0
         
         // Oyun süresini hesapla
-        gameDurationSeconds = (System.currentTimeMillis() - gameStartTimeMillis) / 1000f
+        gameDurationSeconds = (platformServices.getCurrentTimeMillis() - gameStartTimeMillis) / 1000f
 
         soundManager.playGameOver()
         if (isVoiceEnabled) {
@@ -579,7 +565,7 @@ class GameState(
         
         // If we just dropped below max, start the recharge timer
         if (newCharges < card.maxCharges && cardLastUseTimes[cardId] == 0L) {
-            cardLastUseTimes[cardId] = System.currentTimeMillis()
+            cardLastUseTimes[cardId] = platformServices.getCurrentTimeMillis()
         }
 
         when (card.bonusType) {
@@ -640,7 +626,7 @@ class GameState(
                 if (wrongIndices.isNotEmpty()) {
                     zapEliminatedOption = wrongIndices.random()
                     speedMessage = "⚡ Tesla Şimşeği!"
-                    soundManager.playCorrect()
+                    soundManager.playSuccess()
                 }
             }
         }
@@ -672,10 +658,7 @@ class GameState(
     }
 
     private fun submitScoreToLeaderboard() {
-        val lm = languageManager ?: return
         val lbm = leaderboardManager ?: return
-        val playerId = lm.getPlayerId()
-        val playerName = lm.getPlayerName()
         if (playerId.isEmpty() || playerName.isEmpty()) return
 
         val modeStr = when(mode) {
@@ -691,7 +674,7 @@ class GameState(
             baseScore + (timeLeft * 10).toLong().coerceAtLeast(0)
         }
         
-        CoroutineScope(Dispatchers.IO).launch {
+        scope?.launch {
             try { 
                 lbm.submitScore(playerId, playerName, totalScore, currentCheckpoint, mode = modeStr)
                 dataStore?.saveHighScore(totalScore.toInt(), mode)
@@ -718,7 +701,7 @@ class GameState(
         slowMotionActive = false
         totalTimeBonusEarned = 0f
         gameDurationSeconds = 0f
-        gameStartTimeMillis = System.currentTimeMillis()
+        gameStartTimeMillis = platformServices.getCurrentTimeMillis()
 
         currentQuestion = generateQuestionForCheckpoint()
         resetTimer()
@@ -770,7 +753,7 @@ class GameState(
             nextHeartRefillSeconds = 0
             return
         }
-        val now = System.currentTimeMillis()
+        val now = platformServices.getCurrentTimeMillis()
         val timePassed = now - lastLifeLossTime
         val remainingMs = REFILL_TIME_MS - (timePassed % REFILL_TIME_MS)
         nextHeartRefillSeconds = (remainingMs / 1000).toInt()
@@ -780,7 +763,9 @@ class GameState(
         if (livesRemaining >= MAX_LIVES) return ""
         val minutes = nextHeartRefillSeconds / 60
         val seconds = nextHeartRefillSeconds % 60
-        return String.format("%02d:%02d", minutes, seconds)
+        val minStr = if (minutes < 10) "0$minutes" else "$minutes"
+        val secStr = if (seconds < 10) "0$seconds" else "$seconds"
+        return "$minStr:$secStr"
     }
 
     fun declineSaveMe() {
@@ -901,7 +886,7 @@ object SpeedMessages {
         good = listOf("👍 干得好！", "🧠 聪明！", "✅ 正确！"),
         normal = listOf("😐 一般...", "⚡ 加速！", "🚀 更快！"),
         slow = listOf("🐢 乌龟速度...", "⏳ 最后一秒！", "😴 睡着了吗？"),
-        amazing = listOf("🌟 像伽利略！🌟", "🚀 开普勒速度！🚀", "🧠 哥白尼智慧！🧠"),
+        amazing = listOf("🌟 像加利略！🌟", "🚀 开普勒速度！🚀", "🧠 哥白尼智慧！🧠"),
         legendary = listOf("👑 欧拉的王座！👑", "🌟 高斯传奇！🌟", "🔥 像拉马努金！🔥"),
         godLike = listOf("👑 高斯+爱因斯坦！👑", "⚡ 特斯拉×牛顿！⚡", "🌟 数学之神！🌟")
     )
@@ -1003,14 +988,13 @@ object MotivationalMessages {
             "A legendary mastery of numbers!"
         )
     )
-    
     private val spanish = MotivationalMessageSet(
         correctEasy = listOf("¡Muy fácil!", "¡Sencillo!", "¡Pan comido!"),
         correctNormal = listOf("¡Excelente!", "¡Correcto!", "¡Genial!", "¡Así se hace!"),
         correctHard = listOf("¡Increíble, era difícil!", "¡Vaya reto!", "¡Qué logro!"),
         speed = listOf("¡Qué velocidad! ¡Increíble!", "¡Eres como un rayo!", "¡Cómo eres tan rápido?", "¡Vas a la velocidad de la luz!"),
         streak = listOf("¡No rompas la racha, legendario!", "¡Te has vuelto imparable!", "¿Eres un genio de las mates?", "¡Lo haces perfecto, sigue así!"),
-        recovery = listOf("¡No hay problema, la próxima vez lo logras!", "¡No te desanimes, vamos!", "¡Está bien, lo harás mejor!", "¡Puedes hacerlo de nuevo!"),
+        recovery = listOf("¡No hay problema, la próxima vez lo logras!", "¡No te desanimar, vamos!", "¡Está bien, lo harás mejor!", "¡Puedes hacerlo de nuevo!"),
         elitePraise = listOf("Unstoppable!", "You are a legend!", "Math God status!", "Incredible!", "Legendary!")
     )
     private val german = MotivationalMessageSet(
@@ -1068,20 +1052,15 @@ object MotivationalMessages {
         elitePraise = listOf("Unstoppable!", "You are a legend!", "Math God status!", "Incredible!", "Legendary!")
     )
     private val russian = MotivationalMessageSet(
-        correctEasy = listOf("Очень просто!", "Легко!", "Проще простого!"),
-        correctNormal = listOf("Отлично!", "Верно!", "Супер!", "Хорошо!", "Так держать!"),
-        correctHard = listOf("Невероятно, это было трудно!", "Настоящий вызов!", "Впечатляюще!"),
-        speed = listOf("Какая скорость! Невероятно!", "Ты как молния!", "Как ты такой быстрый?", "Мчишься на скорости света!"),
-        streak = listOf("Не прерывай серию, легендарно!", "Ты стал неудержимым!", "Ты математический гений?", "Идеально, продолжай!"),
-        recovery = listOf("Никаких проблем, в следующий раз получится!", "Не унывай, давай!", "Все хорошо, ты справишься лучше!", "Ты сможешь еще раз!"),
-        elitePraise = listOf(
-            "Unstoppable! You are a legend!",
-            "You've reached Math God status!",
-            "Incredible! Records are falling!",
-            "Absolute genius level performance!",
-            "A legendary mastery of numbers!"
-        )
+        correctEasy = listOf("Очень легко!", "Просто!", "Проще простого!"),
+        correctNormal = listOf("Отлично!", "Правильно!", "Супер!", "Хорошо!", "Так держать!"),
+        correctHard = listOf("Невероятно, это было трудно!", "Какой вызов!", "Впечатляюще!"),
+        speed = listOf("Какая скорость! Невероятно!", "Ты как молния!", "Как ты так быстро?", "Скорость света!"),
+        streak = listOf("Не прерывай серию, легенда!", "Тебя не остановить!", "Ты гений математики?", "Отлично, продолжай!"),
+        recovery = listOf("Ничего страшного, в следующий раз получится!", "Не сдавайся, давай!", "Все хорошо, ты справишься!", "Ты можешь сделать это снова!"),
+        elitePraise = listOf("Unstoppable!", "You are a legend!", "Math God status!", "Incredible!", "Legendary!")
     )
+
 
     fun getMessages(language: AppLanguage): MotivationalMessageSet {
         return when (language) {

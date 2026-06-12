@@ -1,8 +1,20 @@
 package com.mawelly.blitzmath.ui
 
-import android.app.Activity
-import android.util.Log
-import com.mawelly.blitzmath.R
+import com.mawelly.blitzmath.ui.components.ScientistResources
+import com.mawelly.blitzmath.core.LocalPlatformServices
+import com.mawelly.blitzmath.core.PlatformServices
+import com.mawelly.blitzmath.core.ISoundManager
+import com.mawelly.blitzmath.core.IHapticManager
+import com.mawelly.blitzmath.core.IAdController
+import com.mawelly.blitzmath.audio.IVoiceManager
+import com.mawelly.blitzmath.data.IGameDataStore
+import com.mawelly.blitzmath.ui.screens.AppLifecycleObserver
+import kotlin.math.sqrt
+import kotlin.math.floor
+
+
+
+
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.*
@@ -22,9 +34,9 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
+
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.res.painterResource
+import org.jetbrains.compose.resources.painterResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -34,12 +46,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.mawelly.blitzmath.ui.theme.LocalBlitzMathColors
 import com.mawelly.blitzmath.localization.AppLanguage
-import com.mawelly.blitzmath.LanguageManager
-import com.mawelly.blitzmath.ui.utils.ShareManager
-import com.mawelly.blitzmath.analytics.AnalyticsManager
-import com.mawelly.blitzmath.ads.IAdManager
-import com.mawelly.blitzmath.audio.SoundManager
-import com.mawelly.blitzmath.utils.HapticManager
+
+
+
+
+
+
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Adjust
 import androidx.compose.material.icons.filled.ArrowBack
@@ -54,7 +66,7 @@ import com.mawelly.blitzmath.game.MathGenerator
 import com.mawelly.blitzmath.game.OperationType
 import com.mawelly.blitzmath.game.ScientistCard
 import com.mawelly.blitzmath.game.ScientistCards
-import com.mawelly.blitzmath.leaderboard.LeaderboardManager
+import com.mawelly.blitzmath.leaderboard.ILeaderboardManager
 import com.mawelly.blitzmath.localization.Strings
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -63,9 +75,7 @@ import com.mawelly.blitzmath.game.MathQuote
 import com.mawelly.blitzmath.game.mathQuotes
 import com.mawelly.blitzmath.ui.dialogs.ScientistCardUnlockDialog
 import com.mawelly.blitzmath.ui.components.SuccessConfetti
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleEventObserver
-import androidx.compose.ui.platform.LocalLifecycleOwner
+
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.draw.blur
 
@@ -87,30 +97,30 @@ object QuoteManager {
 fun GameScreen(
     mode: GameMode,
     startLevel: Int,
-    soundManager: SoundManager,
-    voiceManager: com.mawelly.blitzmath.audio.VoiceManager? = null,
-    dataStore: com.mawelly.blitzmath.data.GameDataStore, // Added
-    adMobManager: IAdManager? = null,
+    dataStore: IGameDataStore,
+    voiceManager: IVoiceManager? = null,
+    leaderboardManager: ILeaderboardManager? = null,
     onLevelComplete: (Int) -> Unit,
     onBackToMenu: () -> Unit,
     onShowRanking: (String) -> Unit
 ) {
-    val context = androidx.compose.ui.platform.LocalContext.current
-    val activity = remember(context) {
-        var c = context
-        while (c is android.content.ContextWrapper) {
-            if (c is android.app.Activity) return@remember c
-            c = c.baseContext
-        }
-        null
-    }
+    val platformServices = LocalPlatformServices.current
+    val soundManager = platformServices.soundManager
+    val hapticManager = platformServices.hapticManager
+    val analyticsManager = platformServices.analyticsManager
 
     val currentLang by com.mawelly.blitzmath.localization.Strings.currentLanguageFlow.collectAsState(initial = com.mawelly.blitzmath.localization.Strings.currentLanguage)
 
-    val languageManager = remember { LanguageManager(context) }
-    val leaderboardManager = remember { LeaderboardManager() }
-    val analyticsManager = remember { AnalyticsManager.getInstance(context) }
-    val hapticManager = remember { HapticManager(context) }
+    val playerXp by dataStore.playerXp.collectAsState(initial = 0)
+    val pLevel = remember(playerXp) { (floor(sqrt(playerXp / 100.0)).toInt() + 1).coerceAtMost(100) }
+    val pProgress = remember(playerXp, pLevel) {
+        if (pLevel >= 100) 1f
+        else {
+            val xpForCurrentLevel = ((pLevel - 1) * (pLevel - 1)) * 100
+            val xpForNextLevel = (pLevel * pLevel) * 100
+            ((playerXp - xpForCurrentLevel).toFloat() / (xpForNextLevel - xpForCurrentLevel).toFloat()).coerceIn(0f, 1f)
+        }
+    }
     val unlockedCards by dataStore.unlockedCards.collectAsState(initial = null)
     val equippedCards by dataStore.equippedCards.collectAsState(initial = null)
     val isVoiceEnabled by dataStore.voiceEnabled.collectAsState(initial = true)
@@ -139,54 +149,41 @@ fun GameScreen(
     val sLives = savedLives
     val sLossTime = savedLastLifeLossTime
 
-    if (uCards == null || eCards == null || sCharges == null || sTimes == null || sLives == null || sLossTime == null || activity == null) {
+    val playerId by dataStore.playerId.collectAsState(initial = "")
+    val playerName by dataStore.playerName.collectAsState(initial = "")
+
+    if (uCards == null || eCards == null || sCharges == null || sTimes == null || sLives == null || sLossTime == null) {
         Box(modifier = Modifier.fillMaxSize())
         return
     }
 
-    val currentActivity = activity // Safe reference
-
     val gameState = remember(mode, startLevel) {
         GameState(
-            soundManager = soundManager,
+            platformServices = platformServices,
             voiceManager = voiceManager,
             isVoiceEnabled = isVoiceEnabled,
             mode = mode,
             startCheckpoint = startLevel,
-            languageManager = languageManager,
-            leaderboardManager = leaderboardManager,
             unlockedCards = uCards,
             equippedCards = eCards,
-            hapticManager = hapticManager,
             vibrationEnabled = isVibrationEnabled,
             vibrationStrength = vibrationStrength,
             onCardUnlocked = { newlyUnlockedCard = it },
             startingLives = sLives,
             lastLossTime = sLossTime,
+            playerId = playerId,
+            playerName = playerName,
+            leaderboardManager = leaderboardManager,
             scope = scope,
             dataStore = dataStore
         )
     }
 
     // Lifecycle Observer to catch Background/Foreground transitions
-    val lifecycleOwner = LocalLifecycleOwner.current
-    DisposableEffect(lifecycleOwner, gameState) {
-        val observer = LifecycleEventObserver { _, event ->
-            when (event) {
-                Lifecycle.Event.ON_PAUSE -> {
-                    isAppPaused = true
-                }
-                Lifecycle.Event.ON_RESUME -> {
-                    isAppPaused = false
-                }
-                else -> {}
-            }
-        }
-        lifecycleOwner.lifecycle.addObserver(observer)
-        onDispose {
-            lifecycleOwner.lifecycle.removeObserver(observer)
-        }
-    }
+    AppLifecycleObserver(
+        onPause = { isAppPaused = true },
+        onResume = { isAppPaused = false }
+    )
 
     // Sync charges and start times from DataStore only once or when saved data changes
     LaunchedEffect(sCharges, sTimes) {
@@ -218,36 +215,19 @@ fun GameScreen(
 
     // Schedule notifications when a charge is used and it starts/continues recharging
     LaunchedEffect(gameState.cardLastUseTimes.toMap()) {
-        try {
-            val workManager = androidx.work.WorkManager.getInstance(context.applicationContext)
-            // Iterating over a copy to prevent ConcurrentModificationException
-            gameState.cardLastUseTimes.toMap().forEach { (cardId, lastUseTime) ->
+        gameState.cardLastUseTimes.toMap().forEach { (cardId, lastUseTime) ->
             if (lastUseTime > 0L) {
                 val card = ScientistCards.getCardById(cardId) ?: return@forEach
                 val currentChargeCount = gameState.cardCharges[cardId] ?: 0
                 val chargesToFull = card.maxCharges - currentChargeCount
                 
-                // We notify when it reaches MAX charges
                 val delayMinutes = (chargesToFull * card.rechargeDurationMinutes).toLong()
                 if (delayMinutes > 0) {
-                    val workRequest = androidx.work.OneTimeWorkRequestBuilder<com.mawelly.blitzmath.notifications.RechargeWorker>()
-                        .setInitialDelay(delayMinutes, java.util.concurrent.TimeUnit.MINUTES)
-                        .setInputData(androidx.work.workDataOf("card_id" to cardId))
-                        .addTag("recharge_$cardId")
-                        .build()
-
-                    workManager.enqueueUniqueWork(
-                        "recharge_$cardId",
-                        androidx.work.ExistingWorkPolicy.REPLACE,
-                        workRequest
-                    )
+                    platformServices.scheduleCardRecharge(cardId, delayMinutes)
                 }
             } else {
-                workManager.cancelUniqueWork("recharge_$cardId")
+                platformServices.cancelCardRecharge(cardId)
             }
-            }
-        } catch (e: Exception) {
-            Log.e("GameScreen", "Error scheduling notifications: ${e.message}")
         }
     }
 
@@ -355,8 +335,6 @@ fun GameScreen(
                         )
                     }
                     // Canları buraya taşıdık
-                    val pLevel = languageManager.getPlayerLevel()
-                    val pProgress = languageManager.getPlayerLevelProgress()
                     HeartsHUD(
                         livesRemaining = gameState.livesRemaining, 
                         refillTime = gameState.getFormattedRefillTime(),
@@ -395,9 +373,7 @@ fun GameScreen(
                 // Normal UI content
                 when {
                     gameState.isSaveMePending -> SaveMeScreen(
-                        gameState = gameState,
-                        adMobManager = adMobManager,
-                        activity = currentActivity
+                        gameState = gameState
                     )
                     gameState.isGameOver -> {
                         if (showInitialLeaderboard) {
@@ -411,11 +387,10 @@ fun GameScreen(
                         } else {
                             GameOverScreen(
                                 gameState = gameState,
-                                adMobManager = adMobManager,
-                                activity = currentActivity,
                                 onBackToMenu = onBackToMenu,
                                 onShowRanking = onShowRanking,
-                                currentLang = currentLang
+                                currentLang = currentLang,
+                                leaderboardManager = leaderboardManager
                             )
                         }
                     }
@@ -423,7 +398,7 @@ fun GameScreen(
                         gameState = gameState,
                         onNextCheckpoint = { gameState.nextCheckpoint() }
                     )
-                    else -> GamePlayScreen(gameState = gameState, adMobManager = adMobManager, activity = currentActivity)
+                    else -> GamePlayScreen(gameState = gameState)
                 }
             }
         }
@@ -454,9 +429,7 @@ fun GameScreen(
                     Button(
                         onClick = {
                             showReviewInvitation = false
-                            com.mawelly.blitzmath.utils.AppReviewManager.showReviewDialog(activity!!, dataStore) {
-                                Log.d("GameScreen", "Review flow completed.")
-                            }
+                            platformServices.showAppReview()
                         },
                         colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
                         shape = RoundedCornerShape(12.dp)
@@ -490,11 +463,10 @@ fun GameScreen(
                 text = {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         welcomeCard?.id?.let { imageId ->
-                            val context = androidx.compose.ui.platform.LocalContext.current
-                            val resId = remember(imageId) { context.resources.getIdentifier(imageId, "drawable", context.packageName) }
-                            if (resId != 0) {
+                            val res = ScientistResources.getPortrait(imageId)
+                            if (res != null) {
                                 Image(
-                                    painter = painterResource(id = resId),
+                                    painter = painterResource(res),
                                     contentDescription = null,
                                     modifier = Modifier
                                         .size(120.dp)
@@ -530,7 +502,7 @@ fun GameScreen(
 enum class AnswerFeedback { NONE, CORRECT, WRONG }
 
 @Composable
-private fun GamePlayScreen(gameState: GameState, adMobManager: IAdManager? = null, activity: android.app.Activity? = null) {
+private fun GamePlayScreen(gameState: GameState) {
     var selectedOptionIndex by remember { mutableStateOf<Int?>(null) }
     var feedbackType by remember { mutableStateOf(AnswerFeedback.NONE) }
     val scope = rememberCoroutineScope()
@@ -619,8 +591,6 @@ private fun GamePlayScreen(gameState: GameState, adMobManager: IAdManager? = nul
 
                     JokerSkillBar(
                         gameState = gameState,
-                        adMobManager = adMobManager,
-                        activity = activity,
                         isSmall = true,
                         modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp)
                     )
@@ -743,8 +713,6 @@ private fun GamePlayScreen(gameState: GameState, adMobManager: IAdManager? = nul
                 ) {
                     JokerSkillBar(
                         gameState = gameState,
-                        adMobManager = adMobManager,
-                        activity = activity,
                         isSmall = isSmallScreen,
                         modifier = Modifier
                             .fillMaxWidth()
@@ -781,7 +749,7 @@ private fun ModernHUD(
         // Sol: Checkpoint - 🎯
         CircularStat(
             label = if (isChallenge) Strings.statSpeed else Strings.statCheck,
-            value = if (isChallenge) String.format("%.1f", gameState.timeLeft) else gameState.currentCheckpoint.toString(),
+            value = if (isChallenge) run { val intPart = gameState.timeLeft.toInt(); val fracPart = ((gameState.timeLeft - intPart) * 10).toInt().coerceIn(0, 9); "$intPart.$fracPart" } else gameState.currentCheckpoint.toString(),
             color = if (isChallenge) Color(0xFFf9a825) else Color(0xFF00d9ff),
             icon = Icons.Default.Adjust,
             size = baseSize,
@@ -1004,7 +972,7 @@ private fun TimerBar(timeLeft: Float, maxTime: Float) {
                 fontWeight = FontWeight.Bold
             )
             Text(
-                text = String.format("%.1fs", timeLeft),
+                text = run { val intPart = timeLeft.toInt(); val fracPart = ((timeLeft - intPart) * 10).toInt().coerceIn(0, 9); "$intPart.${fracPart}s" },
                 color = color,
                 fontSize = 20.sp,
                 fontWeight = FontWeight.ExtraBold
@@ -1250,12 +1218,10 @@ private fun OptionButton(
 @Composable
 private fun JokerSkillBar(
     gameState: GameState,
-    adMobManager: IAdManager? = null,
-    activity: android.app.Activity? = null,
     isSmall: Boolean = false,
     modifier: Modifier = Modifier
 ) {
-    val context = androidx.compose.ui.platform.LocalContext.current
+    val platformServices = LocalPlatformServices.current
     val equipped = gameState.equippedCards.toList().take(2)
     if (equipped.isEmpty()) return
 
@@ -1266,30 +1232,19 @@ private fun JokerSkillBar(
 
     // 1 Reklam = 1 Hak sistemi
     fun showRefillAd(cardId: String) {
-        val analyticsManager = com.mawelly.blitzmath.analytics.AnalyticsManager.getInstance(context)
-        
-        if (activity == null || adMobManager == null) {
-            gameState.refillCharges(cardId)
-            return
-        }
-
+        val analyticsManager = platformServices.analyticsManager
         refillCardId = cardId
         
-        scope.launch {
-            // Reklam hazır mı kontrol et, değilse 3 saniye bekle
-            var retryCount = 0
-            while (adMobManager.isAdReady(com.mawelly.blitzmath.ads.IAdManager.Placement.REFILL_CHARGES) == false && retryCount < 3) {
-                delay(1000)
-                retryCount++
-            }
-
-            analyticsManager.logAdClick("RefillAbility_Single_$cardId")
-            adMobManager.showAd(activity, IAdManager.Placement.REFILL_CHARGES) {
+        analyticsManager.logAdClick("RefillAbility_Single_$cardId")
+        platformServices.adController.showRewardedAd(
+            onReward = {
                 analyticsManager.logAdReward("RefillAbility_Single_$cardId")
                 gameState.refillCharges(cardId)
+            },
+            onClosed = {
                 refillCardId = null
             }
-        }
+        )
     }
 
     Row(
@@ -1353,14 +1308,13 @@ private fun JokerSkillBar(
                                         .padding(4.dp) // Yüzün kenarlara yapışmasını ve kesilmesini önlemek için boşluk
                                         .clip(CircleShape)
                                 ) {
-                                    val context = androidx.compose.ui.platform.LocalContext.current
-                                    val resId = remember(card.id) { context.resources.getIdentifier(card.id, "drawable", context.packageName) }
-                                    if (resId != 0) {
+                                    val res = ScientistResources.getPortrait(card.id)
+                                    if (res != null) {
                                         Image(
-                                            painter = painterResource(id = resId),
+                                            painter = painterResource(res),
                                             contentDescription = card.name,
                                             modifier = Modifier.fillMaxSize(),
-                                            contentScale = ContentScale.Fit // Fit kullanarak tüm yüzün görünmesini sağlıyoruz
+                                            contentScale = ContentScale.Fit
                                         )
                                     }
                                 }
@@ -1432,7 +1386,7 @@ private fun JokerSkillBar(
                                 if (remainingMs > 0) {
                                     val seconds = (remainingMs / 1000) % 60
                                     val minutes = (remainingMs / (1000 * 60)) % 60
-                                    val timerText = String.format("%02d:%02d", minutes, seconds)
+                                    val timerText = run { val minStr = if (minutes < 10) "0$minutes" else "$minutes"; val secStr = if (seconds < 10) "0$seconds" else "$seconds"; "$minStr:$secStr" }
                                     
                                     // Timer Pill
                                     Box(
@@ -1658,9 +1612,7 @@ private fun CheckpointCompleteScreen(
 
 @Composable
 private fun SaveMeScreen(
-    gameState: GameState,
-    adMobManager: IAdManager?,
-    activity: android.app.Activity
+    gameState: GameState
 ) {
     val progress = (gameState.saveMeTimeLeft / 3.0f).coerceIn(0f, 1f)
     
@@ -1742,17 +1694,20 @@ private fun SaveMeScreen(
             Spacer(modifier = Modifier.height(if (isSmall) 30.dp else 60.dp))
 
             // Watch Ad Button (Premium Gradient + Pulse)
-            val context = androidx.compose.ui.platform.LocalContext.current
-            val analyticsManager = remember { com.mawelly.blitzmath.analytics.AnalyticsManager.getInstance(context) }
+            val platformServices = LocalPlatformServices.current
+            val analyticsManager = platformServices.analyticsManager
 
             Button(
                 onClick = {
                     analyticsManager.logRefillLivesClick("Gameplay")
                     analyticsManager.logAdClick("RevillLives_InGame")
-                    adMobManager?.showAd(activity, IAdManager.Placement.SAVE_ME) {
-                        analyticsManager.logAdReward("RevillLives_InGame")
-                        gameState.resurrect()
-                    }
+                    platformServices.adController.showRewardedAd(
+                        onReward = {
+                            analyticsManager.logAdReward("RevillLives_InGame")
+                            gameState.resurrect()
+                        },
+                        onClosed = {}
+                    )
                 },
                 modifier = Modifier
                     .fillMaxWidth(if (screenWidth > 600.dp) 0.6f else 0.85f)
@@ -1948,33 +1903,32 @@ fun HeartsHUD(
 @Composable
 private fun GameOverScreen(
     gameState: GameState,
-    adMobManager: IAdManager?,
-    activity: Activity,
     onBackToMenu: () -> Unit,
     onShowRanking: (String) -> Unit,
-    currentLang: AppLanguage
+    currentLang: AppLanguage,
+    leaderboardManager: ILeaderboardManager? = null
 ) {
-    val context = androidx.compose.ui.platform.LocalContext.current
+    val platformServices = LocalPlatformServices.current
     val nextQuote = remember { QuoteManager.getNextQuote() }
     val adCalled = remember { mutableStateOf(false) }
     val hasUsedSecondChance = remember { mutableStateOf(false) }
     val scrollState = androidx.compose.foundation.rememberScrollState()
     val scope = rememberCoroutineScope()
     
-    val leaderboardManager = remember { com.mawelly.blitzmath.leaderboard.LeaderboardManager() }
     var currentPlayerRank by remember { mutableStateOf<Int?>(null) }
-    val playerId = gameState.languageManager?.getPlayerId() ?: ""
+    val playerId = gameState.playerId
+    val playerName = gameState.playerName
 
     // Skorları sunucuya gönder ve sıralamayı al
     LaunchedEffect(gameState.score) {
-        if (gameState.score > 0) {
+        if (gameState.score > 0 && leaderboardManager != null) {
             val modeName = gameState.mode.name.lowercase()
             leaderboardManager.submitScore(
                 playerId = playerId,
-                playerName = gameState.languageManager?.getPlayerName() ?: "",
+                playerName = playerName,
                 score = gameState.score.toLong(),
                 level = gameState.currentCheckpoint,
-                country = java.util.Locale.getDefault().country,
+                country = "",
                 mode = modeName
             )
             
@@ -1998,7 +1952,9 @@ private fun GameOverScreen(
     LaunchedEffect(Unit) {
         if (!adCalled.value && gameState.showAdOnGameOver) {
             adCalled.value = true
-            adMobManager?.onGameOver(activity) { gameState.onAdShown() }
+            platformServices.adController.showInterstitialAd {
+                gameState.onAdShown()
+            }
         }
     }
 
@@ -2205,12 +2161,15 @@ private fun GameOverScreen(
                 Button(
                     onClick = {
                         hasUsedSecondChance.value = true
-                        val analyticsManager = com.mawelly.blitzmath.analytics.AnalyticsManager.getInstance(context)
+                        val analyticsManager = platformServices.analyticsManager
                         analyticsManager.logAdClick("Revive_GameOver")
-                        adMobManager?.showAd(activity, IAdManager.Placement.SAVE_ME) {
-                            analyticsManager.logAdReward("Revive_GameOver")
-                            gameState.resurrect()
-                        }
+                        platformServices.adController.showRewardedAd(
+                            onReward = {
+                                analyticsManager.logAdReward("Revive_GameOver")
+                                gameState.resurrect()
+                            },
+                            onClosed = {}
+                        )
                     },
                     modifier = Modifier.fillMaxWidth().height(btnHeight),
                     shape = RoundedCornerShape(14.dp),
@@ -2299,11 +2258,7 @@ private fun GameOverScreen(
             // 📤 Share score
             OutlinedButton(
                 onClick = {
-                    ShareManager.shareScoreWithScreenshot(
-                        activity = activity,
-                        score = gameState.score,
-                        checkpoint = gameState.currentCheckpoint
-                    )
+                    platformServices.shareManager.shareScore(gameState.score.toInt())
                 },
                 modifier = Modifier.fillMaxWidth().height(btnHeight - 6.dp),
                 shape = RoundedCornerShape(14.dp),
