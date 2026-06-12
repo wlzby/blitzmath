@@ -377,6 +377,7 @@ fun GameScreen(
                     gameState.isGameOver -> {
                         if (showInitialLeaderboard) {
                             com.mawelly.blitzmath.ui.screens.LeaderboardPopup(
+                                dataStore = dataStore,
                                 mode = gameState.mode.name.lowercase(),
                                 onDismiss = { 
                                     showInitialLeaderboard = false
@@ -386,6 +387,7 @@ fun GameScreen(
                         } else {
                             GameOverScreen(
                                 gameState = gameState,
+                                dataStore = dataStore,
                                 onBackToMenu = onBackToMenu,
                                 onShowRanking = onShowRanking,
                                 currentLang = currentLang,
@@ -1903,6 +1905,7 @@ fun HeartsHUD(
 @Composable
 private fun GameOverScreen(
     gameState: GameState,
+    dataStore: IGameDataStore,
     onBackToMenu: () -> Unit,
     onShowRanking: (String) -> Unit,
     currentLang: AppLanguage,
@@ -1963,6 +1966,7 @@ private fun GameOverScreen(
 
     if (showManualLeaderboard) {
         com.mawelly.blitzmath.ui.screens.LeaderboardPopup(
+            dataStore = dataStore,
             mode = gameState.mode.name.lowercase(),
             onDismiss = { showManualLeaderboard = false }
         )

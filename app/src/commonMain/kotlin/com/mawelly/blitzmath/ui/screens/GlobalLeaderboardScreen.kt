@@ -21,28 +21,27 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.mawelly.blitzmath.LanguageManager
+import com.mawelly.blitzmath.core.LocalPlatformServices
+import com.mawelly.blitzmath.data.IGameDataStore
+import com.mawelly.blitzmath.leaderboard.ILeaderboardManager
 import com.mawelly.blitzmath.leaderboard.LeaderboardEntry
-import com.mawelly.blitzmath.leaderboard.LeaderboardManager
 import com.mawelly.blitzmath.localization.Strings
 import com.mawelly.blitzmath.ui.theme.LocalBlitzMathColors
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @Composable
-actual fun GlobalLeaderboardScreen(
-    initialMode: String,
-    scrollToPlayerId: String?,
+fun GlobalLeaderboardScreen(
+    dataStore: IGameDataStore,
+    initialMode: String = "classic",
+    scrollToPlayerId: String? = null,
     onBackToMenu: () -> Unit
 ) {
-    val context = LocalContext.current
-    val languageManager = remember { LanguageManager(context) }
-    val leaderboardManager = remember { LeaderboardManager() }
+    val platformServices = LocalPlatformServices.current
     val scope = rememberCoroutineScope()
     val listState = rememberLazyListState()
 
@@ -54,52 +53,58 @@ actual fun GlobalLeaderboardScreen(
     var lastRefresh by remember { mutableStateOf(0L) }
     var hasScrolledOnce by remember { mutableStateOf(false) }
 
-    val playerId = languageManager.getPlayerId()
-    val playerName = languageManager.getPlayerName()
+    val playerId by dataStore.playerId.collectAsState(initial = "")
+    val playerName by dataStore.playerName.collectAsState(initial = "")
 
     fun loadData() {
+        val manager = platformServices.leaderboardManager
+        if (manager == null) {
+            errorMessage = "Leaderboard not supported on this platform"
+            isLoading = false
+            return
+        }
         scope.launch {
             isLoading = true
             errorMessage = null
-            val result = leaderboardManager.getGlobalLeaderboard(100, mode = selectedMode)
-            result.onSuccess { entries ->
+            val result = manager.getGlobalLeaderboard(100, mode = selectedMode)
+            if (result.isSuccess) {
+                val entries = result.getOrNull() ?: emptyList()
                 leaderboard = entries
                 isLoading = false
-                lastRefresh = System.currentTimeMillis()
+                lastRefresh = platformServices.getCurrentTimeMillis()
                 
                 if (playerId.isNotEmpty()) {
-                    val rankResult = leaderboardManager.getPlayerRank(playerId, mode = selectedMode)
-                    rankResult.onSuccess { rank -> 
+                    val rankResult = manager.getPlayerRank(playerId, mode = selectedMode)
+                    if (rankResult.isSuccess) {
+                        val rank = rankResult.getOrNull() ?: 0
                         playerRank = rank 
                         
-                        // Scroll animasyonu - Eğer scrollToPlayerId varsa ve henüz kaydırılmadıysa
+                        // Scroll animation
                         if (scrollToPlayerId == playerId && !hasScrolledOnce && entries.isNotEmpty()) {
                             val targetIndex = entries.indexOfFirst { it.playerId == playerId }
                             if (targetIndex != -1) {
                                 hasScrolledOnce = true
-                                delay(800) // Ekranın oturması için kısa bir bekleme
+                                delay(800)
                                 
-                                // "Yukarı doğru" efekti için önce alt kısımdan başlatıp yukarı kaydırıyoruz
                                 val startIndex = (targetIndex + 10).coerceAtMost(entries.size - 1)
                                 listState.scrollToItem(startIndex)
                                 listState.animateScrollToItem(
                                     index = targetIndex,
-                                    scrollOffset = -100 // Biraz pay bırak ki tam ortalansın veya üstte kalsın
+                                    scrollOffset = -100
                                 )
                             }
                         }
                     }
                 }
-            }.onFailure { error ->
-                errorMessage = error.message
+            } else {
+                errorMessage = result.exceptionOrNull()?.message ?: "Unknown error"
                 isLoading = false
             }
         }
     }
 
-    LaunchedEffect(selectedMode) { loadData() }
+    LaunchedEffect(selectedMode, playerId) { loadData() }
 
-    // Modern Dark Background Gradient
     BoxWithConstraints(
         modifier = Modifier
             .fillMaxSize()
@@ -107,7 +112,6 @@ actual fun GlobalLeaderboardScreen(
     ) {
         val screenWidth = maxWidth
         
-        // Background Decorative Bubbles (Subtle)
         Box(
             modifier = Modifier
                 .size(300.dp)
@@ -178,7 +182,7 @@ actual fun GlobalLeaderboardScreen(
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            text = label.replace(" MOD", "").replace(" MODE", ""), // Kısa isim
+                            text = label.replace(" MOD", "").replace(" MODE", ""),
                             color = if (isSelected) Color.White else Color.White.copy(alpha = 0.5f),
                             fontSize = 12.sp,
                             fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
@@ -191,7 +195,7 @@ actual fun GlobalLeaderboardScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Current Player Status (Premium Glass Card)
+            // Current Player Status
             AnimatedVisibility(
                 visible = playerRank > 0,
                 enter = fadeIn() + expandVertically()

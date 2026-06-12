@@ -6,15 +6,7 @@ import androidx.annotation.Keep
 import kotlinx.coroutines.tasks.await
 import java.util.Date
 
-@Keep
-data class LeaderboardEntry(
-    var playerId: String = "",
-    var playerName: String = "",
-    var totalScore: Long = 0,
-    var highestLevel: Int = 1,
-    var country: String = "",
-    var timestamp: Date = Date()
-)
+
 
 class LeaderboardManager : ILeaderboardManager {
     
@@ -92,7 +84,7 @@ class LeaderboardManager : ILeaderboardManager {
         }
     }
 
-    suspend fun getGlobalLeaderboard(limit: Int = 100, mode: String = "classic"): Result<List<LeaderboardEntry>> {
+    override suspend fun getGlobalLeaderboard(limit: Int, mode: String): Result<List<LeaderboardEntry>> {
         return try {
             val targetRef = getRefForMode(mode) ?: return Result.failure(Exception("Firestore not available"))
             val snapshot = targetRef

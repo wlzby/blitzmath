@@ -217,6 +217,7 @@ fun App(dataStore: IGameDataStore) {
                     }
                     AppScreen.GLOBAL_LEADERBOARD -> {
                         GlobalLeaderboardScreen(
+                            dataStore = dataStore,
                             initialMode = leaderboardInitialMode,
                             scrollToPlayerId = leaderboardScrollToId,
                             onBackToMenu = { currentScreen = AppScreen.MAIN_MENU }

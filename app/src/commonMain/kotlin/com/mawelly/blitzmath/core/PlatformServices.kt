@@ -1,5 +1,7 @@
 package com.mawelly.blitzmath.core
 
+import com.mawelly.blitzmath.leaderboard.ILeaderboardManager
+
 interface ISoundManager {
     fun playClick()
     fun playSuccess()
@@ -51,4 +53,5 @@ interface PlatformServices {
     fun scheduleCardRecharge(cardId: String, delayMinutes: Long) {}
     fun cancelCardRecharge(cardId: String) {}
     fun showAppReview() {}
+    val leaderboardManager: ILeaderboardManager? get() = null
 }

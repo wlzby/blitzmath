@@ -7,6 +7,7 @@ import com.mawelly.blitzmath.ads.IAdManager
 import com.mawelly.blitzmath.analytics.AnalyticsManager
 import com.mawelly.blitzmath.audio.SoundManager
 import com.mawelly.blitzmath.utils.HapticManager
+import com.mawelly.blitzmath.leaderboard.ILeaderboardManager
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -82,6 +83,7 @@ class AndroidPlatformServices(
     override fun getCurrentTimeMillis(): Long = System.currentTimeMillis()
     override val shareManager: IShareManager = AndroidShareManager(context)
     override val adController: IAdController = AndroidAdController(activity, adManager)
+    override val leaderboardManager: ILeaderboardManager = com.mawelly.blitzmath.leaderboard.LeaderboardManager()
 
     override fun openUrl(url: String) {
         val intent = android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(url))

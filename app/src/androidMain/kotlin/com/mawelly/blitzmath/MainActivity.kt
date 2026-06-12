@@ -564,6 +564,7 @@ fun BlitzMathApp() {
                 }
                 Screen.GLOBAL_LEADERBOARD -> {
                     GlobalLeaderboardScreen(
+                        dataStore = dataStore,
                         initialMode = leaderboardInitialMode,
                         scrollToPlayerId = leaderboardScrollToId,
                         onBackToMenu = { currentScreen = Screen.MAIN_MENU }
