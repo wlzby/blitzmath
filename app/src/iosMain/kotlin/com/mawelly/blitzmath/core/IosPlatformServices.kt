@@ -1,3 +1,4 @@
+@file:OptIn(kotlinx.cinterop.ExperimentalForeignApi::class)
 package com.mawelly.blitzmath.core
 
 import platform.Foundation.NSDate
