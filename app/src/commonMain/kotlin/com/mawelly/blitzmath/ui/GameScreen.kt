@@ -541,10 +541,10 @@ private fun GamePlayScreen(gameState: GameState) {
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.SpaceEvenly
                 ) {
-                    ModernHUD(gameState = gameState, isSmall = true)
+                    ModernHUD(gameState = gameState, isSmall = true, timeLeftProvider = { gameState.timeLeft })
                     
                     TimerBar(
-                        timeLeft = gameState.timeLeft,
+                        timeLeftProvider = { gameState.timeLeft },
                         maxTime = if (gameState.mode == com.mawelly.blitzmath.game.GameMode.CHALLENGE) 30f else 5f
                     )
                     
@@ -613,7 +613,8 @@ private fun GamePlayScreen(gameState: GameState) {
                         isSmall = isSmallScreen,
                         isUltraSmall = isUltraSmallScreen,
                         circleSize = circleSize,
-                        mainCircleSize = mainCircleSize
+                        mainCircleSize = mainCircleSize,
+                        timeLeftProvider = { gameState.timeLeft }
                     )
                 }
 
@@ -663,7 +664,7 @@ private fun GamePlayScreen(gameState: GameState) {
 
                     // Süre Çubuğu
                     TimerBar(
-                        timeLeft = gameState.timeLeft,
+                        timeLeftProvider = { gameState.timeLeft },
                         maxTime = if (gameState.mode == com.mawelly.blitzmath.game.GameMode.CHALLENGE) 30f else 5f
                     )
 
@@ -731,7 +732,8 @@ private fun ModernHUD(
     isSmall: Boolean = false, 
     isUltraSmall: Boolean = false,
     circleSize: Dp = 75.dp,
-    mainCircleSize: Dp = 88.dp
+    mainCircleSize: Dp = 88.dp,
+    timeLeftProvider: () -> Float
 ) {
     val baseSize = circleSize
     val centerSize = mainCircleSize
@@ -750,7 +752,12 @@ private fun ModernHUD(
         // Sol: Checkpoint - 🎯
         CircularStat(
             label = if (isChallenge) Strings.statSpeed else Strings.statCheck,
-            value = if (isChallenge) run { val intPart = gameState.timeLeft.toInt(); val fracPart = ((gameState.timeLeft - intPart) * 10).toInt().coerceIn(0, 9); "$intPart.$fracPart" } else gameState.currentCheckpoint.toString(),
+            value = if (isChallenge) {
+                val timeLeft = timeLeftProvider()
+                val intPart = timeLeft.toInt()
+                val fracPart = ((timeLeft - intPart) * 10).toInt().coerceIn(0, 9)
+                "$intPart.$fracPart"
+            } else gameState.currentCheckpoint.toString(),
             color = if (isChallenge) Color(0xFFf9a825) else Color(0xFF00d9ff),
             icon = Icons.Default.Adjust,
             size = baseSize,
@@ -931,7 +938,7 @@ private fun QuestionProgressBar(current: Int, total: Int) {
         }
         Spacer(modifier = Modifier.height(4.dp))
         LinearProgressIndicator(
-            progress = progress,
+            progress = { progress },
             modifier = Modifier
                 .fillMaxWidth()
                 .height(if (current == 0) 6.dp else 10.dp) // Start with slightly thinner, then expand
@@ -943,7 +950,8 @@ private fun QuestionProgressBar(current: Int, total: Int) {
 }
 
 @Composable
-private fun TimerBar(timeLeft: Float, maxTime: Float) {
+private fun TimerBar(timeLeftProvider: () -> Float, maxTime: Float) {
+    val timeLeft = timeLeftProvider()
     val progress = (timeLeft / maxTime).coerceIn(0f, 1f)
     val color = if (maxTime == 30f) {
         // Challenge modunda daha agresif renkler (Turuncu -> Kırmızı)
@@ -981,7 +989,7 @@ private fun TimerBar(timeLeft: Float, maxTime: Float) {
         }
         Spacer(modifier = Modifier.height(6.dp))
         LinearProgressIndicator(
-            progress = progress,
+            progress = { progress },
             modifier = Modifier
                 .fillMaxWidth()
                 .height(14.dp)
@@ -1666,13 +1674,13 @@ private fun SaveMeScreen(
             Box(contentAlignment = Alignment.Center) {
                 val ringSize = (screenHeight.value * 0.2f).coerceIn(120f, 160f).dp
                 CircularProgressIndicator(
-                    progress = 1f,
+                    progress = { 1f },
                     modifier = Modifier.size(ringSize),
                     color = Color.White.copy(alpha = 0.1f),
                     strokeWidth = (ringSize.value * 0.075f).dp
                 )
                 CircularProgressIndicator(
-                    progress = progress,
+                    progress = { progress },
                     modifier = Modifier.size(ringSize),
                     color = Color(0xFFe94560),
                     strokeWidth = (ringSize.value * 0.075f).dp,
