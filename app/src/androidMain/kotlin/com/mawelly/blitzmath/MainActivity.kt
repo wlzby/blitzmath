@@ -255,7 +255,6 @@ fun BlitzMathApp() {
         }
     }
 
-    val languageManager = remember { LanguageManager(context) }
     val adMobManager = remember { AdsProvider.getInstance(context) }
     val scope = rememberCoroutineScope()
     val isAutoThemeEnabled by dataStore.autoTheme.collectAsState(initial = false)
@@ -263,8 +262,16 @@ fun BlitzMathApp() {
     
     val currentTheme = if (isAutoThemeEnabled) getAutoTheme() else savedTheme
 
+    val savedLanguage by dataStore.language.collectAsState(initial = AppLanguage.TURKISH)
+    val savedPlayerName by dataStore.playerName.collectAsState(initial = "")
+    val isFirstLaunch = savedPlayerName.isEmpty()
+
     var currentLang by remember { mutableStateOf(Strings.currentLanguage) }
-    val isFirstLaunch = remember { languageManager.isFirstLaunch() }
+
+    LaunchedEffect(savedLanguage) {
+        Strings.setLanguage(savedLanguage)
+        currentLang = savedLanguage
+    }
 
     var analyticsManager by remember { mutableStateOf<AnalyticsManager?>(null) }
     
@@ -291,10 +298,6 @@ fun BlitzMathApp() {
 
     LaunchedEffect(Unit) {
         analyticsManager = AnalyticsManager.getInstance(context)
-        if (!isFirstLaunch) {
-            languageManager.loadSavedLanguage()
-            currentLang = Strings.currentLanguage
-        }
     }
 
     var currentScreen by remember {
@@ -312,9 +315,9 @@ fun BlitzMathApp() {
             if (com.mawelly.blitzmath.utils.ServiceChecker.isGmsAvailable(context)) {
                 com.google.firebase.messaging.FirebaseMessaging.getInstance().token.addOnSuccessListener { token ->
                     if (token != null) {
-                        val playerId = languageManager.getPlayerId()
-                        if (playerId.isNotEmpty()) {
-                            scope.launch {
+                        scope.launch {
+                            val playerId = dataStore.playerId.first()
+                            if (playerId.isNotEmpty()) {
                                 try {
                                     val lbm = com.mawelly.blitzmath.leaderboard.LeaderboardManager()
                                     lbm.updateFcmToken(playerId, token)
@@ -331,8 +334,10 @@ fun BlitzMathApp() {
 
     fun showRanking(mode: String, scrollToPlayer: Boolean = false) {
         leaderboardInitialMode = mode.lowercase()
-        leaderboardScrollToId = if (scrollToPlayer) languageManager.getPlayerId() else null
-        currentScreen = Screen.GLOBAL_LEADERBOARD
+        scope.launch {
+            leaderboardScrollToId = if (scrollToPlayer) dataStore.playerId.first() else null
+            currentScreen = Screen.GLOBAL_LEADERBOARD
+        }
     }
 
     // --- FORCED UPDATE CHECK ---
@@ -386,17 +391,7 @@ fun BlitzMathApp() {
         analyticsManager?.logScreenView(currentScreen.name)
     }
 
-    LaunchedEffect(currentScreen) {
-        if (currentScreen == Screen.MAIN_MENU) {
-            // Dil ayarlarını arka planda kontrol et, UI'ı bloke etme
-            try {
-                languageManager.loadSavedLanguage()
-                currentLang = Strings.currentLanguage
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
-        }
-    }
+
 
     CompositionLocalProvider(LocalPlatformServices provides platformServices) {
         BlitzMathTheme(themeType = currentTheme) {
@@ -449,6 +444,14 @@ fun BlitzMathApp() {
                     )
                 }
                 Screen.MAIN_MENU -> {
+                    val playerXp by dataStore.playerXp.collectAsState(initial = 0)
+                    val calculatedLevel = kotlin.math.floor(kotlin.math.sqrt(playerXp / 100.0)).toInt() + 1
+                    val level = calculatedLevel.coerceIn(1, 100)
+                    
+                    val xpForCurrentLevel = java.lang.Math.pow((level - 1).toDouble(), 2.0).toInt() * 100
+                    val xpForNextLevel = java.lang.Math.pow(level.toDouble(), 2.0).toInt() * 100
+                    val progress = if (level >= 100) 1f else ((playerXp - xpForCurrentLevel).toFloat() / (xpForNextLevel - xpForCurrentLevel).toFloat()).coerceIn(0f, 1f)
+
                     MainMenuScreen(
                         dataStore = dataStore,
                         onPlayClick = {
@@ -494,9 +497,9 @@ fun BlitzMathApp() {
                             voiceManager.speak(message, multiplier, isProfessional)
                         },
                         platformServices = platformServices,
-                        pLevel = languageManager.getPlayerLevel(),
-                        pProgress = languageManager.getPlayerLevelProgress(),
-                        currentXp = languageManager.getPlayerXP()
+                        pLevel = level,
+                        pProgress = progress,
+                        currentXp = playerXp
                     )
                 }
                 Screen.GAME_CLASSIC -> {

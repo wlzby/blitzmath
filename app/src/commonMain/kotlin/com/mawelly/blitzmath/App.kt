@@ -59,6 +59,12 @@ fun App(dataStore: IGameDataStore) {
     
     val savedTheme by dataStore.theme.collectAsState(initial = AppTheme.MIDNIGHT)
     val starCount by dataStore.starCount.collectAsState(initial = 100)
+    val savedLanguage by dataStore.language.collectAsState(initial = AppLanguage.TURKISH)
+    val savedPlayerName by dataStore.playerName.collectAsState(initial = "")
+    
+    LaunchedEffect(savedLanguage) {
+        Strings.setLanguage(savedLanguage)
+    }
     
     var currentScreen by remember { mutableStateOf(AppScreen.SPLASH) }
     var currentLevel by remember { mutableStateOf(1) }
@@ -101,7 +107,7 @@ fun App(dataStore: IGameDataStore) {
                 when (targetScreen) {
                     AppScreen.SPLASH -> {
                         IosSplashContent(onFinish = {
-                            currentScreen = AppScreen.MAIN_MENU
+                            currentScreen = if (savedPlayerName.isEmpty()) AppScreen.LANGUAGE_SELECTION else AppScreen.MAIN_MENU
                         })
                     }
                     AppScreen.LANGUAGE_SELECTION -> {
