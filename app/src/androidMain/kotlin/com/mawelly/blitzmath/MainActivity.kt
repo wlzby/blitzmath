@@ -263,8 +263,8 @@ fun BlitzMathApp() {
     val currentTheme = if (isAutoThemeEnabled) getAutoTheme() else savedTheme
 
     val savedLanguage by dataStore.language.collectAsState(initial = AppLanguage.TURKISH)
-    val savedPlayerName by dataStore.playerName.collectAsState(initial = "")
-    val isFirstLaunch = savedPlayerName.isEmpty()
+    val savedPlayerName by dataStore.playerName.collectAsState(initial = null)
+    val isFirstLaunch = savedPlayerName.orEmpty().isEmpty()
 
     var currentLang by remember { mutableStateOf(Strings.currentLanguage) }
 
@@ -302,6 +302,14 @@ fun BlitzMathApp() {
 
     var currentScreen by remember {
         mutableStateOf(Screen.SPLASH)
+    }
+
+    var splashFinished by remember { mutableStateOf(false) }
+
+    LaunchedEffect(splashFinished, savedPlayerName) {
+        if (splashFinished && savedPlayerName != null) {
+            currentScreen = if (savedPlayerName.orEmpty().isEmpty()) Screen.LANGUAGE_SELECTION else Screen.MAIN_MENU
+        }
     }
 
     var leaderboardInitialMode by remember { mutableStateOf("classic") }
@@ -430,7 +438,7 @@ fun BlitzMathApp() {
             when (targetScreen) {
                 Screen.SPLASH -> {
                     SplashContent(onFinish = {
-                        currentScreen = if (isFirstLaunch) Screen.LANGUAGE_SELECTION else Screen.MAIN_MENU
+                        splashFinished = true
                     })
                 }
                 Screen.LANGUAGE_SELECTION -> {
@@ -554,13 +562,6 @@ fun BlitzMathApp() {
                 Screen.SETTINGS -> {
                     SettingsScreen(dataStore = dataStore,
                         onBackToMenu = {
-                            scope.launch {
-                                val savedLang = dataStore.language.first()
-                                if (savedLang != Strings.currentLanguage) {
-                                    Strings.setLanguage(savedLang)
-                                    currentLang = savedLang
-                                }
-                            }
                             currentScreen = Screen.MAIN_MENU
                         }
                     )

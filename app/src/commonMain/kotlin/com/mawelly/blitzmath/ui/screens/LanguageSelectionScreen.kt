@@ -104,7 +104,11 @@ fun LanguageSelectionScreen(
                             onSelect = { lang ->
                                 selectedLanguage = lang
                                 com.mawelly.blitzmath.localization.Strings.setLanguage(lang)
-                                scope.launch { dataStore.saveLanguage(lang) }
+                                scope.launch {
+                                    kotlinx.coroutines.withContext(kotlinx.coroutines.NonCancellable) {
+                                        dataStore.saveLanguage(lang)
+                                    }
+                                }
                                 currentStep = SetupStep.NAME_ENTRY
                             }
                         )
@@ -151,10 +155,12 @@ private fun completeSetup(
     name: String,
     onComplete: () -> Unit
 ) {
-    scope.launch { dataStore.saveLoginType(type) }
-    scope.launch { dataStore.savePlayerName(name) }
-    scope.launch { dataStore.setFirstLaunchCompleted() }
-    onComplete()
+    scope.launch {
+        dataStore.saveLoginType(type)
+        dataStore.savePlayerName(name)
+        dataStore.setFirstLaunchCompleted()
+        onComplete()
+    }
 }
 
 @Composable

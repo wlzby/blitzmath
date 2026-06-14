@@ -60,7 +60,7 @@ fun App(dataStore: IGameDataStore) {
     val savedTheme by dataStore.theme.collectAsState(initial = AppTheme.MIDNIGHT)
     val starCount by dataStore.starCount.collectAsState(initial = 100)
     val savedLanguage by dataStore.language.collectAsState(initial = AppLanguage.TURKISH)
-    val savedPlayerName by dataStore.playerName.collectAsState(initial = "")
+    val savedPlayerName by dataStore.playerName.collectAsState(initial = null)
     
     LaunchedEffect(savedLanguage) {
         Strings.setLanguage(savedLanguage)
@@ -71,6 +71,14 @@ fun App(dataStore: IGameDataStore) {
     
     var leaderboardInitialMode by remember { mutableStateOf("classic") }
     var leaderboardScrollToId by remember { mutableStateOf<String?>(null) }
+    
+    var splashFinished by remember { mutableStateOf(false) }
+    
+    LaunchedEffect(splashFinished, savedPlayerName) {
+        if (splashFinished && savedPlayerName != null) {
+            currentScreen = if (savedPlayerName.orEmpty().isEmpty()) AppScreen.LANGUAGE_SELECTION else AppScreen.MAIN_MENU
+        }
+    }
     
     BlitzMathTheme(themeType = savedTheme) {
         val blitzColors = LocalBlitzMathColors.current
@@ -107,7 +115,7 @@ fun App(dataStore: IGameDataStore) {
                 when (targetScreen) {
                     AppScreen.SPLASH -> {
                         IosSplashContent(onFinish = {
-                            currentScreen = if (savedPlayerName.isEmpty()) AppScreen.LANGUAGE_SELECTION else AppScreen.MAIN_MENU
+                            splashFinished = true
                         })
                     }
                     AppScreen.LANGUAGE_SELECTION -> {

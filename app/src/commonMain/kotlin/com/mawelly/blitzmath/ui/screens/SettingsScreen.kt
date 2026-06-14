@@ -67,7 +67,9 @@ fun SettingsScreen(
         if (currentLang != newLang) {
             com.mawelly.blitzmath.localization.Strings.setLanguage(newLang) // Strings.setLanguage çağrılır
             scope.launch {
-                dataStore.saveLanguage(newLang)
+                kotlinx.coroutines.withContext(kotlinx.coroutines.NonCancellable) {
+                    dataStore.saveLanguage(newLang)
+                }
             }
             currentLang = newLang
         }
@@ -277,7 +279,9 @@ fun SettingsScreen(
                         width = optionWidth,
                         onClick = {
                             scope.launch {
-                                dataStore.saveTheme(theme)
+                                kotlinx.coroutines.withContext(kotlinx.coroutines.NonCancellable) {
+                                    dataStore.saveTheme(theme)
+                                }
                             }
                         }
                     )
