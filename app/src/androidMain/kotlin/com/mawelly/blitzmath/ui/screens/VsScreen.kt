@@ -1375,10 +1375,15 @@ fun MatchedBannerView(
                             .background(
                                 Brush.verticalGradient(listOf(Color(0xFF00d9ff), Color(0xFF00838f))),
                                 CircleShape
-                            ),
+                            )
+                            .clip(CircleShape),
                         contentAlignment = Alignment.Center
                     ) {
-                        Text(text = getFlagEmojiForCountryCode(myCountryCode), fontSize = 40.sp)
+                        Text(
+                            text = getFlagEmojiForCountryCode(myCountryCode),
+                            fontSize = 110.sp,
+                            modifier = Modifier.scale(1.2f)
+                        )
                     }
                     Spacer(modifier = Modifier.height(12.dp))
                     Text(
@@ -1409,10 +1414,15 @@ fun MatchedBannerView(
                             .background(
                                 Brush.verticalGradient(listOf(Color(0xFFD500F9), Color(0xFF7B1FA2))),
                                 CircleShape
-                            ),
+                            )
+                            .clip(CircleShape),
                         contentAlignment = Alignment.Center
                     ) {
-                        Text(text = getFlagEmojiForCountryCode(opponentCountryCode), fontSize = 40.sp)
+                        Text(
+                            text = getFlagEmojiForCountryCode(opponentCountryCode),
+                            fontSize = 110.sp,
+                            modifier = Modifier.scale(1.2f)
+                        )
                     }
                     Spacer(modifier = Modifier.height(12.dp))
                     Text(
@@ -1505,10 +1515,15 @@ fun VsGameplayView(
                         modifier = Modifier
                             .size(36.dp)
                             .background(Color.Black.copy(alpha = 0.5f), CircleShape)
-                            .border(1.dp, Color(0xFF00E5FF).copy(alpha = 0.5f), CircleShape),
+                            .border(1.dp, Color(0xFF00E5FF).copy(alpha = 0.5f), CircleShape)
+                            .clip(CircleShape),
                         contentAlignment = Alignment.Center
                     ) {
-                        Text(text = getFlagEmojiForCountryCode(myCountryCode), fontSize = 20.sp)
+                        Text(
+                            text = getFlagEmojiForCountryCode(myCountryCode),
+                            fontSize = 45.sp,
+                            modifier = Modifier.scale(1.2f)
+                        )
                     }
                     Spacer(modifier = Modifier.width(8.dp))
                     Column(
@@ -1585,10 +1600,15 @@ fun VsGameplayView(
                         modifier = Modifier
                             .size(36.dp)
                             .background(Color.Black.copy(alpha = 0.5f), CircleShape)
-                            .border(1.dp, Color(0xFFD500F9).copy(alpha = 0.5f), CircleShape),
+                            .border(1.dp, Color(0xFFD500F9).copy(alpha = 0.5f), CircleShape)
+                            .clip(CircleShape),
                         contentAlignment = Alignment.Center
                     ) {
-                        Text(text = getFlagEmojiForCountryCode(opponentCountryCode), fontSize = 20.sp)
+                        Text(
+                            text = getFlagEmojiForCountryCode(opponentCountryCode),
+                            fontSize = 45.sp,
+                            modifier = Modifier.scale(1.2f)
+                        )
                     }
                 }
                 
