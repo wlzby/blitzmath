@@ -31,6 +31,7 @@ kotlin {
         val androidMain by getting {
             dependencies {
                 implementation("io.coil-kt:coil-compose:2.6.0")
+                implementation("io.coil-kt:coil-svg:2.6.0")
                 implementation(libs.androidx.core.ktx)
                 implementation("androidx.core:core-splashscreen:1.0.1")
                 implementation("androidx.fragment:fragment-ktx:1.8.6")

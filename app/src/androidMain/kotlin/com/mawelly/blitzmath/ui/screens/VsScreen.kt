@@ -30,6 +30,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import coil.compose.AsyncImage
+import coil.ImageLoader
+import coil.decode.SvgDecoder
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -76,6 +78,73 @@ fun getFlagEmojiForCountryCode(countryCode: String): String {
     val firstLetter = Character.codePointAt(countryCode.uppercase(java.util.Locale.ROOT), 0) - 0x41 + 0x1F1E6
     val secondLetter = Character.codePointAt(countryCode.uppercase(java.util.Locale.ROOT), 1) - 0x41 + 0x1F1E6
     return try { String(Character.toChars(firstLetter)) + String(Character.toChars(secondLetter)) } catch (e: Exception) { "❓" }
+}
+
+@Composable
+fun GlossyCircularFlag(
+    countryCode: String,
+    modifier: Modifier,
+    fallbackSize: androidx.compose.ui.unit.TextUnit,
+    fallbackScale: Float
+) {
+    val context = LocalContext.current
+    val imageLoader = remember {
+        ImageLoader.Builder(context)
+            .components {
+                add(SvgDecoder.Factory())
+            }
+            .build()
+    }
+
+    Box(
+        modifier = modifier
+            .clip(CircleShape),
+        contentAlignment = Alignment.Center
+    ) {
+        // 1. Fallback emoji
+        Text(
+            text = getFlagEmojiForCountryCode(countryCode),
+            fontSize = fallbackSize,
+            modifier = Modifier.scale(fallbackScale)
+        )
+        
+        // 2. SVG Circular Flag from Circle-Flags CDN
+        AsyncImage(
+            model = "https://hatscripts.github.io/circle-flags/flags/${countryCode.lowercase(java.util.Locale.ROOT)}.svg",
+            imageLoader = imageLoader,
+            contentDescription = null,
+            contentScale = ContentScale.Crop,
+            modifier = Modifier.fillMaxSize()
+        )
+        
+        // 3. Overall soft vertical sheen (glass effect)
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(
+                            Color.White.copy(alpha = 0.25f),
+                            Color.Transparent,
+                            Color.Black.copy(alpha = 0.2f)
+                        )
+                    )
+                )
+        )
+        
+        // 4. Top specular glass highlight
+        Canvas(modifier = Modifier.fillMaxSize()) {
+            drawOval(
+                brush = Brush.verticalGradient(
+                    colors = listOf(Color.White.copy(alpha = 0.5f), Color.White.copy(alpha = 0.0f)),
+                    startY = size.height * 0.03f,
+                    endY = size.height * 0.38f
+                ),
+                topLeft = androidx.compose.ui.geometry.Offset(size.width * 0.15f, size.height * 0.03f),
+                size = androidx.compose.ui.geometry.Size(size.width * 0.7f, size.height * 0.35f)
+            )
+        }
+    }
 }
 
 @Composable
@@ -1378,19 +1447,15 @@ fun MatchedBannerView(
                                 Brush.verticalGradient(listOf(Color(0xFF00d9ff), Color(0xFF00838f))),
                                 CircleShape
                             )
+                            .border(2.dp, Color(0xFF00E5FF).copy(alpha = 0.5f), CircleShape)
                             .clip(CircleShape),
                         contentAlignment = Alignment.Center
                     ) {
-                        Text(
-                            text = getFlagEmojiForCountryCode(myCountryCode),
-                            fontSize = 110.sp,
-                            modifier = Modifier.scale(1.8f)
-                        )
-                        AsyncImage(
-                            model = "https://flagcdn.com/w256/${myCountryCode.lowercase(java.util.Locale.ROOT)}.png",
-                            contentDescription = null,
-                            contentScale = ContentScale.Crop,
-                            modifier = Modifier.fillMaxSize()
+                        GlossyCircularFlag(
+                            countryCode = myCountryCode,
+                            modifier = Modifier.fillMaxSize(),
+                            fallbackSize = 110.sp,
+                            fallbackScale = 1.8f
                         )
                     }
                     Spacer(modifier = Modifier.height(12.dp))
@@ -1423,19 +1488,15 @@ fun MatchedBannerView(
                                 Brush.verticalGradient(listOf(Color(0xFFD500F9), Color(0xFF7B1FA2))),
                                 CircleShape
                             )
+                            .border(2.dp, Color(0xFFD500F9).copy(alpha = 0.5f), CircleShape)
                             .clip(CircleShape),
                         contentAlignment = Alignment.Center
                     ) {
-                        Text(
-                            text = getFlagEmojiForCountryCode(opponentCountryCode),
-                            fontSize = 110.sp,
-                            modifier = Modifier.scale(1.8f)
-                        )
-                        AsyncImage(
-                            model = "https://flagcdn.com/w256/${opponentCountryCode.lowercase(java.util.Locale.ROOT)}.png",
-                            contentDescription = null,
-                            contentScale = ContentScale.Crop,
-                            modifier = Modifier.fillMaxSize()
+                        GlossyCircularFlag(
+                            countryCode = opponentCountryCode,
+                            modifier = Modifier.fillMaxSize(),
+                            fallbackSize = 110.sp,
+                            fallbackScale = 1.8f
                         )
                     }
                     Spacer(modifier = Modifier.height(12.dp))
@@ -1533,16 +1594,11 @@ fun VsGameplayView(
                             .clip(CircleShape),
                         contentAlignment = Alignment.Center
                     ) {
-                        Text(
-                            text = getFlagEmojiForCountryCode(myCountryCode),
-                            fontSize = 45.sp,
-                            modifier = Modifier.scale(1.8f)
-                        )
-                        AsyncImage(
-                            model = "https://flagcdn.com/w160/${myCountryCode.lowercase(java.util.Locale.ROOT)}.png",
-                            contentDescription = null,
-                            contentScale = ContentScale.Crop,
-                            modifier = Modifier.fillMaxSize()
+                        GlossyCircularFlag(
+                            countryCode = myCountryCode,
+                            modifier = Modifier.fillMaxSize(),
+                            fallbackSize = 45.sp,
+                            fallbackScale = 1.8f
                         )
                     }
                     Spacer(modifier = Modifier.width(8.dp))
@@ -1624,16 +1680,11 @@ fun VsGameplayView(
                             .clip(CircleShape),
                         contentAlignment = Alignment.Center
                     ) {
-                        Text(
-                            text = getFlagEmojiForCountryCode(opponentCountryCode),
-                            fontSize = 45.sp,
-                            modifier = Modifier.scale(1.8f)
-                        )
-                        AsyncImage(
-                            model = "https://flagcdn.com/w160/${opponentCountryCode.lowercase(java.util.Locale.ROOT)}.png",
-                            contentDescription = null,
-                            contentScale = ContentScale.Crop,
-                            modifier = Modifier.fillMaxSize()
+                        GlossyCircularFlag(
+                            countryCode = opponentCountryCode,
+                            modifier = Modifier.fillMaxSize(),
+                            fallbackSize = 45.sp,
+                            fallbackScale = 1.8f
                         )
                     }
                 }
