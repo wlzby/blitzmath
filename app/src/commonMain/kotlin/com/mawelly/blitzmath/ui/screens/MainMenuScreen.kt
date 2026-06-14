@@ -412,117 +412,6 @@ fun MainMenuScreen(
                 )
             }
         }
-
-        // Diğer Oyunlarımız (Sol Alt)
-        var isExpanded by remember { mutableStateOf(false) }
-        val rotation by animateFloatAsState(
-            targetValue = if (isExpanded) 45f else 0f,
-            animationSpec = tween(durationMillis = 300, easing = LinearOutSlowInEasing),
-            label = "plusRotation"
-        )
-
-        Row(
-            modifier = Modifier
-                .align(Alignment.BottomStart)
-                .padding(bottom = 20.dp, start = 20.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Box(
-                modifier = Modifier
-                    .size(56.dp)
-                    .shadow(8.dp, CircleShape)
-                    .clip(CircleShape)
-                    .background(
-                        brush = Brush.linearGradient(
-                            colors = if (isExpanded) 
-                                listOf(Color(0xFFE94560), Color(0xFFC0392B)) 
-                            else 
-                                listOf(Color.White.copy(alpha = 0.1f), Color.White.copy(alpha = 0.05f))
-                        )
-                    )
-                    .border(1.dp, Color.White.copy(alpha = 0.2f), CircleShape)
-                    .clickable(
-                        interactionSource = remember { MutableInteractionSource() },
-                        indication = null
-                    ) { isExpanded = !isExpanded },
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Add,
-                    contentDescription = Strings.otherGames,
-                    tint = Color.White,
-                    modifier = Modifier
-                        .size(30.dp)
-                        .rotate(rotation)
-                )
-            }
-
-            Spacer(modifier = Modifier.width(12.dp))
-
-            AnimatedVisibility(
-                visible = isExpanded,
-                enter = fadeIn(animationSpec = tween(300)) + expandHorizontally(animationSpec = tween(300)),
-                exit = fadeOut(animationSpec = tween(300)) + shrinkHorizontally(animationSpec = tween(300))
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    
-                    val infiniteTransition = rememberInfiniteTransition(label = "gamesPulse")
-                    val pulseScale by infiniteTransition.animateFloat(
-                        initialValue = 1f,
-                        targetValue = 1.08f,
-                        animationSpec = infiniteRepeatable(
-                            animation = tween(600, easing = FastOutSlowInEasing),
-                            repeatMode = RepeatMode.Reverse
-                        ),
-                        label = "pulseScale"
-                    )
-
-                    // One Top Tower
-                    Box(
-                        modifier = Modifier
-                            .scale(pulseScale)
-                            .size(64.dp)
-                            .shadow(12.dp, RoundedCornerShape(16.dp))
-                            .clip(RoundedCornerShape(16.dp))
-                            .background(Color.White.copy(alpha = 0.1f))
-                            .border(1.dp, Color.White.copy(alpha = 0.3f), RoundedCornerShape(16.dp))
-                            .clickable { onMoreGamesClick("com.mawelly.onetoptower") },
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = "Tower",
-                            color = Color.White,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 12.sp,
-                            modifier = Modifier.padding(4.dp)
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.width(10.dp))
-
-                    // Oyna İste
-                    Box(
-                        modifier = Modifier
-                            .scale(pulseScale)
-                            .size(64.dp)
-                            .shadow(12.dp, RoundedCornerShape(16.dp))
-                            .clip(RoundedCornerShape(16.dp))
-                            .background(Color.White.copy(alpha = 0.1f))
-                            .border(1.dp, Color.White.copy(alpha = 0.3f), RoundedCornerShape(16.dp))
-                            .clickable { onMoreGamesClick("com.oyna.iste") },
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = "Oyna İste",
-                            color = Color.White,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 12.sp,
-                            modifier = Modifier.padding(4.dp)
-                        )
-                    }
-                }
-            }
-        }
         
         if (showRewardDialog) {
             DailyRewardDialog(currentTime = platformServices.getCurrentTimeMillis(),
@@ -597,7 +486,7 @@ fun MainMenuScreen(
                     Button(
                         onClick = {
                             showExitDialog = false
-                            isExpanded = true // Aç diğer oyunları
+                            onExitClick()
                         },
                         colors = ButtonDefaults.buttonColors(containerColor = blitzColors.accent),
                         shape = RoundedCornerShape(12.dp)
@@ -613,7 +502,6 @@ fun MainMenuScreen(
                     TextButton(
                         onClick = {
                             showExitDialog = false
-                            onExitClick()
                         }
                     ) {
                         Text(
