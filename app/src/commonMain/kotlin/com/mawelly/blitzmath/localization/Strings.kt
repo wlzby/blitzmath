@@ -1586,17 +1586,17 @@ object Strings {
     }
 
     val randomExitVoicePrompt: String get() = when (currentLanguage) {
-        AppLanguage.TURKISH -> "Ayrılmadan önce diğer oyunlarımızı da denemek ister misiniz?"
-        AppLanguage.ENGLISH -> "Would you like to try our other games before you go?"
-        AppLanguage.SPANISH -> "¿Te gustaría probar nuestros otros juegos antes de irte?"
-        AppLanguage.GERMAN -> "Möchten Sie unsere anderen Spiele ausprobieren, bevor Sie gehen?"
-        AppLanguage.FRENCH -> "Souhaitez-vous essayer nos autres jeux avant de partir ?"
-        AppLanguage.ITALIAN -> "Ti piacerebbe provare i nostri altri giochi prima di uscire?"
-        AppLanguage.PORTUGUESE -> "Gostaria de experimentar nossos outros jogos antes de sair?"
-        AppLanguage.HINDI -> "जाने से पहले क्या आप हमारे अन्य खेलों को आजमाना चाहेंगे?"
-        AppLanguage.CHINESE -> "您想在离开前尝试一下我们的其他游戏吗？"
-        AppLanguage.RUSSIAN -> "Не хотели бы вы попробовать наши другие игры перед уходом?"
-        else -> "Would you like to try our other games before you go?"
+        AppLanguage.TURKISH -> "Çıkmak istediğinizden emin misiniz?"
+        AppLanguage.ENGLISH -> "Are you sure you want to exit?"
+        AppLanguage.SPANISH -> "¿Está seguro de que desea salir?"
+        AppLanguage.GERMAN -> "Sind Sie sicher, dass Sie das Spiel beenden möchten?"
+        AppLanguage.FRENCH -> "Êtes-vous sûr de vouloir quitter le jeu ?"
+        AppLanguage.ITALIAN -> "Sei sicuro di voler uscire?"
+        AppLanguage.PORTUGUESE -> "Tem certeza de que deseja sair?"
+        AppLanguage.HINDI -> "क्या आप वाकई बाहर निकलना चाहते हैं?"
+        AppLanguage.CHINESE -> "您确定要退出吗？"
+        AppLanguage.RUSSIAN -> "Вы уверены, что хотите выйти?"
+        else -> "Are you sure you want to exit?"
     }
 
     fun getShareMessage(score: Int, checkpoint: Int): String = when(currentLanguage) {

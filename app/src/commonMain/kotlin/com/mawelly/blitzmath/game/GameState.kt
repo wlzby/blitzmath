@@ -349,7 +349,7 @@ class GameState(
             consecutiveMistakes = 0
             if (score > highScore) highScore = score
             
-            soundManager.playSuccess()
+            soundManager.playClick()
             
             // Decoupled Feedback
             val commentary = MotivationalMessages.getMessages(Strings.currentLanguage)
@@ -403,7 +403,7 @@ class GameState(
         // Newton shield - EXTRA_LIFE active skill (pre-activated shield)
         if (shieldsRemaining > 0 && !isGameOver && !isCheckpointComplete) {
             shieldsRemaining--
-            soundManager.playSuccess()
+            soundManager.playClick()
             speedMessage = "🛡️ İKİNCİ ŞANS! ($shieldsRemaining kaldı)"
             if (isVoiceEnabled) voiceManager?.speak("Kalkan Seni Korudu!")
             speedBonus = 0
@@ -626,7 +626,7 @@ class GameState(
                 if (wrongIndices.isNotEmpty()) {
                     zapEliminatedOption = wrongIndices.random()
                     speedMessage = "⚡ Tesla Şimşeği!"
-                    soundManager.playSuccess()
+                    soundManager.playClick()
                 }
             }
         }
