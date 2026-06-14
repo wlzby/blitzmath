@@ -29,6 +29,8 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import coil.compose.AsyncImage
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
@@ -1384,6 +1386,12 @@ fun MatchedBannerView(
                             fontSize = 110.sp,
                             modifier = Modifier.scale(1.8f)
                         )
+                        AsyncImage(
+                            model = "https://flagcdn.com/w256/${myCountryCode.lowercase(java.util.Locale.ROOT)}.png",
+                            contentDescription = null,
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier.fillMaxSize()
+                        )
                     }
                     Spacer(modifier = Modifier.height(12.dp))
                     Text(
@@ -1422,6 +1430,12 @@ fun MatchedBannerView(
                             text = getFlagEmojiForCountryCode(opponentCountryCode),
                             fontSize = 110.sp,
                             modifier = Modifier.scale(1.8f)
+                        )
+                        AsyncImage(
+                            model = "https://flagcdn.com/w256/${opponentCountryCode.lowercase(java.util.Locale.ROOT)}.png",
+                            contentDescription = null,
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier.fillMaxSize()
                         )
                     }
                     Spacer(modifier = Modifier.height(12.dp))
@@ -1524,6 +1538,12 @@ fun VsGameplayView(
                             fontSize = 45.sp,
                             modifier = Modifier.scale(1.8f)
                         )
+                        AsyncImage(
+                            model = "https://flagcdn.com/w160/${myCountryCode.lowercase(java.util.Locale.ROOT)}.png",
+                            contentDescription = null,
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier.fillMaxSize()
+                        )
                     }
                     Spacer(modifier = Modifier.width(8.dp))
                     Column(
@@ -1608,6 +1628,12 @@ fun VsGameplayView(
                             text = getFlagEmojiForCountryCode(opponentCountryCode),
                             fontSize = 45.sp,
                             modifier = Modifier.scale(1.8f)
+                        )
+                        AsyncImage(
+                            model = "https://flagcdn.com/w160/${opponentCountryCode.lowercase(java.util.Locale.ROOT)}.png",
+                            contentDescription = null,
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier.fillMaxSize()
                         )
                     }
                 }
