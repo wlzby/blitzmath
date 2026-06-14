@@ -1382,7 +1382,7 @@ fun MatchedBannerView(
                         Text(
                             text = getFlagEmojiForCountryCode(myCountryCode),
                             fontSize = 110.sp,
-                            modifier = Modifier.scale(1.2f)
+                            modifier = Modifier.scale(1.8f)
                         )
                     }
                     Spacer(modifier = Modifier.height(12.dp))
@@ -1421,7 +1421,7 @@ fun MatchedBannerView(
                         Text(
                             text = getFlagEmojiForCountryCode(opponentCountryCode),
                             fontSize = 110.sp,
-                            modifier = Modifier.scale(1.2f)
+                            modifier = Modifier.scale(1.8f)
                         )
                     }
                     Spacer(modifier = Modifier.height(12.dp))
@@ -1522,7 +1522,7 @@ fun VsGameplayView(
                         Text(
                             text = getFlagEmojiForCountryCode(myCountryCode),
                             fontSize = 45.sp,
-                            modifier = Modifier.scale(1.2f)
+                            modifier = Modifier.scale(1.8f)
                         )
                     }
                     Spacer(modifier = Modifier.width(8.dp))
@@ -1607,7 +1607,7 @@ fun VsGameplayView(
                         Text(
                             text = getFlagEmojiForCountryCode(opponentCountryCode),
                             fontSize = 45.sp,
-                            modifier = Modifier.scale(1.2f)
+                            modifier = Modifier.scale(1.8f)
                         )
                     }
                 }
