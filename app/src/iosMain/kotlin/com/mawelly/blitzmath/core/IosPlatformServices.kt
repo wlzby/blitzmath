@@ -109,7 +109,23 @@ class IosAnalyticsManager : IAnalyticsManager {
 }
 
 class IosShareManager : IShareManager {
-    override fun shareScore(score: Int) {}
+    override fun shareScore(score: Int) {
+        val text = "BlitzMath Challenge'da $score skoruna ulaştım! 🧠 Sen de katıl ve zihnini test et! ⚡"
+        val items = listOf(text)
+        val activityController = platform.UIKit.UIActivityViewController(
+            activityItems = items,
+            applicationActivities = null
+        )
+        val window = platform.UIKit.UIApplication.sharedApplication.keyWindow
+        val rootVC = window?.rootViewController
+        
+        if (activityController.popoverPresentationController != null) {
+            activityController.popoverPresentationController?.sourceView = window
+            activityController.popoverPresentationController?.sourceRect = platform.CoreGraphics.CGRectMake(0.0, 0.0, 100.0, 100.0)
+        }
+        
+        rootVC?.presentViewController(activityController, animated = true, completion = null)
+    }
 }
 
 class IosAdController : IAdController {
@@ -310,5 +326,45 @@ class IosPlatformServices : PlatformServices {
     override fun openUrl(url: String) {
         val nsUrl = NSURL.URLWithString(url) ?: return
         UIApplication.sharedApplication.openURL(nsUrl)
+    }
+
+    override fun scheduleCardRecharge(cardId: String, delayMinutes: Long) {
+        val card = com.mawelly.blitzmath.game.ScientistCards.getCardById(cardId) ?: return
+        val center = platform.UserNotifications.UNUserNotificationCenter.currentNotificationCenter()
+        
+        val options = platform.UserNotifications.UNAuthorizationOptionAlert or 
+                      platform.UserNotifications.UNAuthorizationOptionSound
+                      
+        center.requestAuthorizationWithOptions(options) { granted, error ->
+            if (granted) {
+                val content = platform.UserNotifications.UNMutableNotificationContent().apply {
+                    setTitle("Enerji Doldu! ⚡")
+                    setBody("${card.name} artık hazır. Gel ve zihnini tazele! 🧠")
+                    setSound(platform.UserNotifications.UNNotificationSound.defaultSound())
+                }
+                
+                val trigger = platform.UserNotifications.UNTimeIntervalNotificationTrigger.triggerWithTimeInterval(
+                    timeInterval = delayMinutes * 60.0,
+                    repeats = false
+                )
+                
+                val request = platform.UserNotifications.UNNotificationRequest.requestWithIdentifier(
+                    identifier = "recharge_$cardId",
+                    content = content,
+                    trigger = trigger
+                )
+                
+                center.addNotificationRequest(request) { err ->
+                    if (err != null) {
+                        println("Notification Error: ${err.localizedDescription}")
+                    }
+                }
+            }
+        }
+    }
+
+    override fun cancelCardRecharge(cardId: String) {
+        val center = platform.UserNotifications.UNUserNotificationCenter.currentNotificationCenter()
+        center.removePendingNotificationRequestsWithIdentifiers(listOf("recharge_$cardId"))
     }
 }

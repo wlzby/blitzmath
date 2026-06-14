@@ -32,8 +32,34 @@ actual fun VsScreen(onBackToMenu: () -> Unit) {
 }
 
 
+import androidx.compose.runtime.DisposableEffect
+import platform.Foundation.NSNotificationCenter
+import platform.UIKit.UIApplicationDidEnterBackgroundNotification
+import platform.UIKit.UIApplicationWillEnterForegroundNotification
+
 @Composable
 actual fun AppLifecycleObserver(onPause: () -> Unit, onResume: () -> Unit) {
-    // No-op stub for iOS
+    DisposableEffect(Unit) {
+        val pauseObserver = NSNotificationCenter.defaultCenter.addObserverForName(
+            name = UIApplicationDidEnterBackgroundNotification,
+            `object` = null,
+            queue = null
+        ) { _ ->
+            onPause()
+        }
+
+        val resumeObserver = NSNotificationCenter.defaultCenter.addObserverForName(
+            name = UIApplicationWillEnterForegroundNotification,
+            `object` = null,
+            queue = null
+        ) { _ ->
+            onResume()
+        }
+
+        onDispose {
+            NSNotificationCenter.defaultCenter.removeObserver(pauseObserver)
+            NSNotificationCenter.defaultCenter.removeObserver(resumeObserver)
+        }
+    }
 }
 
