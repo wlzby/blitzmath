@@ -240,154 +240,147 @@ actual fun VsScreen(onBackToMenu: () -> Unit) {
     LaunchedEffect(currentState) {
         if (currentState == VsState.MATCHMAKING) {
             isBotMode = false
-            var myCreatedLobbyId: String? = null
-            var myLobbyListener: ListenerRegistration? = null
+            val myCreatedAt = System.currentTimeMillis()
+            var myTicketListener: ListenerRegistration? = null
+            
+            // Create our ticket in vs_queue
+            val myTicketRef = db.collection("vs_queue").document(myPlayerId)
+            val myTicketData = hashMapOf(
+                "playerId" to myPlayerId,
+                "playerName" to playerName,
+                "level" to myLevel,
+                "country" to myCountryCode,
+                "status" to "searching",
+                "matchedLobbyId" to "",
+                "createdAt" to myCreatedAt
+            )
+            
+            myTicketRef.set(myTicketData)
+            
+            // Start listening to our ticket
+            myTicketListener = myTicketRef.addSnapshotListener { snap, err ->
+                if (snap != null && snap.exists() && currentState == VsState.MATCHMAKING) {
+                    val status = snap.getString("status") ?: "searching"
+                    val lobbyId = snap.getString("matchedLobbyId") ?: ""
+                    if (status == "matched" && lobbyId.isNotEmpty()) {
+                        // We were matched as Host!
+                        db.collection("vs_lobbies").document(lobbyId).get().addOnSuccessListener { lobbySnap ->
+                            if (lobbySnap != null && lobbySnap.exists() && currentState == VsState.MATCHMAKING) {
+                                val p2Name = lobbySnap.getString("player2Name") ?: ""
+                                val p2Level = lobbySnap.getLong("player2Level")?.toInt() ?: 1
+                                val p2Country = lobbySnap.getString("player2Country") ?: "US"
+                                val startTime = lobbySnap.getLong("gameStartTimestamp") ?: 0L
+                                val seed = lobbySnap.getLong("seed") ?: 0L
+                                
+                                activeLobbyId = lobbyId
+                                myRole = 1
+                                gameSeed = seed
+                                gameStartTimestamp = startTime
+                                opponentName = p2Name
+                                opponentLevel = p2Level
+                                opponentCountryCode = p2Country
+                                matchLevel = ((myLevel + p2Level) / 2).coerceAtLeast(1)
+                                currentState = VsState.MATCHED
+                            }
+                        }
+                    }
+                }
+            }
+            
             val matchmakingStartTime = System.currentTimeMillis()
             
-            while (currentState == VsState.MATCHMAKING) {
-                val elapsed = System.currentTimeMillis() - matchmakingStartTime
-                if (elapsed >= 15000) {
-                    isBotMode = true
-                    myLobbyListener?.remove()
-                    myLobbyListener = null
-                    listenerRegistration?.remove()
-                    listenerRegistration = null
-                    
-                    myCreatedLobbyId?.let { lid ->
-                        db.collection("vs_lobbies").document(lid).delete()
-                    }
-                    myCreatedLobbyId = null
-                    
-                    activeLobbyId = "bot_lobby"
-                    
-                    val fakeNames = listOf(
-                        "Kerem_92", "Alex_Math", "Sakura", "JohnDoe", "Mert_06", 
-                        "Elena_K", "BurakY", "SpeedyMath", "David_M", "NinjaBrain",
-                        "MathGenius", "Elif_Math", "Chen_Wei", "Oliver99", "Zehra_T",
-                        "Sophie_M", "Brainiac", "Luiz_F", "Yuki_99", "FastFingers"
-                    )
-                    val fakeCountries = listOf("US", "GB", "DE", "FR", "TR", "JP", "BR", "CA", "AU", "KR", "ES", "IT", "RU", "AZ")
-                    opponentCountryCode = fakeCountries.random()
-                    opponentName = fakeNames.random()
-                    opponentLevel = (myLevel + Random.nextInt(-3, 4)).coerceAtLeast(1)
-                    matchLevel = ((myLevel + opponentLevel) / 2).coerceAtLeast(1)
-                    gameSeed = Random.nextLong()
-                    gameStartTimestamp = System.currentTimeMillis() + 3500L
-                    currentState = VsState.MATCHED
-                    break
-                }
-                
-                // 1. Search for a waiting lobby
-                val snapshot = suspendGetWaitingLobbies(db)
-                if (currentState != VsState.MATCHMAKING) break
-                
-                val suitableDoc = if (snapshot != null && !snapshot.isEmpty) {
-                    snapshot.documents.firstOrNull { doc ->
-                        doc.id != myCreatedLobbyId &&
-                        Math.abs((doc.getLong("player1Level")?.toInt() ?: 1) - myLevel) <= 10
-                    }
-                } else null
-                
-                if (suitableDoc != null) {
-                    val lobbyId = suitableDoc.id
-                    val lobbyRef = db.collection("vs_lobbies").document(lobbyId)
-                    val startTime = System.currentTimeMillis() + 3500L
-                    
-                    val result = suspendPlayTransaction(db, lobbyRef, myPlayerId, playerName, myLevel, myCountryCode, startTime)
-                    if (currentState != VsState.MATCHMAKING) break
-                    
-                    if (result != null) {
-                        myLobbyListener?.remove()
-                        myLobbyListener = null
-                        listenerRegistration?.remove()
-                        listenerRegistration = null
+            try {
+                while (currentState == VsState.MATCHMAKING) {
+                    val elapsed = System.currentTimeMillis() - matchmakingStartTime
+                    if (elapsed >= 15000) {
+                        // Timeout -> bot mode
+                        isBotMode = true
+                        activeLobbyId = "bot_lobby"
                         
-                        myCreatedLobbyId?.let { lid ->
-                            db.collection("vs_lobbies").document(lid).delete()
-                        }
-                        myCreatedLobbyId = null
-                        
-                        val oppName = result.getString("player1Name") ?: ""
-                        val oppLevel = result.getLong("player1Level")?.toInt() ?: 1
-                        val oppCountry = result.getString("player1Country") ?: "US"
-                        val seed = result.getLong("seed") ?: 0L
-                        
-                        activeLobbyId = lobbyId
-                        myRole = 2
-                        gameSeed = seed
-                        gameStartTimestamp = startTime
-                        opponentName = oppName
-                        opponentLevel = oppLevel
-                        opponentCountryCode = oppCountry
-                        matchLevel = ((myLevel + oppLevel) / 2).coerceAtLeast(1)
+                        val fakeNames = listOf(
+                            "Kerem_92", "Alex_Math", "Sakura", "JohnDoe", "Mert_06", 
+                            "Elena_K", "BurakY", "SpeedyMath", "David_M", "NinjaBrain",
+                            "MathGenius", "Elif_Math", "Chen_Wei", "Oliver99", "Zehra_T",
+                            "Sophie_M", "Brainiac", "Luiz_F", "Yuki_99", "FastFingers"
+                        )
+                        val fakeCountries = listOf("US", "GB", "DE", "FR", "TR", "JP", "BR", "CA", "AU", "KR", "ES", "IT", "RU", "AZ")
+                        opponentCountryCode = fakeCountries.random()
+                        opponentName = fakeNames.random()
+                        opponentLevel = (myLevel + Random.nextInt(-3, 4)).coerceAtLeast(1)
+                        matchLevel = ((myLevel + opponentLevel) / 2).coerceAtLeast(1)
+                        gameSeed = Random.nextLong()
+                        gameStartTimestamp = System.currentTimeMillis() + 3500L
                         currentState = VsState.MATCHED
                         break
                     }
-                }
-                
-                // 2. If we haven't created a lobby yet, create one
-                if (myCreatedLobbyId == null && currentState == VsState.MATCHMAKING) {
-                    val lobbyId = UUID.randomUUID().toString().take(8)
-                    val seed = Random.nextLong()
                     
-                    val newLobby = hashMapOf(
-                        "lobbyId" to lobbyId,
-                        "player1Id" to myPlayerId,
-                        "player1Name" to playerName,
-                        "player1Level" to myLevel,
-                        "player1Country" to myCountryCode,
-                        "player1Score" to 0L,
-                        "player2Id" to "",
-                        "player2Name" to "",
-                        "player2Level" to 0,
-                        "player2Country" to "",
-                        "player2Score" to 0L,
-                        "status" to "waiting",
-                        "seed" to seed,
-                        "currentQuestionIndex" to 0L,
-                        "lastAnswererId" to "",
-                        "gameStartTimestamp" to 0L,
-                        "createdAt" to java.util.Date()
-                    )
-                    
-                    val success = suspendCreateLobby(db, lobbyId, newLobby)
+                    // Periodic scan: get up to 20 tickets that are searching
+                    val snapshot = suspendGetSearchingTickets(db)
                     if (currentState != VsState.MATCHMAKING) break
                     
-                    if (success) {
-                        myCreatedLobbyId = lobbyId
-                        activeLobbyId = lobbyId
-                        
-                        val lobbyRef = db.collection("vs_lobbies").document(lobbyId)
-                        myLobbyListener = lobbyRef.addSnapshotListener { snap, err ->
-                            if (snap != null && snap.exists() && currentState == VsState.MATCHMAKING) {
-                                val status = snap.getString("status") ?: "waiting"
-                                val p2Name = snap.getString("player2Name") ?: ""
-                                val p2Country = snap.getString("player2Country") ?: "US"
-                                val startTime = snap.getLong("gameStartTimestamp") ?: 0L
+                    val suitableDoc = if (snapshot != null && !snapshot.isEmpty) {
+                        snapshot.documents
+                            .filter { doc ->
+                                val docId = doc.id
+                                val docCreatedAt = doc.getLong("createdAt") ?: 0L
+                                val docLevel = doc.getLong("level")?.toInt() ?: 1
+                                val isSearching = doc.getString("status") == "searching"
                                 
-                                if (status == "active" && p2Name.isNotEmpty() && startTime > 0) {
-                                    val p2Level = snap.getLong("player2Level")?.toInt() ?: 1
-                                    myLobbyListener?.remove()
-                                    myLobbyListener = null
-                                    
-                                    activeLobbyId = lobbyId
-                                    myRole = 1
-                                    gameSeed = seed
-                                    gameStartTimestamp = startTime
-                                    opponentName = p2Name
-                                    opponentLevel = p2Level
-                                    opponentCountryCode = p2Country
-                                    matchLevel = ((myLevel + p2Level) / 2).coerceAtLeast(1)
-                                    currentState = VsState.MATCHED
-                                }
+                                docId != myPlayerId &&
+                                isSearching &&
+                                Math.abs(docLevel - myLevel) <= 10 &&
+                                (docCreatedAt < myCreatedAt || (docCreatedAt == myCreatedAt && docId < myPlayerId))
                             }
+                            .minByOrNull { it.getLong("createdAt") ?: 0L }
+                    } else null
+                    
+                    if (suitableDoc != null) {
+                        val olderTicketId = suitableDoc.id
+                        val oppName = suitableDoc.getString("playerName") ?: ""
+                        val oppLevel = suitableDoc.getLong("level")?.toInt() ?: 1
+                        val oppCountry = suitableDoc.getString("country") ?: "US"
+                        
+                        val lobbyId = UUID.randomUUID().toString().take(8)
+                        val seed = Random.nextLong()
+                        val startTime = System.currentTimeMillis() + 3500L
+                        
+                        val success = suspendMatchTicketsTransaction(
+                            db = db,
+                            olderTicketId = olderTicketId,
+                            newerTicketId = myPlayerId,
+                            lobbyId = lobbyId,
+                            seed = seed,
+                            startTime = startTime,
+                            player1Id = olderTicketId,
+                            player1Name = oppName,
+                            player1Level = oppLevel,
+                            player1Country = oppCountry,
+                            player2Id = myPlayerId,
+                            player2Name = playerName,
+                            player2Level = myLevel,
+                            player2Country = myCountryCode
+                        )
+                        
+                        if (success && currentState == VsState.MATCHMAKING) {
+                            activeLobbyId = lobbyId
+                            myRole = 2 // Guest
+                            gameSeed = seed
+                            gameStartTimestamp = startTime
+                            opponentName = oppName
+                            opponentLevel = oppLevel
+                            opponentCountryCode = oppCountry
+                            matchLevel = ((myLevel + oppLevel) / 2).coerceAtLeast(1)
+                            currentState = VsState.MATCHED
+                            break
                         }
-                        listenerRegistration = myLobbyListener
                     }
+                    
+                    delay(1000)
                 }
-                
-                // Stagger queries to allow propagation and minimize collisions
-                delay(Random.nextLong(2000L, 3000L))
+            } finally {
+                myTicketListener?.remove()
+                // Clean up ticket from database
+                db.collection("vs_queue").document(myPlayerId).delete()
             }
         }
     }
@@ -957,12 +950,12 @@ actual fun VsScreen(onBackToMenu: () -> Unit) {
 }
 
 // SUSPENDED FIREBASE HELPERS FOR ROBUST MATCHMAKING
-private suspend fun suspendGetWaitingLobbies(
+private suspend fun suspendGetSearchingTickets(
     db: FirebaseFirestore
 ): com.google.firebase.firestore.QuerySnapshot? = kotlinx.coroutines.suspendCancellableCoroutine { continuation ->
-    db.collection("vs_lobbies")
-        .whereEqualTo("status", "waiting")
-        .limit(15)
+    db.collection("vs_queue")
+        .whereEqualTo("status", "searching")
+        .limit(20)
         .get()
         .addOnSuccessListener { snapshot ->
             continuation.resume(snapshot)
@@ -972,53 +965,68 @@ private suspend fun suspendGetWaitingLobbies(
         }
 }
 
-private suspend fun suspendPlayTransaction(
+private suspend fun suspendMatchTicketsTransaction(
     db: FirebaseFirestore,
-    lobbyRef: com.google.firebase.firestore.DocumentReference,
-    myPlayerId: String,
-    myPlayerName: String,
-    myLevel: Int,
-    myCountryCode: String,
-    startTime: Long
-): com.google.firebase.firestore.DocumentSnapshot? = kotlinx.coroutines.suspendCancellableCoroutine { continuation ->
+    olderTicketId: String,
+    newerTicketId: String,
+    lobbyId: String,
+    seed: Long,
+    startTime: Long,
+    player1Id: String,
+    player1Name: String,
+    player1Level: Int,
+    player1Country: String,
+    player2Id: String,
+    player2Name: String,
+    player2Level: Int,
+    player2Country: String
+): Boolean = kotlinx.coroutines.suspendCancellableCoroutine { continuation ->
+    val olderTicketRef = db.collection("vs_queue").document(olderTicketId)
+    val newerTicketRef = db.collection("vs_queue").document(newerTicketId)
+    val lobbyRef = db.collection("vs_lobbies").document(lobbyId)
+    
     db.runTransaction { transaction ->
-        val freshSnap = transaction.get(lobbyRef)
-        val status = freshSnap.getString("status") ?: "waiting"
-        if (status == "waiting") {
-            transaction.update(
-                lobbyRef, mapOf(
-                    "player2Id" to myPlayerId,
-                    "player2Name" to myPlayerName,
-                    "player2Level" to myLevel,
-                    "player2Country" to myCountryCode,
-                    "status" to "active",
-                    "gameStartTimestamp" to startTime
-                )
+        val snapOlder = transaction.get(olderTicketRef)
+        val snapNewer = transaction.get(newerTicketRef)
+        
+        val statusOlder = snapOlder.getString("status") ?: "searching"
+        val statusNewer = snapNewer.getString("status") ?: "searching"
+        
+        if (statusOlder == "searching" && statusNewer == "searching") {
+            // Update tickets
+            transaction.update(olderTicketRef, mapOf("status" to "matched", "matchedLobbyId" to lobbyId))
+            transaction.update(newerTicketRef, mapOf("status" to "matched", "matchedLobbyId" to lobbyId))
+            
+            // Create lobby
+            val newLobby = hashMapOf(
+                "lobbyId" to lobbyId,
+                "player1Id" to player1Id,
+                "player1Name" to player1Name,
+                "player1Level" to player1Level,
+                "player1Country" to player1Country,
+                "player1Score" to 0L,
+                "player2Id" to player2Id,
+                "player2Name" to player2Name,
+                "player2Level" to player2Level,
+                "player2Country" to player2Country,
+                "player2Score" to 0L,
+                "status" to "active",
+                "seed" to seed,
+                "currentQuestionIndex" to 0L,
+                "lastAnswererId" to "",
+                "gameStartTimestamp" to startTime,
+                "createdAt" to java.util.Date()
             )
-            freshSnap
+            transaction.set(lobbyRef, newLobby)
+            true
         } else {
-            null
+            false
         }
     }.addOnSuccessListener { result ->
         continuation.resume(result)
     }.addOnFailureListener {
-        continuation.resume(null)
+        continuation.resume(false)
     }
-}
-
-private suspend fun suspendCreateLobby(
-    db: FirebaseFirestore,
-    lobbyId: String,
-    newLobby: Map<String, Any>
-): Boolean = kotlinx.coroutines.suspendCancellableCoroutine { continuation ->
-    db.collection("vs_lobbies").document(lobbyId)
-        .set(newLobby)
-        .addOnSuccessListener {
-            continuation.resume(true)
-        }
-        .addOnFailureListener {
-            continuation.resume(false)
-        }
 }
 
 // DETERMINISTIC SYNCED MATH ENGINE

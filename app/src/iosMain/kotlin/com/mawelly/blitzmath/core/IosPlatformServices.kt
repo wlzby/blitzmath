@@ -312,6 +312,7 @@ class IosPlatformServices : PlatformServices {
     override val shareManager: IShareManager = IosShareManager()
     override val adController: IAdController = IosAdController()
     override val leaderboardManager: ILeaderboardManager = IosLeaderboardManager()
+    override val deviceCountry: String get() = platform.Foundation.NSLocale.currentLocale.countryCode ?: "US"
 
     override fun getCurrentTimeMillis(): Long {
         return (NSDate().timeIntervalSince1970 * 1000).toLong()

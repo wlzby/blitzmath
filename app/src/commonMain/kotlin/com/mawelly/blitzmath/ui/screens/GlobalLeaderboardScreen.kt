@@ -233,18 +233,33 @@ fun GlobalLeaderboardScreen(
                         
                         Spacer(modifier = Modifier.width(16.dp))
                         
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text(
-                                text = playerName,
-                                fontSize = 18.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = Color.White
-                            )
-                            Text(
-                                text = "${Strings.yourRank}",
-                                fontSize = 12.sp,
-                                color = Color.White.copy(alpha = 0.6f)
-                            )
+                        Row(
+                            modifier = Modifier.weight(1f),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            val myCountry = platformServices.deviceCountry
+                            if (myCountry.isNotEmpty()) {
+                                PlatformFlag(
+                                    countryCode = myCountry,
+                                    modifier = Modifier
+                                        .padding(end = 10.dp)
+                                        .size(32.dp),
+                                    fallbackSize = 24.sp
+                                )
+                            }
+                            Column {
+                                Text(
+                                    text = playerName,
+                                    fontSize = 18.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color.White
+                                )
+                                Text(
+                                    text = "${Strings.yourRank}",
+                                    fontSize = 12.sp,
+                                    color = Color.White.copy(alpha = 0.6f)
+                                )
+                            }
                         }
                         
                         Column(horizontalAlignment = Alignment.End) {
@@ -366,19 +381,33 @@ private fun LeaderboardItem(
             }
 
             // Player Info
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = entry.playerName,
-                    fontSize = 16.sp,
-                    fontWeight = if (rank <= 3 || isCurrentPlayer) FontWeight.Bold else FontWeight.Medium,
-                    color = Color.White
-                )
-                if (showLevel) {
-                    Text(
-                        text = "${Strings.level} ${entry.highestLevel}",
-                        fontSize = 11.sp,
-                        color = Color.White.copy(alpha = 0.5f)
+            Row(
+                modifier = Modifier.weight(1f),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                if (entry.country.isNotEmpty()) {
+                    PlatformFlag(
+                        countryCode = entry.country,
+                        modifier = Modifier
+                            .padding(end = 10.dp)
+                            .size(24.dp),
+                        fallbackSize = 18.sp
                     )
+                }
+                Column {
+                    Text(
+                        text = entry.playerName,
+                        fontSize = 16.sp,
+                        fontWeight = if (rank <= 3 || isCurrentPlayer) FontWeight.Bold else FontWeight.Medium,
+                        color = Color.White
+                    )
+                    if (showLevel) {
+                        Text(
+                            text = "${Strings.level} ${entry.highestLevel}",
+                            fontSize = 11.sp,
+                            color = Color.White.copy(alpha = 0.5f)
+                        )
+                    }
                 }
             }
 

@@ -54,4 +54,5 @@ interface PlatformServices {
     fun cancelCardRecharge(cardId: String) {}
     fun showAppReview() {}
     val leaderboardManager: ILeaderboardManager? get() = null
+    val deviceCountry: String
 }

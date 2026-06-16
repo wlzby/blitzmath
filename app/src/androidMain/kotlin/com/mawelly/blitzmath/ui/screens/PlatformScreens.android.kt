@@ -2,6 +2,7 @@ package com.mawelly.blitzmath.ui.screens
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
@@ -22,4 +23,19 @@ actual fun AppLifecycleObserver(onPause: () -> Unit, onResume: () -> Unit) {
             lifecycleOwner.lifecycle.removeObserver(observer)
         }
     }
+}
+
+@Composable
+actual fun PlatformFlag(
+    countryCode: String,
+    modifier: Modifier,
+    fallbackSize: androidx.compose.ui.unit.TextUnit,
+    fallbackScale: Float
+) {
+    GlossyCircularFlag(
+        countryCode = countryCode,
+        modifier = modifier,
+        fallbackSize = fallbackSize,
+        fallbackScale = fallbackScale
+    )
 }

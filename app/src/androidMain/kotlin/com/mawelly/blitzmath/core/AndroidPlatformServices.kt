@@ -84,6 +84,7 @@ class AndroidPlatformServices(
     override val shareManager: IShareManager = AndroidShareManager(context)
     override val adController: IAdController = AndroidAdController(activity, adManager)
     override val leaderboardManager: ILeaderboardManager = com.mawelly.blitzmath.leaderboard.LeaderboardManager()
+    override val deviceCountry: String get() = java.util.Locale.getDefault().country.takeIf { it.isNotBlank() } ?: "US"
 
     override fun openUrl(url: String) {
         val intent = android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(url))

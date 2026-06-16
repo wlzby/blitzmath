@@ -1,6 +1,7 @@
 package com.mawelly.blitzmath.ui.screens
 
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.draw.scale
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.ui.Alignment
@@ -30,6 +31,26 @@ actual fun VsScreen(onBackToMenu: () -> Unit) {
         }
     }
 }
+
+@Composable
+actual fun PlatformFlag(
+    countryCode: String,
+    modifier: Modifier,
+    fallbackSize: androidx.compose.ui.unit.TextUnit,
+    fallbackScale: Float
+) {
+    Box(
+        modifier = modifier,
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = getFlagEmoji(countryCode),
+            fontSize = fallbackSize,
+            modifier = Modifier.scale(fallbackScale)
+        )
+    }
+}
+
 
 
 import androidx.compose.runtime.DisposableEffect

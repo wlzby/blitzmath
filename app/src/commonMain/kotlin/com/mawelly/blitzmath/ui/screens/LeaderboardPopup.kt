@@ -271,19 +271,33 @@ fun LeaderboardPopup(
                                                 )
                                             }
 
-                                            Column(modifier = Modifier.weight(1f)) {
-                                                Text(
-                                                    text = entry.playerName,
-                                                    fontSize = 15.sp,
-                                                    fontWeight = if (isMe || rank <= 3) FontWeight.Bold else FontWeight.Medium,
-                                                    color = Color.White
-                                                )
-                                                if (mode != "challenge") {
-                                                    Text(
-                                                        text = "${Strings.level} ${entry.highestLevel}",
-                                                        fontSize = 10.sp,
-                                                        color = Color.White.copy(alpha = 0.5f)
+                                            Row(
+                                                modifier = Modifier.weight(1f),
+                                                verticalAlignment = Alignment.CenterVertically
+                                            ) {
+                                                if (entry.country.isNotEmpty()) {
+                                                    PlatformFlag(
+                                                        countryCode = entry.country,
+                                                        modifier = Modifier
+                                                            .padding(end = 8.dp)
+                                                            .size(20.dp),
+                                                        fallbackSize = 14.sp
                                                     )
+                                                }
+                                                Column {
+                                                    Text(
+                                                        text = entry.playerName,
+                                                        fontSize = 15.sp,
+                                                        fontWeight = if (isMe || rank <= 3) FontWeight.Bold else FontWeight.Medium,
+                                                        color = Color.White
+                                                    )
+                                                    if (mode != "challenge") {
+                                                        Text(
+                                                            text = "${Strings.level} ${entry.highestLevel}",
+                                                            fontSize = 10.sp,
+                                                            color = Color.White.copy(alpha = 0.5f)
+                                                        )
+                                                    }
                                                 }
                                             }
 

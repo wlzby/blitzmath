@@ -1939,7 +1939,7 @@ private fun GameOverScreen(
                 playerName = playerName,
                 score = gameState.score.toLong(),
                 level = gameState.currentCheckpoint,
-                country = "",
+                country = platformServices.deviceCountry,
                 mode = modeName
             )
             

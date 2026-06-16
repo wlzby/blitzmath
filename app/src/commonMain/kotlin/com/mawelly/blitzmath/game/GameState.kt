@@ -676,7 +676,7 @@ class GameState(
         
         scope?.launch {
             try { 
-                lbm.submitScore(playerId, playerName, totalScore, currentCheckpoint, mode = modeStr)
+                lbm.submitScore(playerId, playerName, totalScore, currentCheckpoint, country = platformServices.deviceCountry, mode = modeStr)
                 dataStore?.saveHighScore(totalScore.toInt(), mode)
             } catch (e: Exception) {}
         }

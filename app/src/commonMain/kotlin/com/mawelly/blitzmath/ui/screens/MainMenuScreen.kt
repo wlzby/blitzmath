@@ -198,46 +198,48 @@ fun MainMenuScreen(
     BoxWithConstraints(
         modifier = Modifier
             .fillMaxSize()
-            .padding(20.dp),
+            .padding(horizontal = 20.dp, vertical = 10.dp),
         contentAlignment = Alignment.Center
     ) {
 
         val screenWidth = maxWidth
         val screenHeight = maxHeight
-        
-        // --- HUD Bar (Top) ---
-        MainMenuTopHUD(
-            currentLives = currentLives,
-            timeLeftToRefill = timeLeftToRefill,
-            totalStars = totalStars,
-            playerLevel = pLevel,
-            playerProgress = pProgress,
-            currentXp = currentXp,
-            xpForNextLevel = xpForNextLevel,
-            canAffordCard = canAffordCard,
-            onCollectionClick = onCollectionClick,
-            modifier = Modifier
-                .align(Alignment.TopCenter)
-                .zIndex(10f) // En üst katmanda durması için Z-Index eklendi (tıklamalar çalışacak)
-        )
-
-        // Dinamik boyutlandırma hesaplamalarını güvenli hale getirelim
         val screenHeightVal = screenHeight.value
         val screenWidthVal = screenWidth.value
         
         val buttonHeight = (screenHeightVal * 0.08f).coerceIn(55f, 75f).dp
         val spacing = (screenHeightVal * 0.015f).coerceIn(8f, 16f).dp
-
         val scrollState = rememberScrollState()
 
         Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Top,
-            modifier = Modifier
-                .fillMaxSize()
-                .verticalScroll(scrollState)
-                .padding(top = 100.dp, bottom = 120.dp)
+            modifier = Modifier.fillMaxSize(),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            // --- HUD Bar (Top) ---
+            MainMenuTopHUD(
+                currentLives = currentLives,
+                timeLeftToRefill = timeLeftToRefill,
+                totalStars = totalStars,
+                playerLevel = pLevel,
+                playerProgress = pProgress,
+                currentXp = currentXp,
+                xpForNextLevel = xpForNextLevel,
+                canAffordCard = canAffordCard,
+                onCollectionClick = onCollectionClick,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .zIndex(10f)
+            )
+
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Top,
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth()
+                    .verticalScroll(scrollState)
+                    .padding(bottom = 80.dp)
+            ) {
             // --- Title Section ---
             Box(
                 modifier = Modifier
@@ -412,6 +414,7 @@ fun MainMenuScreen(
                 )
             }
         }
+    }
         
         if (showRewardDialog) {
             DailyRewardDialog(currentTime = platformServices.getCurrentTimeMillis(),
@@ -773,7 +776,7 @@ private fun ModernGlassButton(
     Card(
         modifier = modifier
             .scale(scale)
-            .height(if (compact) 100.dp else 120.dp)
+            .heightIn(min = if (compact) 90.dp else 110.dp)
             .clickable(
                 interactionSource = interactionSource,
                 indication = null,
@@ -823,7 +826,7 @@ private fun ModernGlassButton(
                 ) {
                     Text(text = if (isLocked) "🔒" else icon, fontSize = 28.sp)
                     Spacer(modifier = Modifier.height(8.dp))
-                    Text(
+                    AutoSizingText(
                         text = title,
                         color = Color.White,
                         fontWeight = FontWeight.Bold,
@@ -851,7 +854,7 @@ private fun ModernGlassButton(
                     Spacer(modifier = Modifier.width(20.dp))
 
                     Column(modifier = Modifier.weight(1f)) {
-                        Text(
+                        AutoSizingText(
                             text = title,
                             color = Color.White,
                             fontWeight = FontWeight.ExtraBold,
@@ -920,12 +923,13 @@ private fun SmallIconButton(
             )
         }
         Spacer(modifier = Modifier.height(8.dp))
-        Text(
+        AutoSizingText(
             text = label,
             color = Color.White.copy(alpha = 0.6f),
             fontSize = 11.sp,
             fontWeight = FontWeight.Medium,
-            textAlign = TextAlign.Center
+            textAlign = TextAlign.Center,
+            maxLines = 1
         )
     }
 }
@@ -953,15 +957,17 @@ fun MainMenuTopHUD(
         if (isXpExpanded) { delay(3500); isXpExpanded = false }
     }
 
-    Box(
+    Row(
         modifier = modifier
             .fillMaxWidth()
-            .padding(top = 10.dp)
+            .padding(top = 10.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
     ) {
         // --- LEFT HUD (XP + HEARTS) ---
         Row(
-            modifier = Modifier.align(Alignment.TopStart),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
             // 1. XP WIDGET
             Row(
@@ -1088,7 +1094,6 @@ fun MainMenuTopHUD(
 
         Row(
             modifier = Modifier
-                .align(Alignment.TopEnd)
                 .scale(starsScale)
                 .shadow(4.dp, RoundedCornerShape(20.dp))
                 .clip(RoundedCornerShape(20.dp))
@@ -1113,4 +1118,42 @@ fun MainMenuTopHUD(
             )
         }
     }
+}
+
+@Composable
+private fun AutoSizingText(
+    text: String,
+    color: Color,
+    fontWeight: FontWeight,
+    fontSize: androidx.compose.ui.unit.TextUnit,
+    textAlign: TextAlign = TextAlign.Start,
+    letterSpacing: androidx.compose.ui.unit.TextUnit = 0.sp,
+    maxLines: Int = 1,
+    modifier: Modifier = Modifier
+) {
+    var scaledFontSize by remember(text) { mutableStateOf(fontSize) }
+    var readyToDraw by remember(text) { mutableStateOf(false) }
+
+    Text(
+        text = text,
+        color = color,
+        fontWeight = fontWeight,
+        fontSize = scaledFontSize,
+        textAlign = textAlign,
+        letterSpacing = letterSpacing,
+        maxLines = maxLines,
+        softWrap = false,
+        onTextLayout = { textLayoutResult ->
+            if (textLayoutResult.hasVisualOverflow) {
+                if (scaledFontSize.value > 8f) {
+                    scaledFontSize = (scaledFontSize.value * 0.9f).sp
+                } else {
+                    readyToDraw = true
+                }
+            } else {
+                readyToDraw = true
+            }
+        },
+        modifier = modifier.alpha(if (readyToDraw) 1f else 0f)
+    )
 }
