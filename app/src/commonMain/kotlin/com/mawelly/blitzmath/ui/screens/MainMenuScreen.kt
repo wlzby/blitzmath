@@ -325,8 +325,8 @@ fun MainMenuScreen(
 
             // 1.5. ÇEVRİMİÇİ DÜELLO (Online VS Mode Hero Button)
             ModernGlassButton(
-                title = if (currentLang == AppLanguage.TURKISH) "ÇEVRİMİÇİ DÜELLO" else "ONLINE VS DUEL",
-                subtitle = if (currentLang == AppLanguage.TURKISH) "Canlı VS - 2 Dakika Hız Yarışı!" else "Live VS - 2 Minute Speed Race!",
+                title = Strings.menuOnlineVsDuelTitle,
+                subtitle = Strings.menuOnlineVsDuelSubtitle,
                 icon = "⚔️",
                 mainColor = Color(0xFF00E5FF),
                 onClick = {

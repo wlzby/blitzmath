@@ -2153,6 +2153,34 @@ object Strings {
         else -> "Your Score"
     }
 
+    val menuOnlineVsDuelTitle: String get() = when (currentLanguage) {
+        AppLanguage.TURKISH -> "ÇEVRİMİÇİ DÜELLO"
+        AppLanguage.ENGLISH -> "ONLINE VS DUEL"
+        AppLanguage.SPANISH -> "DUELO EN LÍNEA"
+        AppLanguage.GERMAN -> "ONLINE-DUELL"
+        AppLanguage.FRENCH -> "DUEL EN LIGNE"
+        AppLanguage.ITALIAN -> "DUELLO ONLINE"
+        AppLanguage.PORTUGUESE -> "DUELO ONLINE"
+        AppLanguage.HINDI -> "ऑनलाइन द्वंद्व"
+        AppLanguage.CHINESE -> "在线对决"
+        AppLanguage.RUSSIAN -> "ОНЛАЙН-ДУЭЛЬ"
+        else -> "ONLINE VS DUEL"
+    }
+
+    val menuOnlineVsDuelSubtitle: String get() = when (currentLanguage) {
+        AppLanguage.TURKISH -> "Canlı VS - 2 Dakika Hız Yarışı!"
+        AppLanguage.ENGLISH -> "Live VS - 2 Minute Speed Race!"
+        AppLanguage.SPANISH -> "¡VS en vivo - 2 minutos de carrera de velocidad!"
+        AppLanguage.GERMAN -> "Live VS - 2 Minuten Schnelligkeitsrennen!"
+        AppLanguage.FRENCH -> "VS en direct - Course de vitesse de 2 minutes !"
+        AppLanguage.ITALIAN -> "VS in diretta - 2 minuti di gara di velocità!"
+        AppLanguage.PORTUGUESE -> "VS ao vivo - Corrida de velocidade de 2 minutos!"
+        AppLanguage.HINDI -> "लाइव VS - 2 मिनट स्पीड रेस!"
+        AppLanguage.CHINESE -> "实时对决 - 2分钟速度赛！"
+        AppLanguage.RUSSIAN -> "Живой бой - 2-минутная гонка на скорость!"
+        else -> "Live VS - 2 Minute Speed Race!"
+    }
+
     fun isValidUsername(name: String): Boolean = name.length in 3..15 && name.all { it.isLetterOrDigit() }
     fun isUsernameBanned(name: String): Boolean = bannedWords.any { name.lowercase().contains(it) }
 }
