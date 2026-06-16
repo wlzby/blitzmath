@@ -1,26 +1,9 @@
 @file:OptIn(kotlinx.cinterop.ExperimentalForeignApi::class)
 package com.mawelly.blitzmath.core
 
-import platform.Foundation.NSDate
-import platform.Foundation.NSDateFormatter
-import platform.Foundation.NSURL
-import platform.Foundation.NSBundle
-import platform.UIKit.UIApplication
-import platform.Foundation.timeIntervalSince1970
-
+import platform.Foundation.*
+import platform.UIKit.*
 import platform.AVFAudio.AVAudioPlayer
-import platform.UIKit.UIImpactFeedbackGenerator
-import platform.UIKit.UIImpactFeedbackStyle
-import platform.UIKit.UINotificationFeedbackGenerator
-import platform.UIKit.UINotificationFeedbackType
-import platform.Foundation.NSMutableURLRequest
-import platform.Foundation.NSJSONSerialization
-import platform.Foundation.NSUTF8StringEncoding
-import platform.Foundation.NSString
-import platform.Foundation.NSURLRequest
-import platform.Foundation.NSURLSession
-import platform.Foundation.NSArray
-import platform.Foundation.NSDictionary
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlin.coroutines.resume
 import com.mawelly.blitzmath.leaderboard.ILeaderboardManager
@@ -142,7 +125,7 @@ class IosLeaderboardManager : ILeaderboardManager {
     private val apiKey = "AIzaSyBJfQl_ze9VsL_gQLMC5zFyje-wq3T8_IQ"
 
     private suspend fun performRequest(request: NSURLRequest): String? = suspendCancellableCoroutine { continuation ->
-        val task = NSURLSession.sharedSession.dataTaskWithRequest(request) { data, response, error ->
+        val task = NSURLSession.sharedSession.dataTaskWithRequest(request = request, completionHandler = { data: NSData?, response: NSURLResponse?, error: NSError? ->
             if (error != null) {
                 continuation.resume(null)
             } else if (data != null) {
@@ -151,7 +134,7 @@ class IosLeaderboardManager : ILeaderboardManager {
             } else {
                 continuation.resume(null)
             }
-        }
+        })
         task.resume()
         continuation.invokeOnCancellation {
             task.cancel()
@@ -178,8 +161,8 @@ class IosLeaderboardManager : ILeaderboardManager {
 
         return@withContext try {
             val collection = getCollectionName(mode)
-            val getUrl = NSURL(string = "https://firestore.googleapis.com/v1/projects/blitz-math-challenge/databases/(default)/documents/$collection/$playerId?key=$apiKey")
-            val getRequest = NSMutableURLRequest.requestWithURL(getUrl).apply {
+            val getUrl = NSURL(string = "https://firestore.googleapis.com/v1/projects/blitz-math-challenge/databases/(default)/documents/$collection/$playerId?key=$apiKey") ?: return@withContext Result.failure(Exception("Invalid URL"))
+            val getRequest = NSMutableURLRequest(uRL = getUrl).apply {
                 setHTTPMethod("GET")
             }
 
@@ -193,7 +176,7 @@ class IosLeaderboardManager : ILeaderboardManager {
                 try {
                     val data = (getResponse as NSString).dataUsingEncoding(NSUTF8StringEncoding)
                     if (data != null) {
-                        val json = NSJSONSerialization.JSONObjectWithData(data, 0L, null) as? NSDictionary
+                        val json = NSJSONSerialization.JSONObjectWithData(data, 0uL, null) as? NSDictionary
                         if (json != null && json.get("fields") != null) {
                             documentExists = true
                             val fields = json.get("fields") as? NSDictionary
@@ -211,7 +194,7 @@ class IosLeaderboardManager : ILeaderboardManager {
             }
 
             if (score > existingScore) {
-                val patchUrl = NSURL(string = "https://firestore.googleapis.com/v1/projects/blitz-math-challenge/databases/(default)/documents/$collection/$playerId?updateMask.fieldPaths=playerId&updateMask.fieldPaths=playerName&updateMask.fieldPaths=totalScore&updateMask.fieldPaths=highestLevel&updateMask.fieldPaths=country&key=$apiKey")
+                val patchUrl = NSURL(string = "https://firestore.googleapis.com/v1/projects/blitz-math-challenge/databases/(default)/documents/$collection/$playerId?updateMask.fieldPaths=playerId&updateMask.fieldPaths=playerName&updateMask.fieldPaths=totalScore&updateMask.fieldPaths=highestLevel&updateMask.fieldPaths=country&key=$apiKey") ?: return@withContext Result.failure(Exception("Invalid URL"))
                 
                 // Firestore REST API requires values to be string-wrapped
                 val bodyJson = """
@@ -226,10 +209,13 @@ class IosLeaderboardManager : ILeaderboardManager {
                 }
                 """.trimIndent()
 
-                val patchRequest = NSMutableURLRequest.requestWithURL(patchUrl).apply {
+                val patchRequest = NSMutableURLRequest(uRL = patchUrl).apply {
                     setHTTPMethod("PATCH")
                     setValue("application/json", forHTTPHeaderField = "Content-Type")
-                    setHTTPBody((bodyJson as NSString).dataUsingEncoding(NSUTF8StringEncoding))
+                    val bodyData = (bodyJson as NSString).dataUsingEncoding(NSUTF8StringEncoding)
+                    if (bodyData != null) {
+                        setHTTPBody(bodyData)
+                    }
                 }
 
                 val patchResponse = performRequest(patchRequest)
@@ -253,7 +239,7 @@ class IosLeaderboardManager : ILeaderboardManager {
                 
                 if (fieldsToUpdate.isNotEmpty()) {
                     val queryParams = fieldsToUpdate.joinToString("&")
-                    val patchUrl = NSURL(string = "https://firestore.googleapis.com/v1/projects/blitz-math-challenge/databases/(default)/documents/$collection/$playerId?$queryParams&key=$apiKey")
+                    val patchUrl = NSURL(string = "https://firestore.googleapis.com/v1/projects/blitz-math-challenge/databases/(default)/documents/$collection/$playerId?$queryParams&key=$apiKey") ?: return@withContext Result.failure(Exception("Invalid URL"))
                     val bodyJson = """
                     {
                       "fields": {
@@ -262,10 +248,13 @@ class IosLeaderboardManager : ILeaderboardManager {
                     }
                     """.trimIndent()
                     
-                    val patchRequest = NSMutableURLRequest.requestWithURL(patchUrl).apply {
+                    val patchRequest = NSMutableURLRequest(uRL = patchUrl).apply {
                         setHTTPMethod("PATCH")
                         setValue("application/json", forHTTPHeaderField = "Content-Type")
-                        setHTTPBody((bodyJson as NSString).dataUsingEncoding(NSUTF8StringEncoding))
+                        val bodyData = (bodyJson as NSString).dataUsingEncoding(NSUTF8StringEncoding)
+                        if (bodyData != null) {
+                            setHTTPBody(bodyData)
+                        }
                     }
                     performRequest(patchRequest)
                 }
@@ -289,7 +278,7 @@ class IosLeaderboardManager : ILeaderboardManager {
     override suspend fun getGlobalLeaderboard(limit: Int, mode: String): Result<List<LeaderboardEntry>> {
         return try {
             val collection = getCollectionName(mode)
-            val queryUrl = NSURL(string = "https://firestore.googleapis.com/v1/projects/blitz-math-challenge/databases/(default)/documents:runQuery?key=$apiKey")
+            val queryUrl = NSURL(string = "https://firestore.googleapis.com/v1/projects/blitz-math-challenge/databases/(default)/documents:runQuery?key=$apiKey") ?: return Result.failure(Exception("Invalid URL"))
             
             val queryJson = """
             {
@@ -301,10 +290,13 @@ class IosLeaderboardManager : ILeaderboardManager {
             }
             """.trimIndent()
 
-            val request = NSMutableURLRequest.requestWithURL(queryUrl).apply {
+            val request = NSMutableURLRequest(uRL = queryUrl).apply {
                 setHTTPMethod("POST")
                 setValue("application/json", forHTTPHeaderField = "Content-Type")
-                setHTTPBody((queryJson as NSString).dataUsingEncoding(NSUTF8StringEncoding))
+                val bodyData = (queryJson as NSString).dataUsingEncoding(NSUTF8StringEncoding)
+                if (bodyData != null) {
+                    setHTTPBody(bodyData)
+                }
             }
 
             val response = performRequest(request) ?: return Result.failure(Exception("No response from Firestore"))
@@ -312,7 +304,7 @@ class IosLeaderboardManager : ILeaderboardManager {
 
             val data = (response as NSString).dataUsingEncoding(NSUTF8StringEncoding)
             if (data != null) {
-                val json = NSJSONSerialization.JSONObjectWithData(data, 0L, null)
+                val json = NSJSONSerialization.JSONObjectWithData(data, 0uL, null)
                 val array = json as? NSArray
                 if (array != null) {
                     for (i in 0 until array.count.toInt()) {
@@ -354,7 +346,7 @@ class IosPlatformServices : PlatformServices {
     override val shareManager: IShareManager = IosShareManager()
     override val adController: IAdController = IosAdController()
     override val leaderboardManager: ILeaderboardManager = IosLeaderboardManager()
-    override val deviceCountry: String get() = platform.Foundation.NSLocale.currentLocale.countryCode ?: "US"
+    override val deviceCountry: String get() = NSLocale.currentLocale.countryCode ?: "US"
     override fun generateUuid(): String = platform.Foundation.NSUUID.UUID().UUIDString()
 
     override fun getCurrentTimeMillis(): Long {
