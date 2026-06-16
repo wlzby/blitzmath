@@ -33,3 +33,11 @@ fun getFlagEmoji(countryCode: String): String {
     
     return "$high1$low1$high2$low2"
 }
+
+fun getDisplayCountry(country: String, playerId: String): String {
+    if (country.isNotEmpty()) return country
+    if (playerId.isEmpty()) return "US"
+    val countryList = listOf("TR", "US", "DE", "FR", "GB", "ES", "IT", "JP", "KR", "BR", "RU", "CA", "AU", "NL", "SE")
+    val index = (playerId.hashCode() and Int.MAX_VALUE) % countryList.size
+    return countryList[index]
+}

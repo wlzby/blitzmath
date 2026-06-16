@@ -275,15 +275,14 @@ fun LeaderboardPopup(
                                                 modifier = Modifier.weight(1f),
                                                 verticalAlignment = Alignment.CenterVertically
                                             ) {
-                                                if (entry.country.isNotEmpty()) {
-                                                    PlatformFlag(
-                                                        countryCode = entry.country,
-                                                        modifier = Modifier
-                                                            .padding(end = 8.dp)
-                                                            .size(20.dp),
-                                                        fallbackSize = 14.sp
-                                                    )
-                                                }
+                                                val displayCountry = getDisplayCountry(entry.country, entry.playerId)
+                                                PlatformFlag(
+                                                    countryCode = displayCountry,
+                                                    modifier = Modifier
+                                                        .padding(end = 8.dp)
+                                                        .size(20.dp),
+                                                    fallbackSize = 14.sp
+                                                )
                                                 Column {
                                                     Text(
                                                         text = entry.playerName,

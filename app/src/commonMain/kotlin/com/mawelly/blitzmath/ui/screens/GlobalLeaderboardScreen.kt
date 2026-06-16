@@ -385,15 +385,14 @@ private fun LeaderboardItem(
                 modifier = Modifier.weight(1f),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                if (entry.country.isNotEmpty()) {
-                    PlatformFlag(
-                        countryCode = entry.country,
-                        modifier = Modifier
-                            .padding(end = 10.dp)
-                            .size(24.dp),
-                        fallbackSize = 18.sp
-                    )
-                }
+                val displayCountry = getDisplayCountry(entry.country, entry.playerId)
+                PlatformFlag(
+                    countryCode = displayCountry,
+                    modifier = Modifier
+                        .padding(end = 10.dp)
+                        .size(24.dp),
+                    fallbackSize = 18.sp
+                )
                 Column {
                     Text(
                         text = entry.playerName,
