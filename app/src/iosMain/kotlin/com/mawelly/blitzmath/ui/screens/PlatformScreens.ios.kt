@@ -10,6 +10,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.runtime.DisposableEffect
+import platform.Foundation.NSNotificationCenter
+import platform.UIKit.UIApplicationDidEnterBackgroundNotification
+import platform.UIKit.UIApplicationWillEnterForegroundNotification
 
 @Composable
 actual fun VsScreen(onBackToMenu: () -> Unit) {
@@ -50,13 +54,6 @@ actual fun PlatformFlag(
         )
     }
 }
-
-
-
-import androidx.compose.runtime.DisposableEffect
-import platform.Foundation.NSNotificationCenter
-import platform.UIKit.UIApplicationDidEnterBackgroundNotification
-import platform.UIKit.UIApplicationWillEnterForegroundNotification
 
 @Composable
 actual fun AppLifecycleObserver(onPause: () -> Unit, onResume: () -> Unit) {
