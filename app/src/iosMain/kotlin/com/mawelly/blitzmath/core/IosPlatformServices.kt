@@ -25,6 +25,8 @@ import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlin.coroutines.resume
 import com.mawelly.blitzmath.leaderboard.ILeaderboardManager
 import com.mawelly.blitzmath.leaderboard.LeaderboardEntry
+import com.mawelly.blitzmath.core.AdPlacement
+import com.mawelly.blitzmath.core.IAdController
 
 class IosSoundManager : ISoundManager {
     private var isEnabled = true
