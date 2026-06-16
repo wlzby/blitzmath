@@ -56,6 +56,26 @@ fun LeaderboardPopup(
     var showContent by remember { mutableStateOf(false) }
     
     val playerId by dataStore.playerId.collectAsState(initial = "")
+    val playerName by dataStore.playerName.collectAsState(initial = "")
+
+    val classicHighScore by dataStore.highScore.collectAsState(initial = 0)
+    val mixedHighScore by dataStore.mixedHighScore.collectAsState(initial = 0)
+    val challengeHighScore by dataStore.challengeHighScore.collectAsState(initial = 0)
+    
+    val classicLevel by dataStore.classicLevel.collectAsState(initial = 1)
+    val mixedLevel by dataStore.mixedLevel.collectAsState(initial = 1)
+
+    val myLocalScore = when(mode) {
+        "mixed" -> mixedHighScore
+        "challenge" -> challengeHighScore
+        else -> classicHighScore
+    }
+    
+    val myLocalLevel = when(mode) {
+        "mixed" -> mixedLevel
+        "challenge" -> 1
+        else -> classicLevel
+    }
 
     // Entrance Animation State
     LaunchedEffect(Unit) {
@@ -98,6 +118,19 @@ fun LeaderboardPopup(
                         
                         listState.animateScrollToItem(
                             index = (targetIndex - 1).coerceAtLeast(0),
+                            scrollOffset = -100
+                        )
+                        
+                        reachedRank = true
+                        showConfetti = true
+                    } else if (rank > entries.size) {
+                        delay(1200)
+                        val startIndex = entries.size - 1
+                        listState.scrollToItem(startIndex)
+                        
+                        delay(400)
+                        listState.animateScrollToItem(
+                            index = entries.size, // our appended item
                             scrollOffset = -100
                         )
                         
@@ -311,6 +344,93 @@ fun LeaderboardPopup(
                                                     else -> Color.White
                                                 }
                                             )
+                                        }
+                                    }
+                                }
+                                
+                                if (playerRank > leaderboard.size) {
+                                    item {
+                                        Spacer(modifier = Modifier.height(6.dp))
+                                        Box(
+                                            modifier = Modifier.fillMaxWidth(),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            Text(
+                                                text = "•••",
+                                                color = Color.White.copy(alpha = 0.3f),
+                                                fontSize = 14.sp
+                                            )
+                                        }
+                                        Spacer(modifier = Modifier.height(6.dp))
+                                        
+                                        val itemBgColor = MaterialTheme.colorScheme.secondary.copy(alpha = 0.2f)
+                                        val itemBorderColor = MaterialTheme.colorScheme.secondary.copy(alpha = 0.4f)
+                                        
+                                        Card(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .border(
+                                                    width = 1.5.dp,
+                                                    brush = Brush.linearGradient(listOf(itemBorderColor, Color.Transparent)),
+                                                    shape = RoundedCornerShape(16.dp)
+                                                ),
+                                            shape = RoundedCornerShape(16.dp),
+                                            colors = CardDefaults.cardColors(containerColor = itemBgColor)
+                                        ) {
+                                            Row(
+                                                modifier = Modifier
+                                                    .fillMaxWidth()
+                                                    .padding(horizontal = 16.dp, vertical = 12.dp),
+                                                verticalAlignment = Alignment.CenterVertically
+                                            ) {
+                                                Box(
+                                                    modifier = Modifier.width(40.dp),
+                                                    contentAlignment = Alignment.CenterStart
+                                                ) {
+                                                    Text(
+                                                        text = "#$playerRank",
+                                                        fontSize = 14.sp,
+                                                        fontWeight = FontWeight.Bold,
+                                                        color = Color.White.copy(alpha = 0.8f)
+                                                    )
+                                                }
+
+                                                Row(
+                                                    modifier = Modifier.weight(1f),
+                                                    verticalAlignment = Alignment.CenterVertically
+                                                ) {
+                                                    val displayCountry = platformServices.deviceCountry
+                                                    PlatformFlag(
+                                                        countryCode = displayCountry,
+                                                        modifier = Modifier
+                                                            .padding(end = 8.dp)
+                                                            .size(20.dp),
+                                                        fallbackSize = 14.sp
+                                                    )
+                                                    Column {
+                                                        Text(
+                                                            text = playerName,
+                                                            fontSize = 15.sp,
+                                                            fontWeight = FontWeight.Bold,
+                                                            color = Color.White
+                                                        )
+                                                        if (mode != "challenge") {
+                                                            Text(
+                                                                text = "${Strings.level} $myLocalLevel",
+                                                                fontSize = 10.sp,
+                                                                color = Color.White.copy(alpha = 0.5f)
+                                                            )
+                                                        }
+                                                    }
+                                                }
+
+                                                Text(
+                                                    text = "$myLocalScore",
+                                                    fontSize = 16.sp,
+                                                    fontWeight = FontWeight.ExtraBold,
+                                                    color = Color.White
+                                                )
+                                            }
                                         }
                                     }
                                 }

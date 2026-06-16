@@ -676,9 +676,16 @@ class GameState(
         
         scope?.launch {
             try { 
-                lbm.submitScore(playerId, playerName, totalScore, currentCheckpoint, country = platformServices.deviceCountry, mode = modeStr)
+                val result = lbm.submitScore(playerId, playerName, totalScore, currentCheckpoint, country = platformServices.deviceCountry, mode = modeStr)
+                if (result.isSuccess) {
+                    println("submitScore success for $playerId, score: $totalScore")
+                } else {
+                    println("submitScore failed for $playerId, score: $totalScore: ${result.exceptionOrNull()?.message}")
+                }
                 dataStore?.saveHighScore(totalScore.toInt(), mode)
-            } catch (e: Exception) {}
+            } catch (e: Exception) {
+                println("submitScore threw exception: ${e.message}")
+            }
         }
     }
 

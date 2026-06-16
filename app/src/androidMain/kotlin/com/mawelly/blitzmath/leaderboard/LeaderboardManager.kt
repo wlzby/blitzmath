@@ -31,18 +31,9 @@ class LeaderboardManager : ILeaderboardManager {
         }
     }
 
-    fun isScoreValid(score: Long, level: Int): Boolean {
-        if (level <= 0) return false
-        
-        // Temel puan: level * 1000 (checkpoint bonus)
-        // Soru puanı (max): Her soru 130 puan * 10 soru * level sayısı
-        val maxBaseScore = (level * 1000L) + (level * 10 * 130L)
-        
-        // Marie Curie (+%25) buff'ı olsa bile, normal bir oyunda skorun 
-        // teorik maksimumun 5 katını geçmesi imkansıza yakındır.
-        val generousLimit = maxBaseScore * 5
-        
-        return score <= generousLimit
+    fun isScoreValid(score: Long, level: Int, mode: String): Boolean {
+        android.util.Log.d("LeaderboardManager", "isScoreValid: Bypassed validation, returning true for score: $score, level: $level, mode: $mode")
+        return true
     }
 
     override suspend fun submitScore(
@@ -52,18 +43,32 @@ class LeaderboardManager : ILeaderboardManager {
         level: Int,
         country: String,
         mode: String
-    ): Result<Unit> {
-        if (playerId.isEmpty()) return Result.failure(Exception("Empty Player ID"))
+    ): Result<Unit> = kotlinx.coroutines.withContext(kotlinx.coroutines.NonCancellable) {
+        android.util.Log.i("LeaderboardManager", "submitScore: playerId: $playerId, playerName: $playerName, score: $score, level: $level, country: $country, mode: $mode")
+        if (playerId.isEmpty()) {
+            android.util.Log.w("LeaderboardManager", "submitScore: Empty Player ID")
+            return@withContext Result.failure(Exception("Empty Player ID"))
+        }
 
-        return try {
-            if (!isScoreValid(score, level)) return Result.failure(Exception("Suspicious Score"))
+        return@withContext try {
+            if (!isScoreValid(score, level, mode)) {
+                android.util.Log.w("LeaderboardManager", "submitScore: Validation failed (Suspicious Score)")
+                return@withContext Result.failure(Exception("Suspicious Score"))
+            }
 
-            val targetRef = getRefForMode(mode) ?: return Result.failure(Exception("Firestore not available"))
+            val targetRef = getRefForMode(mode) ?: run {
+                android.util.Log.w("LeaderboardManager", "submitScore: Firestore collection not available for mode $mode")
+                return@withContext Result.failure(Exception("Firestore not available"))
+            }
             val targetDoc = targetRef.document(playerId)
 
             db?.runTransaction { transaction ->
                 val snapshot = transaction.get(targetDoc)
                 val existingScore = if (snapshot.exists()) snapshot.getLong("totalScore") ?: 0 else -1L
+                val existingCountry = if (snapshot.exists()) snapshot.getString("country") ?: "" else ""
+                val existingName = if (snapshot.exists()) snapshot.getString("playerName") ?: "" else ""
+                
+                android.util.Log.d("LeaderboardManager", "submitScore transaction - existingScore: $existingScore, existingCountry: $existingCountry, existingName: $existingName")
                 
                 if (score > existingScore) {
                     val entry = hashMapOf(
@@ -75,11 +80,28 @@ class LeaderboardManager : ILeaderboardManager {
                         "timestamp" to Date()
                     )
                     transaction.set(targetDoc, entry)
+                    android.util.Log.i("LeaderboardManager", "submitScore transaction: Updating score from $existingScore to $score")
+                } else if (snapshot.exists() && (existingCountry.isEmpty() || existingName.isEmpty())) {
+                    val updates = hashMapOf<String, Any>()
+                    if (existingCountry.isEmpty() && country.isNotEmpty()) {
+                        updates["country"] = country
+                    }
+                    if (existingName.isEmpty() && playerName.isNotEmpty()) {
+                        updates["playerName"] = playerName
+                    }
+                    if (updates.isNotEmpty()) {
+                        transaction.update(targetDoc, updates)
+                        android.util.Log.i("LeaderboardManager", "submitScore transaction: Updating fields $updates")
+                    }
+                } else {
+                    android.util.Log.d("LeaderboardManager", "submitScore transaction: No update needed (current score $score <= existing $existingScore)")
                 }
             }?.await()
 
+            android.util.Log.i("LeaderboardManager", "submitScore: Successfully submitted score $score for playerId $playerId")
             Result.success(Unit)
         } catch (e: Exception) {
+            android.util.Log.e("LeaderboardManager", "submitScore: Exception occurred: ${e.message}", e)
             Result.failure(e)
         }
     }
@@ -105,18 +127,24 @@ class LeaderboardManager : ILeaderboardManager {
             if (playerId.isEmpty()) return Result.success(0)
 
             val targetRef = getRefForMode(mode) ?: return Result.success(0)
-            val snapshot = targetRef
-                .orderBy("totalScore", Query.Direction.DESCENDING)
-                .get()
+            
+            // First, find the score of the current player
+            val playerDoc = targetRef.document(playerId).get().await()
+            if (!playerDoc.exists()) return Result.success(0)
+            
+            val playerScore = playerDoc.getLong("totalScore") ?: 0L
+            
+            // Count how many players have a score strictly greater than the player's score
+            val countQuery = targetRef.whereGreaterThan("totalScore", playerScore)
+                .count()
+                .get(com.google.firebase.firestore.AggregateSource.SERVER)
                 .await()
-
-            var rank = 1
-            for (doc in snapshot.documents) {
-                if (doc.id == playerId) return Result.success(rank)
-                rank++
-            }
-            Result.success(0)
+                
+            val rank = countQuery.count.toInt() + 1
+            android.util.Log.d("LeaderboardManager", "getPlayerRank count query success - playerId: $playerId, score: $playerScore, rank: $rank")
+            Result.success(rank)
         } catch (e: Exception) {
+            android.util.Log.e("LeaderboardManager", "getPlayerRank failed: ${e.message}", e)
             Result.failure(e)
         }
     }

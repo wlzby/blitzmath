@@ -65,6 +65,10 @@ class LanguageManager(private val context: Context) {
         return prefs.getString(KEY_PLAYER_ID, "") ?: ""
     }
 
+    fun savePlayerId(id: String) {
+        prefs.edit().putString(KEY_PLAYER_ID, id).apply()
+    }
+
     fun hasPlayerName(): Boolean {
         return getPlayerName().isNotEmpty()
     }

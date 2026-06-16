@@ -552,6 +552,7 @@ fun MainMenuScreen(
                             analyticsManager.logRefillLivesClick("MainMenu")
                             analyticsManager.logAdClick("RefillLives_MainMenu")
                             platformServices.adController.showRewardedAd(
+                                placement = com.mawelly.blitzmath.core.AdPlacement.REFILL_CHARGES,
                                 onReward = {
                                     analyticsManager.logAdReward("RefillLives_MainMenu")
                                     scope.launch {
@@ -614,6 +615,7 @@ fun MainMenuScreen(
                         onClick = {
                             analyticsManager.logAdClick("Challenge_Unlock")
                             platformServices.adController.showRewardedAd(
+                                placement = com.mawelly.blitzmath.core.AdPlacement.DAILY_BONUS,
                                 onReward = {
                                     analyticsManager.logAdReward("Challenge_Unlock")
                                     scope.launch {

@@ -130,7 +130,7 @@ class IosShareManager : IShareManager {
 
 class IosAdController : IAdController {
     override fun showInterstitialAd(onClosed: () -> Unit) { onClosed() }
-    override fun showRewardedAd(onReward: () -> Unit, onClosed: () -> Unit) {
+    override fun showRewardedAd(placement: AdPlacement, onReward: () -> Unit, onClosed: () -> Unit) {
         onReward()
         onClosed()
     }
@@ -171,10 +171,10 @@ class IosLeaderboardManager : ILeaderboardManager {
         level: Int,
         country: String,
         mode: String
-    ): Result<Unit> {
-        if (playerId.isEmpty()) return Result.failure(Exception("Empty Player ID"))
+    ): Result<Unit> = kotlinx.coroutines.withContext(kotlinx.coroutines.NonCancellable) {
+        if (playerId.isEmpty()) return@withContext Result.failure(Exception("Empty Player ID"))
 
-        return try {
+        return@withContext try {
             val collection = getCollectionName(mode)
             val getUrl = NSURL(string = "https://firestore.googleapis.com/v1/projects/blitz-math-challenge/databases/(default)/documents/$collection/$playerId?key=$apiKey")
             val getRequest = NSMutableURLRequest.requestWithURL(getUrl).apply {
@@ -183,16 +183,24 @@ class IosLeaderboardManager : ILeaderboardManager {
 
             val getResponse = performRequest(getRequest)
             var existingScore = -1L
+            var existingCountry = ""
+            var existingName = ""
+            var documentExists = false
 
             if (getResponse != null) {
                 try {
                     val data = (getResponse as NSString).dataUsingEncoding(NSUTF8StringEncoding)
                     if (data != null) {
                         val json = NSJSONSerialization.JSONObjectWithData(data, 0L, null) as? NSDictionary
-                        val fields = json?.get("fields") as? NSDictionary
-                        val totalScoreStr = (fields?.get("totalScore") as? NSDictionary)?.get("integerValue") as? String
-                        if (totalScoreStr != null) {
-                            existingScore = totalScoreStr.toLongOrNull() ?: 0L
+                        if (json != null && json.get("fields") != null) {
+                            documentExists = true
+                            val fields = json.get("fields") as? NSDictionary
+                            val totalScoreStr = (fields?.get("totalScore") as? NSDictionary)?.get("integerValue") as? String
+                            if (totalScoreStr != null) {
+                                existingScore = totalScoreStr.toLongOrNull() ?: 0L
+                            }
+                            existingCountry = (fields?.get("country") as? NSDictionary)?.get("stringValue") as? String ?: ""
+                            existingName = (fields?.get("playerName") as? NSDictionary)?.get("stringValue") as? String ?: ""
                         }
                     }
                 } catch (e: Exception) {
@@ -228,6 +236,38 @@ class IosLeaderboardManager : ILeaderboardManager {
                 } else {
                     Result.failure(Exception("Failed to submit score"))
                 }
+            } else if (documentExists && (existingCountry.isEmpty() || existingName.isEmpty())) {
+                val fieldsToUpdate = mutableListOf<String>()
+                val fieldsJsonList = mutableListOf<String>()
+                
+                if (existingCountry.isEmpty() && country.isNotEmpty()) {
+                    fieldsToUpdate.add("updateMask.fieldPaths=country")
+                    fieldsJsonList.add("\"country\": {\"stringValue\": \"$country\"}")
+                }
+                if (existingName.isEmpty() && playerName.isNotEmpty()) {
+                    fieldsToUpdate.add("updateMask.fieldPaths=playerName")
+                    fieldsJsonList.add("\"playerName\": {\"stringValue\": \"$playerName\"}")
+                }
+                
+                if (fieldsToUpdate.isNotEmpty()) {
+                    val queryParams = fieldsToUpdate.joinToString("&")
+                    val patchUrl = NSURL(string = "https://firestore.googleapis.com/v1/projects/blitz-math-challenge/databases/(default)/documents/$collection/$playerId?$queryParams&key=$apiKey")
+                    val bodyJson = """
+                    {
+                      "fields": {
+                        ${fieldsJsonList.joinToString(",\n")}
+                      }
+                    }
+                    """.trimIndent()
+                    
+                    val patchRequest = NSMutableURLRequest.requestWithURL(patchUrl).apply {
+                        setHTTPMethod("PATCH")
+                        setValue("application/json", forHTTPHeaderField = "Content-Type")
+                        setHTTPBody((bodyJson as NSString).dataUsingEncoding(NSUTF8StringEncoding))
+                    }
+                    performRequest(patchRequest)
+                }
+                Result.success(Unit)
             } else {
                 Result.success(Unit)
             }
@@ -237,7 +277,7 @@ class IosLeaderboardManager : ILeaderboardManager {
     }
 
     override suspend fun getPlayerRank(playerId: String, mode: String): Result<Int> {
-        val result = getGlobalLeaderboard(100, mode)
+        val result = getGlobalLeaderboard(1000, mode)
         return result.map { entries ->
             val index = entries.indexOfFirst { it.playerId == playerId }
             if (index != -1) index + 1 else 0
@@ -313,6 +353,7 @@ class IosPlatformServices : PlatformServices {
     override val adController: IAdController = IosAdController()
     override val leaderboardManager: ILeaderboardManager = IosLeaderboardManager()
     override val deviceCountry: String get() = platform.Foundation.NSLocale.currentLocale.countryCode ?: "US"
+    override fun generateUuid(): String = platform.Foundation.NSUUID.UUID().UUIDString()
 
     override fun getCurrentTimeMillis(): Long {
         return (NSDate().timeIntervalSince1970 * 1000).toLong()

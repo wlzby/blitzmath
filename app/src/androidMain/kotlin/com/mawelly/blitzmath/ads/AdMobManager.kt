@@ -23,7 +23,8 @@ class AdMobManager(private val context: Context) : IAdManager {
     // Reklam Havuzu: Her yerleşim için birden fazla reklam tutar
     private val adPool = mutableMapOf<IAdManager.Placement, MutableList<RewardedAd>>()
     private val loadingPlacements = mutableSetOf<IAdManager.Placement>()
-    private val maxPoolSize = 2 // 3 yerine 2 yapalım, bellek ve ağ kullanımı için daha ideal
+    private val maxPoolSize = 1 // 1 adet önbelleğe alma yeterlidir, istek birikmesini engeller
+    private val retryDelays = mutableMapOf<IAdManager.Placement, Long>()
 
     // Reklam Kimlikleri (Ad Unit IDs)
     private fun getAdUnitId(placement: IAdManager.Placement): String {
@@ -46,7 +47,10 @@ class AdMobManager(private val context: Context) : IAdManager {
     init {
         try {
             // Havuz listelerini ilklendir
-            IAdManager.Placement.entries.forEach { adPool[it] = mutableListOf() }
+            IAdManager.Placement.entries.forEach { 
+                adPool[it] = mutableListOf() 
+                retryDelays[it] = 15000L // Yeniden deneme gecikmesini 15 saniyeden başlat
+            }
 
             // GMS varsa AdMob'u başlat
             if (com.mawelly.blitzmath.utils.ServiceChecker.isGmsAvailable(context)) {
@@ -96,6 +100,9 @@ class AdMobManager(private val context: Context) : IAdManager {
                     loadingPlacements.remove(placement)
                     adPool[placement]?.add(ad)
                     Log.d(TAG, "✅ Ad Loaded for ${placement.key}. Pool: ${adPool[placement]?.size}")
+                    
+                    // Başarılı yüklemede yeniden deneme süresini sıfırla
+                    retryDelays[placement] = 15000L
 
                     ad.fullScreenContentCallback = object : FullScreenContentCallback() {
                         override fun onAdDismissedFullScreenContent() {
@@ -112,11 +119,15 @@ class AdMobManager(private val context: Context) : IAdManager {
 
                 override fun onAdFailedToLoad(loadAdError: LoadAdError) {
                     loadingPlacements.remove(placement)
-                    Log.e(TAG, "❌ Ad Failed to Load for ${placement.key}: ${loadAdError.message}")
-                    // 15 saniye sonra tekrar dene
+                    val currentDelay = retryDelays[placement] ?: 15000L
+                    // Üstel geri çekilme: Gecikmeyi ikiye katla, en fazla 5 dakika (300.000 ms) yap
+                    val nextDelay = (currentDelay * 2).coerceAtMost(300000L)
+                    retryDelays[placement] = nextDelay
+                    
+                    Log.e(TAG, "❌ Ad Failed to Load for ${placement.key}: ${loadAdError.message}. Retrying in ${currentDelay / 1000}s.")
                     android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
                         fillPool(placement)
-                    }, 15000)
+                    }, currentDelay)
                 }
             }
         )

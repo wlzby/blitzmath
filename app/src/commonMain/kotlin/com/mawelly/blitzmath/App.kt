@@ -66,6 +66,50 @@ fun App(dataStore: IGameDataStore) {
         Strings.setLanguage(savedLanguage)
     }
     
+    LaunchedEffect(Unit) {
+        scope.launch {
+            var pId = dataStore.playerId.first()
+            if (pId.isEmpty()) {
+                pId = platformServices.generateUuid()
+                dataStore.savePlayerId(pId)
+            }
+            
+            val pName = dataStore.playerName.first()
+            val lbm = platformServices.leaderboardManager
+            if (pId.isNotEmpty() && pName.isNotEmpty() && lbm != null) {
+                val classicHighScore = dataStore.highScore.first()
+                val mixedHighScore = dataStore.mixedHighScore.first()
+                val challengeHighScore = dataStore.challengeHighScore.first()
+                val deviceCountry = platformServices.deviceCountry
+                
+                if (classicHighScore > 0) {
+                    try {
+                        val res = lbm.submitScore(pId, pName, classicHighScore.toLong(), 1, deviceCountry, "classic")
+                        println("App startup classic score sync result: $res")
+                    } catch (e: Exception) {
+                        println("App startup classic score sync exception: ${e.message}")
+                    }
+                }
+                if (mixedHighScore > 0) {
+                    try {
+                        val res = lbm.submitScore(pId, pName, mixedHighScore.toLong(), 1, deviceCountry, "mixed")
+                        println("App startup mixed score sync result: $res")
+                    } catch (e: Exception) {
+                        println("App startup mixed score sync exception: ${e.message}")
+                    }
+                }
+                if (challengeHighScore > 0) {
+                    try {
+                        val res = lbm.submitScore(pId, pName, challengeHighScore.toLong(), 1, deviceCountry, "challenge")
+                        println("App startup challenge score sync result: $res")
+                    } catch (e: Exception) {
+                        println("App startup challenge score sync exception: ${e.message}")
+                    }
+                }
+            }
+        }
+    }
+    
     var currentScreen by remember { mutableStateOf(AppScreen.SPLASH) }
     var currentLevel by remember { mutableStateOf(1) }
     
@@ -183,6 +227,7 @@ fun App(dataStore: IGameDataStore) {
                             mode = GameMode.CLASSIC,
                             startLevel = currentLevel,
                             dataStore = dataStore,
+                            leaderboardManager = platformServices.leaderboardManager,
                             onLevelComplete = { level ->
                                 currentLevel = level
                             },
@@ -198,6 +243,7 @@ fun App(dataStore: IGameDataStore) {
                             mode = GameMode.MIXED,
                             startLevel = currentLevel,
                             dataStore = dataStore,
+                            leaderboardManager = platformServices.leaderboardManager,
                             onLevelComplete = { level ->
                                 currentLevel = level
                             },
@@ -213,6 +259,7 @@ fun App(dataStore: IGameDataStore) {
                             mode = GameMode.CHALLENGE,
                             startLevel = 1,
                             dataStore = dataStore,
+                            leaderboardManager = platformServices.leaderboardManager,
                             onLevelComplete = {},
                             onBackToMenu = { currentScreen = AppScreen.MAIN_MENU },
                             onShowRanking = { modeName ->

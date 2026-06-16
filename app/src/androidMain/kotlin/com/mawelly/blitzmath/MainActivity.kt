@@ -314,8 +314,79 @@ fun BlitzMathApp() {
 
     var leaderboardInitialMode by remember { mutableStateOf("classic") }
     var leaderboardScrollToId by remember { mutableStateOf<String?>(null) }
-
     var currentLevel by remember { mutableIntStateOf(1) }
+
+    LaunchedEffect(Unit) {
+        scope.launch {
+            try {
+                val languageManager = com.mawelly.blitzmath.LanguageManager(context)
+                
+                // 1. Sync playerId
+                var pId = dataStore.playerId.first()
+                if (pId.isEmpty()) {
+                    pId = languageManager.getPlayerId()
+                    if (pId.isEmpty()) {
+                        pId = java.util.UUID.randomUUID().toString()
+                        languageManager.savePlayerId(pId)
+                    }
+                    dataStore.savePlayerId(pId)
+                } else {
+                    if (languageManager.getPlayerId().isEmpty()) {
+                        languageManager.savePlayerId(pId)
+                    }
+                }
+                
+                // 2. Sync playerName
+                var pName = dataStore.playerName.first()
+                if (pName.isEmpty()) {
+                    pName = languageManager.getPlayerName()
+                    if (pName.isNotEmpty()) {
+                        dataStore.savePlayerName(pName)
+                    }
+                } else {
+                    if (languageManager.getPlayerName().isEmpty()) {
+                        languageManager.savePlayerName(pName)
+                    }
+                }
+
+                // 3. Sync scores on Android startup
+                if (pId.isNotEmpty() && pName.isNotEmpty()) {
+                    val classicHighScore = dataStore.highScore.first()
+                    val mixedHighScore = dataStore.mixedHighScore.first()
+                    val challengeHighScore = dataStore.challengeHighScore.first()
+                    val deviceCountry = platformServices.deviceCountry
+                    val lbm = leaderboardManager
+                    
+                    if (classicHighScore > 0) {
+                        try {
+                            val res = lbm.submitScore(pId, pName, classicHighScore.toLong(), 1, deviceCountry, "classic")
+                            android.util.Log.d("MainActivity", "Startup classic score sync result: $res")
+                        } catch (e: Exception) {
+                            android.util.Log.e("MainActivity", "Startup classic score sync exception", e)
+                        }
+                    }
+                    if (mixedHighScore > 0) {
+                        try {
+                            val res = lbm.submitScore(pId, pName, mixedHighScore.toLong(), 1, deviceCountry, "mixed")
+                            android.util.Log.d("MainActivity", "Startup mixed score sync result: $res")
+                        } catch (e: Exception) {
+                            android.util.Log.e("MainActivity", "Startup mixed score sync exception", e)
+                        }
+                    }
+                    if (challengeHighScore > 0) {
+                        try {
+                            val res = lbm.submitScore(pId, pName, challengeHighScore.toLong(), 1, deviceCountry, "challenge")
+                            android.util.Log.d("MainActivity", "Startup challenge score sync result: $res")
+                        } catch (e: Exception) {
+                            android.util.Log.e("MainActivity", "Startup challenge score sync exception", e)
+                        }
+                    }
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
 
     LaunchedEffect(Unit) {
         // FCM Token Kaydı - Sadece GMS varsa

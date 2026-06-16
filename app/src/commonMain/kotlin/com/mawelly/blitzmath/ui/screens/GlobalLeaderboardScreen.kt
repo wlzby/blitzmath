@@ -56,6 +56,25 @@ fun GlobalLeaderboardScreen(
     val playerId by dataStore.playerId.collectAsState(initial = "")
     val playerName by dataStore.playerName.collectAsState(initial = "")
 
+    val classicHighScore by dataStore.highScore.collectAsState(initial = 0)
+    val mixedHighScore by dataStore.mixedHighScore.collectAsState(initial = 0)
+    val challengeHighScore by dataStore.challengeHighScore.collectAsState(initial = 0)
+    
+    val classicLevel by dataStore.classicLevel.collectAsState(initial = 1)
+    val mixedLevel by dataStore.mixedLevel.collectAsState(initial = 1)
+
+    val myLocalScore = when(selectedMode) {
+        "mixed" -> mixedHighScore
+        "challenge" -> challengeHighScore
+        else -> classicHighScore
+    }
+    
+    val myLocalLevel = when(selectedMode) {
+        "mixed" -> mixedLevel
+        "challenge" -> 1
+        else -> classicLevel
+    }
+
     fun loadData() {
         val manager = platformServices.leaderboardManager
         if (manager == null) {
@@ -265,13 +284,13 @@ fun GlobalLeaderboardScreen(
                         Column(horizontalAlignment = Alignment.End) {
                             val currentPlayerEntry = leaderboard.find { it.playerId == playerId }
                             Text(
-                                text = "${currentPlayerEntry?.totalScore ?: 0}",
+                                text = "${currentPlayerEntry?.totalScore ?: myLocalScore.toLong()}",
                                 fontSize = 20.sp,
                                 fontWeight = FontWeight.Black,
                                 color = MaterialTheme.colorScheme.secondary
                             )
                             Text(
-                                text = if (selectedMode == "challenge") Strings.statScore else "Lvl ${currentPlayerEntry?.highestLevel ?: 1}",
+                                text = if (selectedMode == "challenge") Strings.statScore else "Lvl ${currentPlayerEntry?.highestLevel ?: myLocalLevel}",
                                 fontSize = 12.sp,
                                 color = Color.White.copy(alpha = 0.6f)
                             )
@@ -315,6 +334,35 @@ fun GlobalLeaderboardScreen(
                             isCurrentPlayer = entry.playerId == playerId,
                             showLevel = selectedMode != "challenge"
                         )
+                    }
+                    
+                    if (playerRank > leaderboard.size) {
+                        item {
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Box(
+                                modifier = Modifier.fillMaxWidth(),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = "•••",
+                                    color = Color.White.copy(alpha = 0.3f),
+                                    fontSize = 16.sp
+                                )
+                            }
+                            Spacer(modifier = Modifier.height(8.dp))
+                            LeaderboardItem(
+                                rank = playerRank,
+                                entry = LeaderboardEntry(
+                                    playerId = playerId,
+                                    playerName = playerName,
+                                    totalScore = myLocalScore.toLong(),
+                                    highestLevel = myLocalLevel,
+                                    country = platformServices.deviceCountry
+                                ),
+                                isCurrentPlayer = true,
+                                showLevel = selectedMode != "challenge"
+                            )
+                        }
                     }
                 }
             }

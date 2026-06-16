@@ -33,9 +33,16 @@ interface IShareManager {
     fun shareScore(score: Int)
 }
 
+enum class AdPlacement(val key: String) {
+    SAVE_ME("save_me"),
+    REFILL_CHARGES("refill_charges"),
+    UNLOCK_SCIENTIST("unlock_scientist"),
+    DAILY_BONUS("daily_bonus")
+}
+
 interface IAdController {
     fun showInterstitialAd(onClosed: () -> Unit)
-    fun showRewardedAd(onReward: () -> Unit, onClosed: () -> Unit)
+    fun showRewardedAd(placement: AdPlacement, onReward: () -> Unit, onClosed: () -> Unit)
 }
 
 // A unified container for all platform-specific services
@@ -55,4 +62,5 @@ interface PlatformServices {
     fun showAppReview() {}
     val leaderboardManager: ILeaderboardManager? get() = null
     val deviceCountry: String
+    fun generateUuid(): String
 }

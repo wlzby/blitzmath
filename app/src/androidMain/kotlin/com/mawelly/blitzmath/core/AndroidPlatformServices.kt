@@ -62,8 +62,14 @@ class AndroidAdController(
         adManager.onGameOver(activity) { onClosed() }
     }
 
-    override fun showRewardedAd(onReward: () -> Unit, onClosed: () -> Unit) {
-        adManager.showAd(activity, IAdManager.Placement.SAVE_ME) {
+    override fun showRewardedAd(placement: AdPlacement, onReward: () -> Unit, onClosed: () -> Unit) {
+        val mappedPlacement = when (placement) {
+            AdPlacement.SAVE_ME -> IAdManager.Placement.SAVE_ME
+            AdPlacement.REFILL_CHARGES -> IAdManager.Placement.REFILL_CHARGES
+            AdPlacement.UNLOCK_SCIENTIST -> IAdManager.Placement.UNLOCK_SCIENTIST
+            AdPlacement.DAILY_BONUS -> IAdManager.Placement.DAILY_BONUS
+        }
+        adManager.showAd(activity, mappedPlacement) {
             onReward()
             onClosed()
         }
@@ -85,6 +91,7 @@ class AndroidPlatformServices(
     override val adController: IAdController = AndroidAdController(activity, adManager)
     override val leaderboardManager: ILeaderboardManager = com.mawelly.blitzmath.leaderboard.LeaderboardManager()
     override val deviceCountry: String get() = java.util.Locale.getDefault().country.takeIf { it.isNotBlank() } ?: "US"
+    override fun generateUuid(): String = java.util.UUID.randomUUID().toString()
 
     override fun openUrl(url: String) {
         val intent = android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(url))
