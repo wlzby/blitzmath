@@ -8,7 +8,8 @@ import org.jetbrains.compose.resources.DrawableResource
 
 object ScientistResources {
     fun getPortrait(id: String): DrawableResource? {
-        return when (id) {
+        val cleanId = if (id.endsWith("_portrait")) id else "${id}_portrait"
+        return when (cleanId) {
             "einstein_portrait" -> Res.drawable.einstein_portrait
             "newton_portrait" -> Res.drawable.newton_portrait
             "tesla_portrait" -> Res.drawable.tesla_portrait
