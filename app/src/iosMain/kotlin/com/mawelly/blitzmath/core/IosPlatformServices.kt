@@ -10,6 +10,11 @@ import com.mawelly.blitzmath.leaderboard.ILeaderboardManager
 import com.mawelly.blitzmath.leaderboard.LeaderboardEntry
 import com.mawelly.blitzmath.core.AdPlacement
 import com.mawelly.blitzmath.core.IAdController
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.CoroutineScope
 
 private operator fun NSDictionary.get(key: Any?): Any? = this.objectForKey(key)
 
@@ -20,6 +25,20 @@ class IosSoundManager : ISoundManager {
     private fun getPlayer(fileName: String, type: String): AVAudioPlayer? {
         if (players.containsKey(fileName)) {
             return players[fileName]
+        }
+        try {
+            val uri = runBlocking {
+                blitzmath.app.generated.resources.Res.getUri("files/$fileName.$type")
+            }
+            val url = NSURL(string = uri)
+            if (url != null) {
+                val player = AVAudioPlayer(contentsOfURL = url, error = null)
+                player.prepareToPlay()
+                players[fileName] = player
+                return player
+            }
+        } catch (e: Exception) {
+            println("IosSoundManager: Error loading sound $fileName via Res.getUri: ${e.message}")
         }
         val path = NSBundle.mainBundle.pathForResource("compose-resources/files/$fileName", type)
             ?: NSBundle.mainBundle.pathForResource(fileName, type)
@@ -118,8 +137,48 @@ class IosShareManager : IShareManager {
 class IosAdController : IAdController {
     override fun showInterstitialAd(onClosed: () -> Unit) { onClosed() }
     override fun showRewardedAd(placement: AdPlacement, onReward: () -> Unit, onClosed: () -> Unit) {
-        onReward()
-        onClosed()
+        val window = platform.UIKit.UIApplication.sharedApplication.keyWindow
+        val rootVC = window?.rootViewController
+        if (rootVC == null) {
+            onReward()
+            onClosed()
+            return
+        }
+
+        val alert = UIAlertController.alertControllerWithTitle(
+            title = "Reklam İzleniyor",
+            message = "Ödülünüz 5 saniye içinde verilecektir...",
+            preferredStyle = UIAlertControllerStyleAlert
+        )
+
+        var completed = false
+        var countdownJob: kotlinx.coroutines.Job? = null
+
+        val cancelAction = UIAlertAction.actionWithTitle(
+            title = "Reklamı Kapat",
+            style = UIAlertActionStyleCancel,
+            handler = { _ ->
+                countdownJob?.cancel()
+                if (!completed) {
+                    onClosed()
+                }
+            }
+        )
+        alert.addAction(cancelAction)
+
+        rootVC.presentViewController(alert, animated = true, completion = null)
+
+        countdownJob = CoroutineScope(Dispatchers.Main).launch {
+            for (i in 5 downTo 1) {
+                alert.setMessage("Ödülünüz $i saniye içinde verilecektir...")
+                delay(1000)
+            }
+            completed = true
+            alert.dismissViewControllerAnimated(true) {
+                onReward()
+                onClosed()
+            }
+        }
     }
 }
 

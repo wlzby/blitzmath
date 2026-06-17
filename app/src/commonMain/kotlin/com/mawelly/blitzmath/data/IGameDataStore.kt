@@ -75,3 +75,7 @@ interface IGameDataStore {
     suspend fun savePlayerId(id: String)
     suspend fun savePlayerXp(xp: Int)
 }
+
+object PlatformDataStoreHolder {
+    var instance: IGameDataStore? = null
+}

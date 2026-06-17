@@ -54,6 +54,9 @@ enum class AppScreen {
 
 @Composable
 fun App(dataStore: IGameDataStore) {
+    // Save dataStore to PlatformDataStoreHolder for static access on iOS
+    com.mawelly.blitzmath.data.PlatformDataStoreHolder.instance = dataStore
+
     val scope = rememberCoroutineScope()
     val platformServices = LocalPlatformServices.current
     

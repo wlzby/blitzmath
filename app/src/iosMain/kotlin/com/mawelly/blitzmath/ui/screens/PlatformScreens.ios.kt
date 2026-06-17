@@ -15,26 +15,6 @@ import platform.Foundation.NSNotificationCenter
 import platform.UIKit.UIApplicationDidEnterBackgroundNotification
 import platform.UIKit.UIApplicationWillEnterForegroundNotification
 
-@Composable
-actual fun VsScreen(onBackToMenu: () -> Unit) {
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
-    ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(
-                text = "VS Mode is coming soon to iOS!",
-                color = Color.White,
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Bold
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-            Button(onClick = onBackToMenu) {
-                Text("Back to Menu")
-            }
-        }
-    }
-}
 
 @Composable
 actual fun PlatformFlag(
