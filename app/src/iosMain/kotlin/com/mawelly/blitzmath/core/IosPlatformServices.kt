@@ -11,6 +11,8 @@ import com.mawelly.blitzmath.leaderboard.LeaderboardEntry
 import com.mawelly.blitzmath.core.AdPlacement
 import com.mawelly.blitzmath.core.IAdController
 
+private operator fun NSDictionary.get(key: Any?): Any? = this.objectForKey(key)
+
 class IosSoundManager : ISoundManager {
     private var isEnabled = true
     private val players = mutableMapOf<String, AVAudioPlayer>()
