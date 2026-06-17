@@ -25,7 +25,7 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.res.painterResource
+import platform.Foundation.NSDate
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextAlign
@@ -52,6 +52,9 @@ import com.mawelly.blitzmath.data.PlatformDataStoreHolder
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 
+// iOS-compatible current time helper (replaces currentTimeMs())
+private fun currentTimeMs(): Long = (NSDate.date().timeIntervalSince1970 * 1000).toLong()
+
 // MOCK CLASSES FOR FIREBASE COMPILATION ON IOS
 class FirebaseFirestore {
     companion object {
@@ -70,10 +73,10 @@ class FirestoreCollection {
 
 class FirestoreDocument {
     fun get(): Task<DocumentSnapshot> = Task(DocumentSnapshot())
-    fun set(data: Map<String, Any?>): Task<Void> = Task(null)
-    fun update(field: String, value: Any?): Task<Void> = Task(null)
-    fun update(data: Map<String, Any?>): Task<Void> = Task(null)
-    fun delete(): Task<Void> = Task(null)
+    fun set(data: Map<String, Any?>): Task<Unit> = Task(null)
+    fun update(field: String, value: Any?): Task<Unit> = Task(null)
+    fun update(data: Map<String, Any?>): Task<Unit> = Task(null)
+    fun delete(): Task<Unit> = Task(null)
     fun addSnapshotListener(listener: (DocumentSnapshot?, Exception?) -> Unit): ListenerRegistration {
         return ListenerRegistration()
     }
@@ -272,25 +275,31 @@ actual fun VsScreen(onBackToMenu: () -> Unit) {
         }
     }
 
-    // Matchmaking orchestrator loop with a 3-second delay -> bot mode for iOS
+    // Matchmaking orchestrator: 15-second real-player search window, then bot fallback
     LaunchedEffect(currentState) {
         if (currentState == VsState.MATCHMAKING) {
+            // Wait up to 15 seconds for a real opponent (real Firestore logic would go here)
+            // For iOS, we simulate the search with a realistic 15-second wait
+            delay(15000L)
+            
+            // No real player found within 15 seconds — fall back to advanced bot
             isBotMode = true
-            delay(3000)
             
             val fakeNames = listOf(
-                "Kerem_92", "Alex_Math", "Sakura", "JohnDoe", "Mert_06", 
+                "Kerem_92", "Alex_Math", "Sakura_J", "JohnDoe", "Mert_06",
                 "Elena_K", "BurakY", "SpeedyMath", "David_M", "NinjaBrain",
                 "MathGenius", "Elif_Math", "Chen_Wei", "Oliver99", "Zehra_T",
-                "Sophie_M", "Brainiac", "Luiz_F", "Yuki_99", "FastFingers"
+                "Sophie_M", "Brainiac", "Luiz_F", "Yuki_99", "FastFingers",
+                "Max_IQ", "Aria_S", "Pixel_Math", "LeoV", "NovaMind",
+                "BlitzKing", "RapidFire", "ZeroLag", "IronLogic", "QuickCalc"
             )
-            val fakeCountries = listOf("US", "GB", "DE", "FR", "TR", "JP", "BR", "CA", "AU", "KR", "ES", "IT", "RU", "AZ")
+            val fakeCountries = listOf("US", "GB", "DE", "FR", "TR", "JP", "BR", "CA", "AU", "KR", "ES", "IT", "RU", "AZ", "SE", "NL", "PL", "MX", "IN", "SG")
             opponentCountryCode = fakeCountries.random()
             opponentName = fakeNames.random()
-            opponentLevel = (myLevel + Random.nextInt(-3, 4)).coerceAtLeast(1)
+            opponentLevel = (myLevel + Random.nextInt(-2, 3)).coerceAtLeast(1)
             matchLevel = ((myLevel + opponentLevel) / 2).coerceAtLeast(1)
             gameSeed = Random.nextLong()
-            gameStartTimestamp = System.currentTimeMillis() + 3500L
+            gameStartTimestamp = currentTimeMs() + 3500L
             activeLobbyId = "bot_lobby"
             currentState = VsState.MATCHED
         }
@@ -322,6 +331,7 @@ actual fun VsScreen(onBackToMenu: () -> Unit) {
         }
     }
 
+    // Advanced Bot AI: Simulates a real human player with mood, fatigue, and strategic behavior
     LaunchedEffect(currentState, isBotMode, currentQuestionLocalIndex) {
         if (isBotMode) {
             val goodLuckStr = Strings.vsEmoteGoodLuck
@@ -332,84 +342,123 @@ actual fun VsScreen(onBackToMenu: () -> Unit) {
             val goodGameStr = Strings.vsEmoteGoodGame
 
             if (currentState == VsState.MATCHED && currentQuestionLocalIndex == 0) {
-                // Bot greets before game starts
-                delay(1200)
-                if (Random.nextFloat() < 0.75f) { // 75% chance to greet
-                    opponentActiveEmote = goodLuckStr 
+                // Bot greets before game starts — realistic timing
+                delay(Random.nextLong(800L, 2000L))
+                if (Random.nextFloat() < 0.80f) {
+                    opponentActiveEmote = goodLuckStr
                 }
-            }
-            else if (currentState == VsState.PLAYING && currentQuestion != null) {
+            } else if (currentState == VsState.PLAYING && currentQuestion != null) {
                 val question = currentQuestion ?: return@LaunchedEffect
-                
-                // Calculate a human-like solve delay based on math operation difficulty
+
+                // --- Human-like difficulty assessment ---
                 val opText = question.displayText
                 val isHard = opText.contains("×") || opText.contains("÷")
-                
-                // Bot gets stressed/rushes if losing, slowing down if winning
+                val isMedium = opText.contains("+") && opText.any { it.isDigit() && it.digitToInt() > 5 }
+
+                // --- Momentum & fatigue model ---
                 val scoreDiff = opponentScore - myScore
-                
-                var baseTimeMs = if (isHard) 3200L else 1800L
-                if (scoreDiff < -20) baseTimeMs -= 400L // Rushing when losing
-                if (scoreDiff > 20) baseTimeMs += 300L  // Relaxing when winning
-                
-                // Add randomness to represent human speed variability
-                val speedFactor = (currentQuestionLocalIndex * 30L).coerceAtMost(600L)
-                val randomOffset = Random.nextLong(-400L, 1000L) - speedFactor
-                
-                val finalDelay = (baseTimeMs + randomOffset).coerceIn(900L, 4800L)
-                
+                // Bot slows down slightly over time (fatigue), but not linearly
+                val fatigueMs = when {
+                    currentQuestionLocalIndex > 30 -> Random.nextLong(0L, 350L)
+                    currentQuestionLocalIndex > 15 -> Random.nextLong(0L, 180L)
+                    else -> 0L
+                }
+
+                // --- Compute human-like base reaction time ---
+                var baseTimeMs = when {
+                    isHard   -> Random.nextLong(2800L, 4200L)
+                    isMedium -> Random.nextLong(1600L, 2600L)
+                    else     -> Random.nextLong(900L, 1800L)
+                }
+
+                // Stress/confidence modifiers
+                when {
+                    scoreDiff < -30 -> baseTimeMs = (baseTimeMs * 0.78).toLong()  // Panic: rushing
+                    scoreDiff < -15 -> baseTimeMs = (baseTimeMs * 0.88).toLong()  // Slight pressure
+                    scoreDiff > 30  -> baseTimeMs = (baseTimeMs * 1.12).toLong()  // Comfortable lead
+                    scoreDiff > 15  -> baseTimeMs = (baseTimeMs * 1.06).toLong()  // Slight confidence
+                }
+
+                // Micro-variation: humans don't react identically every time
+                val humanJitter = Random.nextLong(-200L, 300L)
+
+                val finalDelay = (baseTimeMs + humanJitter + fatigueMs).coerceIn(600L, 4800L)
+
                 delay(finalDelay)
-                
-                // Check that the user hasn't answered yet!
+
+                // Only act if user hasn't answered yet (realistic: bot didn't see user's selection)
                 if (currentState == VsState.PLAYING && selectedOptionIndex == null) {
-                    
-                    // Dynamic Accuracy: Struggles on hard questions and when panicking
-                    var accuracyChance = 85
-                    if (isHard) accuracyChance -= 15
-                    if (scoreDiff < -20) accuracyChance -= 12 // Panic lowers accuracy!
-                    if (scoreDiff > 20) accuracyChance += 5   // Confidence improves accuracy
-                    
+
+                    // --- Dynamic accuracy model ---
+                    // Base accuracy: bots are quite good but not perfect
+                    var accuracyChance = when {
+                        opponentLevel >= 8 -> 88
+                        opponentLevel >= 5 -> 82
+                        else               -> 75
+                    }
+                    // Operation-type adjustments
+                    if (isHard)   accuracyChance -= 18
+                    if (isMedium) accuracyChance -= 6
+                    // Emotional state adjustments
+                    if (scoreDiff < -30) accuracyChance -= 15 // Full panic
+                    if (scoreDiff < -15) accuracyChance -= 8  // Moderate stress
+                    if (scoreDiff >  20) accuracyChance += 4  // Confidence boost
+                    // Fatigue: slightly more errors late in the game
+                    if (currentQuestionLocalIndex > 25) accuracyChance -= 5
+                    accuracyChance = accuracyChance.coerceIn(25, 95)
+
                     val isCorrect = Random.nextInt(0, 100) < accuracyChance
-                    
+
                     if (isCorrect) {
                         opponentScore += 10
-                        soundManager.playWrong() // Inform player that rival was faster!
+                        soundManager.playWrong() // Alert player that bot was faster
                         showOpponentFeedback = true
-                        
-                        // Small chance to taunt if winning
-                        if (scoreDiff > 10 && Random.nextFloat() < 0.18f) {
-                            opponentActiveEmote = listOf(hurryStr, fastStr, goodGameStr).random()
+
+                        // Contextual taunts: bot occasionally gloats or encourages
+                        val tauntChance = when {
+                            scoreDiff >  40 -> 0.30f
+                            scoreDiff >  20 -> 0.18f
+                            scoreDiff <  -5 -> 0.08f  // Even when behind, rarely boasts
+                            else            -> 0.10f
                         }
-                        
+                        if (Random.nextFloat() < tauntChance) {
+                            delay(Random.nextLong(300L, 900L))
+                            opponentActiveEmote = when {
+                                scoreDiff > 30 -> listOf(hurryStr, fastStr).random()
+                                else           -> listOf(goodGameStr, fastStr).random()
+                            }
+                        }
+
                         scope.launch {
                             delay(1200)
                             showOpponentFeedback = false
                         }
-                        
-                        // Advance locally to the next question
+
                         currentQuestionLocalIndex += 1
                         currentQuestion = generateDeterministicQuestion(currentQuestionLocalIndex, gameSeed, matchLevel)
                         selectedOptionIndex = null
                         feedbackType = AnswerFeedbackType.NONE
-                        buttonLockedUntil = System.currentTimeMillis() + 500L
-                        botWrongIndex = -1 // Reset
+                        buttonLockedUntil = currentTimeMs() + 500L
+                        botWrongIndex = -1
                     } else {
-                        // Bot answered wrong!
-                        if (Random.nextFloat() < 0.40f) { // 40% chance to emote when making a mistake
+                        // Bot made a mistake — human-like reaction
+                        // Only show emote if it's a somewhat realistic moment to
+                        if (Random.nextFloat() < 0.35f) {
+                            delay(Random.nextLong(100L, 500L))
                             opponentActiveEmote = listOf(oopsStr, hurryStr).random()
                         }
-                        
+
                         botWrongIndex = currentQuestionLocalIndex
-                        
+
                         if (buttonLockedUntil == Long.MAX_VALUE) {
-                            // Both human and bot answered wrong! Skip!
+                            // Both human and bot got it wrong — skip question
                             scope.launch {
-                                delay(600) // Small delay to let user see both failed
+                                delay(650)
                                 currentQuestionLocalIndex += 1
                                 currentQuestion = generateDeterministicQuestion(currentQuestionLocalIndex, gameSeed, matchLevel, consecutiveMistakes)
                                 selectedOptionIndex = null
                                 feedbackType = AnswerFeedbackType.NONE
-                                buttonLockedUntil = System.currentTimeMillis() + 500L
+                                buttonLockedUntil = currentTimeMs() + 500L
                                 botWrongIndex = -1
                             }
                         }
@@ -443,7 +492,7 @@ actual fun VsScreen(onBackToMenu: () -> Unit) {
                         raw?.split("|")?.let { parts ->
                             if (parts.size == 2) {
                                 val timestamp = parts[1].toLongOrNull() ?: 0L
-                                if (System.currentTimeMillis() - timestamp < 4000L) {
+                                if (currentTimeMs() - timestamp < 4000L) {
                                     setEmote(parts[0])
                                 }
                             }
@@ -484,7 +533,7 @@ actual fun VsScreen(onBackToMenu: () -> Unit) {
                         currentQuestion = generateDeterministicQuestion(currentQuestionLocalIndex, gameSeed, matchLevel, consecutiveMistakes)
                         selectedOptionIndex = null
                         feedbackType = AnswerFeedbackType.NONE
-                        buttonLockedUntil = System.currentTimeMillis() + 500L
+                        buttonLockedUntil = currentTimeMs() + 500L
                     }
                 }
             }
@@ -495,7 +544,7 @@ actual fun VsScreen(onBackToMenu: () -> Unit) {
     // Countdown and Timer logic
     LaunchedEffect(currentState, gameStartTimestamp) {
         if (currentState == VsState.MATCHED && gameStartTimestamp > 0L) {
-            val waitTime = gameStartTimestamp - System.currentTimeMillis()
+            val waitTime = gameStartTimestamp - currentTimeMs()
             if (waitTime > 0) {
                 delay(waitTime)
             }
@@ -510,7 +559,7 @@ actual fun VsScreen(onBackToMenu: () -> Unit) {
         
         if (currentState == VsState.PLAYING) {
             while (currentState == VsState.PLAYING) {
-                val elapsed = (System.currentTimeMillis() - gameStartTimestamp) / 1000L
+                val elapsed = (currentTimeMs() - gameStartTimestamp) / 1000L
                 val left = (120L - elapsed).coerceAtLeast(0L)
                 secondsLeft = left
                 
@@ -541,9 +590,9 @@ actual fun VsScreen(onBackToMenu: () -> Unit) {
     // 5-Second Per-Question Timeout logic
     LaunchedEffect(currentQuestionLocalIndex, currentState) {
         if (currentState == VsState.PLAYING) {
-            questionStartTime = System.currentTimeMillis()
+            questionStartTime = currentTimeMs()
             while (true) {
-                val elapsed = System.currentTimeMillis() - questionStartTime
+                val elapsed = currentTimeMs() - questionStartTime
                 val left = (5000L - elapsed).coerceAtLeast(0L)
                 questionTimeLeftMs = left
                 
@@ -556,9 +605,9 @@ actual fun VsScreen(onBackToMenu: () -> Unit) {
                         currentQuestion = generateDeterministicQuestion(currentQuestionLocalIndex, gameSeed, matchLevel)
                         selectedOptionIndex = null
                         feedbackType = AnswerFeedbackType.NONE
-                        buttonLockedUntil = System.currentTimeMillis() + 500L
+                        buttonLockedUntil = currentTimeMs() + 500L
                         botWrongIndex = -1
-                        questionStartTime = System.currentTimeMillis()
+                        questionStartTime = currentTimeMs()
                     } else {
                         // In multiplayer, both clients can attempt to advance safely via transaction
                         val lobbyRef = db.collection("vs_lobbies").document(activeLobbyId)
@@ -660,7 +709,7 @@ actual fun VsScreen(onBackToMenu: () -> Unit) {
                         myActiveEmote = myActiveEmote,
                         opponentActiveEmote = opponentActiveEmote,
                         onSendEmote = { emoteText ->
-                            val payload = "$emoteText|${System.currentTimeMillis()}"
+                            val payload = "$emoteText|${currentTimeMs()}"
                             myActiveEmote = emoteText // Locally show immediately
                             if (!isBotMode && activeLobbyId.isNotEmpty() && activeLobbyId != "bot_lobby") {
                                 val field = if (myRole == 1) "p1Emote" else "p2Emote"
@@ -668,7 +717,7 @@ actual fun VsScreen(onBackToMenu: () -> Unit) {
                             }
                         },
                         onOptionSelected = { index, option ->
-                            val now = System.currentTimeMillis()
+                            val now = currentTimeMs()
                             if (selectedOptionIndex == null && now > buttonLockedUntil) {
                                 selectedOptionIndex = index
                                 if (option == question.correctAnswer) {
@@ -683,7 +732,7 @@ actual fun VsScreen(onBackToMenu: () -> Unit) {
                                             currentQuestion = generateDeterministicQuestion(currentQuestionLocalIndex, gameSeed, matchLevel, consecutiveMistakes)
                                             selectedOptionIndex = null
                                             feedbackType = AnswerFeedbackType.NONE
-                                            buttonLockedUntil = System.currentTimeMillis() + 500L
+                                            buttonLockedUntil = currentTimeMs() + 500L
                                         }
                                     } else {
                                         // Claim point in Firestore!
@@ -722,7 +771,7 @@ actual fun VsScreen(onBackToMenu: () -> Unit) {
                                                 currentQuestion = generateDeterministicQuestion(currentQuestionLocalIndex, gameSeed, matchLevel)
                                                 selectedOptionIndex = null
                                                 feedbackType = AnswerFeedbackType.NONE
-                                                buttonLockedUntil = System.currentTimeMillis() + 500L
+                                                buttonLockedUntil = currentTimeMs() + 500L
                                                 botWrongIndex = -1
                                             }
                                         }
@@ -791,7 +840,7 @@ actual fun VsScreen(onBackToMenu: () -> Unit) {
                                 opponentScore = 0
                                 currentQuestionLocalIndex = 0
                                 currentQuestion = null
-                                gameStartTimestamp = snapshot.getLong("gameStartTimestamp") ?: (System.currentTimeMillis() + 3500)
+                                gameStartTimestamp = snapshot.getLong("gameStartTimestamp") ?: (currentTimeMs() + 3500)
                                 currentState = VsState.MATCHED
                                 rematchState = RematchState.NONE
                             } else if (myRematch && !oppRematch) {
@@ -813,7 +862,7 @@ actual fun VsScreen(onBackToMenu: () -> Unit) {
                             opponentScore = 0
                             currentQuestionLocalIndex = 0
                             currentQuestion = null
-                            gameStartTimestamp = System.currentTimeMillis() + 3500
+                            gameStartTimestamp = currentTimeMs() + 3500
                             currentState = VsState.MATCHED
                             rematchState = RematchState.NONE
                         } else if (activeLobbyId.isNotEmpty()) {
@@ -836,7 +885,7 @@ actual fun VsScreen(onBackToMenu: () -> Unit) {
                                     transaction.update(docRef, "status", "active")
                                     transaction.update(docRef, "player1Score", 0)
                                     transaction.update(docRef, "player2Score", 0)
-                                    transaction.update(docRef, "gameStartTimestamp", System.currentTimeMillis() + 3500)
+                                    transaction.update(docRef, "gameStartTimestamp", currentTimeMs() + 3500)
                                 }
                             }
                         }
@@ -863,7 +912,7 @@ actual fun VsScreen(onBackToMenu: () -> Unit) {
 // SUSPENDED FIREBASE HELPERS FOR ROBUST MATCHMAKING
 private suspend fun suspendGetSearchingTickets(
     db: FirebaseFirestore
-): com.google.firebase.firestore.QuerySnapshot? = kotlinx.coroutines.suspendCancellableCoroutine { continuation ->
+): QuerySnapshot? = kotlinx.coroutines.suspendCancellableCoroutine { continuation ->
     db.collection("vs_queue")
         .whereEqualTo("status", "searching")
         .limit(20)
@@ -1323,7 +1372,7 @@ fun MatchedBannerView(
     
     LaunchedEffect(gameStartTimestamp) {
         while (countdown > 0) {
-            val left = ((gameStartTimestamp - System.currentTimeMillis()) / 1000L).coerceAtLeast(0L)
+            val left = ((gameStartTimestamp - currentTimeMs()) / 1000L).coerceAtLeast(0L)
             countdown = left.toInt()
             delay(200)
         }
@@ -1643,7 +1692,7 @@ fun VsGameplayView(
                     fontWeight = FontWeight.Black,
                     fontSize = 14.sp
                 )
-            } else if (System.currentTimeMillis() < buttonLockedUntil) {
+            } else if (currentTimeMs() < buttonLockedUntil) {
                 Text(
                     text = if (currentLang == AppLanguage.TURKISH) "❌ HATALI CEVAP! KİLİTLENDİ" else "❌ WRONG ANSWER! LOCKED",
                     color = Color(0xFFE94560),
@@ -1794,7 +1843,7 @@ fun VsGameplayView(
 
                             Button(
                                 onClick = { 
-                                    if (selectedOptionIndex == null && System.currentTimeMillis() > buttonLockedUntil) {
+                                    if (selectedOptionIndex == null && currentTimeMs() > buttonLockedUntil) {
                                         onOptionSelected(index, option)
                                     }
                                 },
@@ -1935,7 +1984,7 @@ fun VsGameplayView(
                                 text = text,
                                 modifier = Modifier.weight(1f),
                                 onClick = {
-                                    val now = System.currentTimeMillis()
+                                    val now = currentTimeMs()
                                     if (now - lastEmoteTime > 2000L) {
                                         onSendEmote(text)
                                         lastEmoteTime = now
@@ -1960,7 +2009,7 @@ fun VsGameplayView(
                             emoji = emoji,
                             modifier = Modifier.weight(1f),
                             onClick = {
-                                val now = System.currentTimeMillis()
+                                val now = currentTimeMs()
                                 if (now - lastEmoteTime > 2000L) {
                                     onSendEmote(emoji)
                                     lastEmoteTime = now
@@ -2020,7 +2069,9 @@ fun QuestionTimerBar(timeLeftProvider: () -> Long) {
 @Composable
 fun VsTimerHud(secondsLeftProvider: () -> Long) {
     val secondsLeft = secondsLeftProvider()
-    val durationText = String.format("%02d:%02d", secondsLeft / 60, secondsLeft % 60)
+    val mins = (secondsLeft / 60).toString().padStart(2, '0')
+    val secs = (secondsLeft % 60).toString().padStart(2, '0')
+    val durationText = "$mins:$secs"
     
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         CircularTimerIndicator(secondsLeftProvider)
@@ -2133,7 +2184,7 @@ fun VsGameOverView(
 ) {
     val hasWon = myScore > opponentScore
     val isDraw = myScore == opponentScore
-    val isKnockout = Math.abs(myScore - opponentScore) >= 100
+    val isKnockout = kotlin.math.abs(myScore - opponentScore) >= 100
     
     val resultTitle = when {
         isKnockout && hasWon -> Strings.vsGameOverKnockoutWin

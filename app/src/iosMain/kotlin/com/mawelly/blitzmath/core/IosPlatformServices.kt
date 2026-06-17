@@ -1,4 +1,5 @@
 @file:OptIn(kotlinx.cinterop.ExperimentalForeignApi::class)
+@file:OptIn(org.jetbrains.compose.resources.ExperimentalResourceApi::class)
 package com.mawelly.blitzmath.core
 
 import platform.Foundation.*
