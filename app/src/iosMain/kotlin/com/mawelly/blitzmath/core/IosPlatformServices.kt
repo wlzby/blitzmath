@@ -189,7 +189,7 @@ class IosLeaderboardManager : ILeaderboardManager {
             completionHandler = { data: NSData?, response: NSURLResponse?, error: NSError? ->
                 if (error != null) {
                     println("IosLeaderboard: Network error: ${error.localizedDescription}")
-                    continuation.resume(null)
+                    continuation.resumeWithException(Exception("Ağ hatası: ${error.localizedDescription}"))
                 } else {
                     val httpResponse = response as? NSHTTPURLResponse
                     val statusCode = httpResponse?.statusCode?.toInt() ?: 200
@@ -197,9 +197,25 @@ class IosLeaderboardManager : ILeaderboardManager {
                     if (statusCode == 429) {
                         println("IosLeaderboard: RATE LIMITED (429)")
                         continuation.resumeWithException(Exception("429: Sunucu meşgul. Lütfen bekleyin."))
+                    } else if (statusCode == 404) {
+                        println("IosLeaderboard: 404 Not Found (Document does not exist)")
+                        continuation.resume(null)
                     } else if (statusCode >= 400) {
                         println("IosLeaderboard: HTTP error $statusCode")
-                        continuation.resumeWithException(Exception("HTTP $statusCode hatası"))
+                        var errorMsg = "HTTP $statusCode hatası"
+                        if (data != null) {
+                            try {
+                                val json = NSJSONSerialization.JSONObjectWithData(data, 0uL, null) as? NSDictionary
+                                val errorObj = json?.objectForKey("error") as? NSDictionary
+                                val msg = errorObj?.objectForKey("message") as? String
+                                if (msg != null) {
+                                    errorMsg = msg
+                                }
+                            } catch (e: Exception) {
+                                // ignore
+                            }
+                        }
+                        continuation.resumeWithException(Exception(errorMsg))
                     } else if (data != null) {
                         val nsString = NSString.create(data = data, encoding = NSUTF8StringEncoding)
                         continuation.resume(nsString?.toString())
@@ -391,6 +407,12 @@ class IosLeaderboardManager : ILeaderboardManager {
                 
                 if (array == null) {
                     println("IosLeaderboard: Response is not an array! jsonObj=$jsonObj")
+                    val dict = jsonObj as? NSDictionary
+                    val errorObj = dict?.objectForKey("error") as? NSDictionary
+                    val message = errorObj?.objectForKey("message") as? String
+                    if (message != null) {
+                        return Result.failure(Exception(message))
+                    }
                     return Result.success(emptyList())
                 }
                 
