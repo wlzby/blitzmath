@@ -26,6 +26,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import platform.Foundation.NSDate
+import platform.Foundation.timeIntervalSince1970
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextAlign
@@ -52,8 +53,12 @@ import com.mawelly.blitzmath.data.PlatformDataStoreHolder
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 
-// iOS-compatible current time helper (replaces currentTimeMs())
-private fun currentTimeMs(): Long = (NSDate.date().timeIntervalSince1970 * 1000).toLong()
+// iOS-compatible current time helper (replaces System.currentTimeMillis())
+private fun currentTimeMs(): Long {
+    val ti: Double = platform.Foundation.NSDate().timeIntervalSince1970
+    return (ti * 1000.0).toLong()
+}
+
 
 // MOCK CLASSES FOR FIREBASE COMPILATION ON IOS
 class FirebaseFirestore {
