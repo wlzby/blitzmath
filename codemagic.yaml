@@ -17,8 +17,8 @@ workflows:
           set -o pipefail
           chmod +x gradlew
           cd iosApp
-          xcodebuild build -project iosApp.xcodeproj -scheme iosApp -sdk iphonesimulator -destination 'platform=iOS Simulator,name=iPhone 17,OS=latest' -derivedDataPath ../build_output CODE_SIGNING_ALLOWED=NO
-      - name: Package App for Appetize
+          xcodebuild build -project iosApp.xcodeproj -scheme iosApp -sdk iphoneos -derivedDataPath ../build_output CODE_SIGNING_ALLOWED=NO CODE_SIGNING_IDENTITY="" PROVISIONING_PROFILE=""
+      - name: Package App for Sideloading
         script: |
           APP_PATH=$(find . -name "*.app" -type d | head -n 1)
           if [ -z "$APP_PATH" ]; then
@@ -26,7 +26,8 @@ workflows:
             exit 1
           fi
           echo "Found app at $APP_PATH"
-          cd "$(dirname "$APP_PATH")"
-          zip -r $CM_BUILD_DIR/blitzmath.app.zip "$(basename "$APP_PATH")"
+          mkdir -p Payload
+          cp -r "$APP_PATH" Payload/
+          zip -r $CM_BUILD_DIR/blitzmath.ipa Payload
     artifacts:
-      - blitzmath.app.zip
+      - blitzmath.ipa
