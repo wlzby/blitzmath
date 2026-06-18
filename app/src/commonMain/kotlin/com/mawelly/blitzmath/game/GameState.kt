@@ -679,6 +679,11 @@ class GameState(
                 val result = lbm.submitScore(playerId, playerName, totalScore, currentCheckpoint, country = platformServices.deviceCountry, mode = modeStr)
                 if (result.isSuccess) {
                     println("submitScore success for $playerId, score: $totalScore")
+                    when (mode) {
+                        GameMode.MIXED -> dataStore?.saveLastSyncedMixedScore(totalScore.toInt())
+                        GameMode.CHALLENGE -> dataStore?.saveLastSyncedChallengeScore(totalScore.toInt())
+                        else -> dataStore?.saveLastSyncedClassicScore(totalScore.toInt())
+                    }
                 } else {
                     println("submitScore failed for $playerId, score: $totalScore: ${result.exceptionOrNull()?.message}")
                 }

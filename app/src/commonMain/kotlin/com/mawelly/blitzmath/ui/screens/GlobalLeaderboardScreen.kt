@@ -85,7 +85,7 @@ fun GlobalLeaderboardScreen(
         scope.launch {
             isLoading = true
             errorMessage = null
-            val result = manager.getGlobalLeaderboard(100, mode = selectedMode)
+            val result = manager.getGlobalLeaderboard(25, mode = selectedMode)
             if (result.isSuccess) {
                 val entries = result.getOrNull() ?: emptyList()
                 leaderboard = entries

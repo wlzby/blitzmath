@@ -81,30 +81,45 @@ fun App(dataStore: IGameDataStore) {
             val lbm = platformServices.leaderboardManager
             if (pId.isNotEmpty() && pName.isNotEmpty() && lbm != null) {
                 val classicHighScore = dataStore.highScore.first()
+                val lastSyncedClassic = dataStore.lastSyncedClassicScore.first()
+                
                 val mixedHighScore = dataStore.mixedHighScore.first()
+                val lastSyncedMixed = dataStore.lastSyncedMixedScore.first()
+                
                 val challengeHighScore = dataStore.challengeHighScore.first()
+                val lastSyncedChallenge = dataStore.lastSyncedChallengeScore.first()
+                
                 val deviceCountry = platformServices.deviceCountry
                 
-                if (classicHighScore > 0) {
+                if (classicHighScore > 0 && classicHighScore > lastSyncedClassic) {
                     try {
                         val res = lbm.submitScore(pId, pName, classicHighScore.toLong(), 1, deviceCountry, "classic")
                         println("App startup classic score sync result: $res")
+                        if (res.isSuccess) {
+                            dataStore.saveLastSyncedClassicScore(classicHighScore)
+                        }
                     } catch (e: Exception) {
                         println("App startup classic score sync exception: ${e.message}")
                     }
                 }
-                if (mixedHighScore > 0) {
+                if (mixedHighScore > 0 && mixedHighScore > lastSyncedMixed) {
                     try {
                         val res = lbm.submitScore(pId, pName, mixedHighScore.toLong(), 1, deviceCountry, "mixed")
                         println("App startup mixed score sync result: $res")
+                        if (res.isSuccess) {
+                            dataStore.saveLastSyncedMixedScore(mixedHighScore)
+                        }
                     } catch (e: Exception) {
                         println("App startup mixed score sync exception: ${e.message}")
                     }
                 }
-                if (challengeHighScore > 0) {
+                if (challengeHighScore > 0 && challengeHighScore > lastSyncedChallenge) {
                     try {
                         val res = lbm.submitScore(pId, pName, challengeHighScore.toLong(), 1, deviceCountry, "challenge")
                         println("App startup challenge score sync result: $res")
+                        if (res.isSuccess) {
+                            dataStore.saveLastSyncedChallengeScore(challengeHighScore)
+                        }
                     } catch (e: Exception) {
                         println("App startup challenge score sync exception: ${e.message}")
                     }

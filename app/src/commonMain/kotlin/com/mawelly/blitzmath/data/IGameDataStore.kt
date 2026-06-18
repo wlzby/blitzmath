@@ -39,6 +39,9 @@ interface IGameDataStore {
     val playerName: Flow<String>
     val playerId: Flow<String>
     val playerXp: Flow<Int>
+    val lastSyncedClassicScore: Flow<Int>
+    val lastSyncedMixedScore: Flow<Int>
+    val lastSyncedChallengeScore: Flow<Int>
 
     suspend fun saveMusicVolume(volume: Float)
     suspend fun saveSfxVolume(volume: Float)
@@ -74,6 +77,9 @@ interface IGameDataStore {
     suspend fun setFirstLaunchCompleted()
     suspend fun savePlayerId(id: String)
     suspend fun savePlayerXp(xp: Int)
+    suspend fun saveLastSyncedClassicScore(score: Int)
+    suspend fun saveLastSyncedMixedScore(score: Int)
+    suspend fun saveLastSyncedChallengeScore(score: Int)
 }
 
 object PlatformDataStoreHolder {

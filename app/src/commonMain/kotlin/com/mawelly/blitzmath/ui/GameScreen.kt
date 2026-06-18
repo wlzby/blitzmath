@@ -1936,7 +1936,7 @@ private fun GameOverScreen(
     LaunchedEffect(gameState.score) {
         if (gameState.score > 0 && leaderboardManager != null) {
             val modeName = gameState.mode.name.lowercase()
-            leaderboardManager.submitScore(
+            val result = leaderboardManager.submitScore(
                 playerId = playerId,
                 playerName = playerName,
                 score = gameState.score.toLong(),
@@ -1944,6 +1944,14 @@ private fun GameOverScreen(
                 country = platformServices.deviceCountry,
                 mode = modeName
             )
+            if (result.isSuccess) {
+                val scoreVal = gameState.score
+                when (gameState.mode) {
+                    GameMode.MIXED -> dataStore.saveLastSyncedMixedScore(scoreVal)
+                    GameMode.CHALLENGE -> dataStore.saveLastSyncedChallengeScore(scoreVal)
+                    else -> dataStore.saveLastSyncedClassicScore(scoreVal)
+                }
+            }
             
             // Sıralamayı al
             val rankResult = leaderboardManager.getPlayerRank(playerId, mode = modeName)

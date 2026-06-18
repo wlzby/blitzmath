@@ -352,31 +352,46 @@ fun BlitzMathApp() {
                 // 3. Sync scores on Android startup
                 if (pId.isNotEmpty() && pName.isNotEmpty()) {
                     val classicHighScore = dataStore.highScore.first()
+                    val lastSyncedClassic = dataStore.lastSyncedClassicScore.first()
+                    
                     val mixedHighScore = dataStore.mixedHighScore.first()
+                    val lastSyncedMixed = dataStore.lastSyncedMixedScore.first()
+                    
                     val challengeHighScore = dataStore.challengeHighScore.first()
+                    val lastSyncedChallenge = dataStore.lastSyncedChallengeScore.first()
+                    
                     val deviceCountry = platformServices.deviceCountry
                     val lbm = leaderboardManager
                     
-                    if (classicHighScore > 0) {
+                    if (classicHighScore > 0 && classicHighScore > lastSyncedClassic) {
                         try {
                             val res = lbm.submitScore(pId, pName, classicHighScore.toLong(), 1, deviceCountry, "classic")
                             android.util.Log.d("MainActivity", "Startup classic score sync result: $res")
+                            if (res.isSuccess) {
+                                dataStore.saveLastSyncedClassicScore(classicHighScore)
+                            }
                         } catch (e: Exception) {
                             android.util.Log.e("MainActivity", "Startup classic score sync exception", e)
                         }
                     }
-                    if (mixedHighScore > 0) {
+                    if (mixedHighScore > 0 && mixedHighScore > lastSyncedMixed) {
                         try {
                             val res = lbm.submitScore(pId, pName, mixedHighScore.toLong(), 1, deviceCountry, "mixed")
                             android.util.Log.d("MainActivity", "Startup mixed score sync result: $res")
+                            if (res.isSuccess) {
+                                dataStore.saveLastSyncedMixedScore(mixedHighScore)
+                            }
                         } catch (e: Exception) {
                             android.util.Log.e("MainActivity", "Startup mixed score sync exception", e)
                         }
                     }
-                    if (challengeHighScore > 0) {
+                    if (challengeHighScore > 0 && challengeHighScore > lastSyncedChallenge) {
                         try {
                             val res = lbm.submitScore(pId, pName, challengeHighScore.toLong(), 1, deviceCountry, "challenge")
                             android.util.Log.d("MainActivity", "Startup challenge score sync result: $res")
+                            if (res.isSuccess) {
+                                dataStore.saveLastSyncedChallengeScore(challengeHighScore)
+                            }
                         } catch (e: Exception) {
                             android.util.Log.e("MainActivity", "Startup challenge score sync exception", e)
                         }

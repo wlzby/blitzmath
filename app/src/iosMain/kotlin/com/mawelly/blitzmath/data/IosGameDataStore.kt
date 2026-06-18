@@ -50,6 +50,15 @@ class IosGameDataStore : IGameDataStore {
     override val lastKnownChallengeRank = MutableStateFlow(
         if (defaults.objectForKey("last_known_challenge_rank") != null) defaults.integerForKey("last_known_challenge_rank").toInt() else 0
     )
+    override val lastSyncedClassicScore = MutableStateFlow(
+        if (defaults.objectForKey("last_synced_classic_score") != null) defaults.integerForKey("last_synced_classic_score").toInt() else 0
+    )
+    override val lastSyncedMixedScore = MutableStateFlow(
+        if (defaults.objectForKey("last_synced_mixed_score") != null) defaults.integerForKey("last_synced_mixed_score").toInt() else 0
+    )
+    override val lastSyncedChallengeScore = MutableStateFlow(
+        if (defaults.objectForKey("last_synced_challenge_score") != null) defaults.integerForKey("last_synced_challenge_score").toInt() else 0
+    )
     override val language = MutableStateFlow(
         try {
             val langStr = defaults.stringForKey("language")
@@ -363,5 +372,20 @@ class IosGameDataStore : IGameDataStore {
     override suspend fun savePlayerXp(xp: Int) {
         playerXp.value = xp
         defaults.setInteger(xp.toLong(), forKey = "player_xp")
+    }
+
+    override suspend fun saveLastSyncedClassicScore(score: Int) {
+        lastSyncedClassicScore.value = score
+        defaults.setInteger(score.toLong(), forKey = "last_synced_classic_score")
+    }
+
+    override suspend fun saveLastSyncedMixedScore(score: Int) {
+        lastSyncedMixedScore.value = score
+        defaults.setInteger(score.toLong(), forKey = "last_synced_mixed_score")
+    }
+
+    override suspend fun saveLastSyncedChallengeScore(score: Int) {
+        lastSyncedChallengeScore.value = score
+        defaults.setInteger(score.toLong(), forKey = "last_synced_challenge_score")
     }
 }

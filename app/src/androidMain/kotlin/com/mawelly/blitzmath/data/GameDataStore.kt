@@ -45,6 +45,9 @@ class GameDataStore(private val context: Context) : IGameDataStore {
         val LAST_KNOWN_CLASSIC_RANK = intPreferencesKey("last_known_classic_rank")
         val LAST_KNOWN_MIXED_RANK = intPreferencesKey("last_known_mixed_rank")
         val LAST_KNOWN_CHALLENGE_RANK = intPreferencesKey("last_known_challenge_rank")
+        val LAST_SYNCED_CLASSIC_SCORE = intPreferencesKey("last_synced_classic_score")
+        val LAST_SYNCED_MIXED_SCORE = intPreferencesKey("last_synced_mixed_score")
+        val LAST_SYNCED_CHALLENGE_SCORE = intPreferencesKey("last_synced_challenge_score")
     }
 
     // Ses Ayarları
@@ -63,6 +66,9 @@ class GameDataStore(private val context: Context) : IGameDataStore {
     override val lastKnownClassicRank: Flow<Int> = context.dataStore.data.map { it[LAST_KNOWN_CLASSIC_RANK] ?: 0 }
     override val lastKnownMixedRank: Flow<Int> = context.dataStore.data.map { it[LAST_KNOWN_MIXED_RANK] ?: 0 }
     override val lastKnownChallengeRank: Flow<Int> = context.dataStore.data.map { it[LAST_KNOWN_CHALLENGE_RANK] ?: 0 }
+    override val lastSyncedClassicScore: Flow<Int> = context.dataStore.data.map { it[LAST_SYNCED_CLASSIC_SCORE] ?: 0 }
+    override val lastSyncedMixedScore: Flow<Int> = context.dataStore.data.map { it[LAST_SYNCED_MIXED_SCORE] ?: 0 }
+    override val lastSyncedChallengeScore: Flow<Int> = context.dataStore.data.map { it[LAST_SYNCED_CHALLENGE_SCORE] ?: 0 }
 
     // Dil
     override val language: Flow<AppLanguage> = context.dataStore.data.map {
@@ -367,5 +373,17 @@ class GameDataStore(private val context: Context) : IGameDataStore {
 
     override suspend fun savePlayerXp(xp: Int) {
         context.dataStore.edit { it[intPreferencesKey("player_xp")] = xp }
+    }
+
+    override suspend fun saveLastSyncedClassicScore(score: Int) {
+        context.dataStore.edit { it[LAST_SYNCED_CLASSIC_SCORE] = score }
+    }
+
+    override suspend fun saveLastSyncedMixedScore(score: Int) {
+        context.dataStore.edit { it[LAST_SYNCED_MIXED_SCORE] = score }
+    }
+
+    override suspend fun saveLastSyncedChallengeScore(score: Int) {
+        context.dataStore.edit { it[LAST_SYNCED_CHALLENGE_SCORE] = score }
     }
 }
