@@ -145,35 +145,32 @@ class IosAdController : IAdController {
             return
         }
 
+        // Show a rewarded ad simulation with a realistic countdown
+        val totalSeconds = 15
         val alert = UIAlertController.alertControllerWithTitle(
-            title = "Reklam İzleniyor",
-            message = "Ödülünüz 5 saniye içinde verilecektir...",
+            title = "📺 Reklam İzleniyor...",
+            message = "Ödülünüz $totalSeconds saniye sonra verilecektir.\n\n▶  [████████████████████]  0%",
             preferredStyle = UIAlertControllerStyleAlert
         )
 
         var completed = false
         var countdownJob: kotlinx.coroutines.Job? = null
 
-        val cancelAction = UIAlertAction.actionWithTitle(
-            title = "Reklamı Kapat",
-            style = UIAlertActionStyleCancel,
-            handler = { _ ->
-                countdownJob?.cancel()
-                if (!completed) {
-                    onClosed()
-                }
-            }
-        )
-        alert.addAction(cancelAction)
-
         rootVC.presentViewController(alert, animated = true, completion = null)
 
         countdownJob = CoroutineScope(Dispatchers.Main).launch {
-            for (i in 5 downTo 1) {
-                alert.setMessage("Ödülünüz $i saniye içinde verilecektir...")
+            for (i in totalSeconds downTo 1) {
+                val progress = ((totalSeconds - i).toFloat() / totalSeconds * 20).toInt()
+                val bar = "█".repeat(progress) + "░".repeat(20 - progress)
+                val percent = ((totalSeconds - i).toFloat() / totalSeconds * 100).toInt()
+                alert.setTitle("📺 Reklam İzleniyor... ($i sn)")
+                alert.setMessage("Ödülünüz $i saniye sonra verilecektir.\n\n▶  [$bar]  $percent%")
                 delay(1000)
             }
             completed = true
+            alert.setTitle("🎁 Ödül Kazanıldı!")
+            alert.setMessage("Reklam tamamlandı! Ödülünüz veriliyor...")
+            delay(800)
             alert.dismissViewControllerAnimated(true) {
                 onReward()
                 onClosed()
@@ -339,7 +336,10 @@ class IosLeaderboardManager : ILeaderboardManager {
     override suspend fun getGlobalLeaderboard(limit: Int, mode: String): Result<List<LeaderboardEntry>> {
         return try {
             val collection = getCollectionName(mode)
-            val queryUrl = NSURL(string = "https://firestore.googleapis.com/v1/projects/blitz-math-challenge/databases/(default)/documents:runQuery?key=$apiKey") ?: return Result.failure(Exception("Invalid URL"))
+            println("IosLeaderboard: Fetching $collection (limit=$limit)")
+            
+            val queryUrl = NSURL(string = "https://firestore.googleapis.com/v1/projects/blitz-math-challenge/databases/(default)/documents:runQuery?key=$apiKey")
+                ?: return Result.failure(Exception("Invalid URL"))
             
             val queryJson = """
             {
@@ -355,46 +355,64 @@ class IosLeaderboardManager : ILeaderboardManager {
                 setHTTPMethod("POST")
                 setValue("application/json", forHTTPHeaderField = "Content-Type")
                 val bodyData = (queryJson as NSString).dataUsingEncoding(NSUTF8StringEncoding)
-                if (bodyData != null) {
-                    setHTTPBody(bodyData)
-                }
+                if (bodyData != null) setHTTPBody(bodyData)
             }
 
-            val response = performRequest(request) ?: return Result.failure(Exception("No response from Firestore"))
+            val response = performRequest(request)
+            if (response == null) {
+                println("IosLeaderboard: NULL response from Firestore")
+                return Result.failure(Exception("No response from Firestore"))
+            }
+            
+            println("IosLeaderboard: Response received, length=${response.length}")
+            println("IosLeaderboard: Response preview=${response.take(200)}")
+            
             val entries = mutableListOf<LeaderboardEntry>()
-
             val data = (response as NSString).dataUsingEncoding(NSUTF8StringEncoding)
+            
             if (data != null) {
-                val json = NSJSONSerialization.JSONObjectWithData(data, 0uL, null)
-                val array = json as? NSArray
-                if (array != null) {
-                    for (i in 0 until array.count.toInt()) {
-                        val item = array.objectAtIndex(i.toULong()) as? NSDictionary ?: continue
-                        val document = item["document"] as? NSDictionary ?: continue
-                        val fields = document["fields"] as? NSDictionary ?: continue
+                val jsonObj = NSJSONSerialization.JSONObjectWithData(data, 0uL, null)
+                val array = jsonObj as? NSArray
+                
+                if (array == null) {
+                    println("IosLeaderboard: Response is not an array! jsonObj=$jsonObj")
+                    return Result.success(emptyList())
+                }
+                
+                println("IosLeaderboard: Array count=${array.count}")
+                
+                for (i in 0 until array.count.toInt()) {
+                    val item = array.objectAtIndex(i.toULong()) as? NSDictionary ?: continue
+                    val document = item.objectForKey("document") as? NSDictionary ?: continue
+                    val fields = document.objectForKey("fields") as? NSDictionary ?: continue
 
-                        val pId = (fields["playerId"] as? NSDictionary)?.get("stringValue") as? String ?: ""
-                        val pName = (fields["playerName"] as? NSDictionary)?.get("stringValue") as? String ?: ""
-                        val totalScoreStr = (fields["totalScore"] as? NSDictionary)?.get("integerValue") as? String ?: "0"
-                        val highestLevelStr = (fields["highestLevel"] as? NSDictionary)?.get("integerValue") as? String ?: "1"
-                        val country = (fields["country"] as? NSDictionary)?.get("stringValue") as? String ?: ""
+                    val pId = (fields.objectForKey("playerId") as? NSDictionary)?.objectForKey("stringValue") as? String ?: ""
+                    val pName = (fields.objectForKey("playerName") as? NSDictionary)?.objectForKey("stringValue") as? String ?: ""
+                    val totalScoreStr = (fields.objectForKey("totalScore") as? NSDictionary)?.objectForKey("integerValue") as? String
+                        ?: (fields.objectForKey("totalScore") as? NSDictionary)?.objectForKey("doubleValue")?.toString() ?: "0"
+                    val highestLevelStr = (fields.objectForKey("highestLevel") as? NSDictionary)?.objectForKey("integerValue") as? String ?: "1"
+                    val country = (fields.objectForKey("country") as? NSDictionary)?.objectForKey("stringValue") as? String ?: ""
 
-                        if (pId.isNotEmpty()) {
-                            entries.add(
-                                LeaderboardEntry(
-                                    playerId = pId,
-                                    playerName = pName,
-                                    totalScore = totalScoreStr.toLongOrNull() ?: 0L,
-                                    highestLevel = highestLevelStr.toIntOrNull() ?: 1,
-                                    country = country
-                                )
+                    println("IosLeaderboard: Entry[$i] pId=$pId pName=$pName score=$totalScoreStr")
+
+                    if (pId.isNotEmpty()) {
+                        entries.add(
+                            LeaderboardEntry(
+                                playerId = pId,
+                                playerName = pName,
+                                totalScore = totalScoreStr.toLongOrNull() ?: 0L,
+                                highestLevel = highestLevelStr.toIntOrNull() ?: 1,
+                                country = country
                             )
-                        }
+                        )
                     }
                 }
             }
+            
+            println("IosLeaderboard: Returning ${entries.size} entries")
             Result.success(entries)
         } catch (e: Exception) {
+            println("IosLeaderboard: Exception: ${e.message}")
             Result.failure(e)
         }
     }
