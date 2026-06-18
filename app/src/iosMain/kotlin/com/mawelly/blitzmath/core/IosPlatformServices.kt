@@ -6,6 +6,7 @@ import platform.UIKit.*
 import platform.AVFAudio.AVAudioPlayer
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
 import com.mawelly.blitzmath.leaderboard.ILeaderboardManager
 import com.mawelly.blitzmath.leaderboard.LeaderboardEntry
 import com.mawelly.blitzmath.core.AdPlacement
@@ -183,21 +184,35 @@ class IosLeaderboardManager : ILeaderboardManager {
     private val apiKey = "AIzaSyBJfQl_ze9VsL_gQLMC5zFyje-wq3T8_IQ"
 
     private suspend fun performRequest(request: NSURLRequest): String? = suspendCancellableCoroutine { continuation ->
-        val task = NSURLSession.sharedSession.dataTaskWithRequest(request = request, completionHandler = { data: NSData?, response: NSURLResponse?, error: NSError? ->
-            if (error != null) {
-                continuation.resume(null)
-            } else if (data != null) {
-                val nsString = NSString.create(data = data, encoding = NSUTF8StringEncoding)
-                continuation.resume(nsString?.toString())
-            } else {
-                continuation.resume(null)
+        val task = NSURLSession.sharedSession.dataTaskWithRequest(
+            request = request,
+            completionHandler = { data: NSData?, response: NSURLResponse?, error: NSError? ->
+                if (error != null) {
+                    println("IosLeaderboard: Network error: ${error.localizedDescription}")
+                    continuation.resume(null)
+                } else {
+                    val httpResponse = response as? NSHTTPURLResponse
+                    val statusCode = httpResponse?.statusCode?.toInt() ?: 200
+                    println("IosLeaderboard: HTTP $statusCode")
+                    if (statusCode == 429) {
+                        println("IosLeaderboard: RATE LIMITED (429)")
+                        continuation.resumeWithException(Exception("429: Sunucu meşgul. Lütfen bekleyin."))
+                    } else if (statusCode >= 400) {
+                        println("IosLeaderboard: HTTP error $statusCode")
+                        continuation.resumeWithException(Exception("HTTP $statusCode hatası"))
+                    } else if (data != null) {
+                        val nsString = NSString.create(data = data, encoding = NSUTF8StringEncoding)
+                        continuation.resume(nsString?.toString())
+                    } else {
+                        continuation.resume(null)
+                    }
+                }
             }
-        })
+        )
         task.resume()
-        continuation.invokeOnCancellation {
-            task.cancel()
-        }
+        continuation.invokeOnCancellation { task.cancel() }
     }
+
 
     private fun getCollectionName(mode: String): String {
         return when (mode.lowercase()) {

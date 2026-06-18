@@ -92,31 +92,27 @@ fun GlobalLeaderboardScreen(
                 isLoading = false
                 lastRefresh = platformServices.getCurrentTimeMillis()
                 
-                if (playerId.isNotEmpty()) {
-                    val rankResult = manager.getPlayerRank(playerId, mode = selectedMode)
-                    if (rankResult.isSuccess) {
-                        val rank = rankResult.getOrNull() ?: 0
-                        playerRank = rank 
-                        
-                        // Scroll animation
-                        if (scrollToPlayerId == playerId && !hasScrolledOnce && entries.isNotEmpty()) {
-                            val targetIndex = entries.indexOfFirst { it.playerId == playerId }
-                            if (targetIndex != -1) {
-                                hasScrolledOnce = true
-                                delay(800)
-                                
-                                val startIndex = (targetIndex + 10).coerceAtMost(entries.size - 1)
-                                listState.scrollToItem(startIndex)
-                                listState.animateScrollToItem(
-                                    index = targetIndex,
-                                    scrollOffset = -100
-                                )
-                            }
-                        }
+                // Compute rank locally from fetched list — avoids a second API call
+                if (playerId.isNotEmpty() && entries.isNotEmpty()) {
+                    val idx = entries.indexOfFirst { it.playerId == playerId }
+                    playerRank = if (idx != -1) idx + 1 else 0
+                    
+                    // Scroll to player if requested
+                    if (scrollToPlayerId == playerId && !hasScrolledOnce && idx != -1) {
+                        hasScrolledOnce = true
+                        delay(800)
+                        val startIndex = (idx + 10).coerceAtMost(entries.size - 1)
+                        listState.scrollToItem(startIndex)
+                        listState.animateScrollToItem(index = idx, scrollOffset = -100)
                     }
                 }
             } else {
-                errorMessage = result.exceptionOrNull()?.message ?: "Unknown error"
+                val err = result.exceptionOrNull()?.message ?: "Unknown error"
+                errorMessage = if (err.contains("429") || err.contains("quota") || err.contains("Too Many")) {
+                    "⚠️ Sunucu meşgul. Lütfen 30 saniye bekleyip tekrar deneyin."
+                } else {
+                    "Bağlantı hatası: $err"
+                }
                 isLoading = false
             }
         }
