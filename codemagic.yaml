@@ -20,7 +20,7 @@ workflows:
           xcodebuild build -project iosApp.xcodeproj -scheme iosApp -sdk iphoneos -derivedDataPath ../build_output CODE_SIGNING_ALLOWED=NO CODE_SIGNING_IDENTITY="" PROVISIONING_PROFILE=""
       - name: Package App for Sideloading
         script: |
-          APP_PATH=$(find . -name "*.app" -type d | head -n 1)
+          APP_PATH=$(find build_output/Build/Products/Debug-iphoneos -name "*.app" -type d | head -n 1)
           if [ -z "$APP_PATH" ]; then
             echo "Error: No .app found! Check xcodebuild logs above."
             exit 1
