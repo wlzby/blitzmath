@@ -123,7 +123,9 @@ class IosShareManager : IShareManager {
             activityItems = items,
             applicationActivities = null
         )
+        val windows = platform.UIKit.UIApplication.sharedApplication.windows
         val window = platform.UIKit.UIApplication.sharedApplication.keyWindow
+            ?: (windows.firstOrNull() as? platform.UIKit.UIWindow)
         val rootVC = window?.rootViewController
         
         if (activityController.popoverPresentationController != null) {
@@ -138,7 +140,9 @@ class IosShareManager : IShareManager {
 class IosAdController : IAdController {
     override fun showInterstitialAd(onClosed: () -> Unit) { onClosed() }
     override fun showRewardedAd(placement: AdPlacement, onReward: () -> Unit, onClosed: () -> Unit) {
+        val windows = platform.UIKit.UIApplication.sharedApplication.windows
         val window = platform.UIKit.UIApplication.sharedApplication.keyWindow
+            ?: (windows.firstOrNull() as? platform.UIKit.UIWindow)
         val rootVC = window?.rootViewController
         if (rootVC == null) {
             onReward()
