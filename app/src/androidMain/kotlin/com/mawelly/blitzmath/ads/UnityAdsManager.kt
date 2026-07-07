@@ -32,87 +32,114 @@ class UnityAdsManager(private val context: Context) : IAdManager {
     }
 
     private fun initializeUnityAds() {
-        Log.d(TAG, "Initializing Unity Ads... (GameID: $gameId)")
-        UnityAds.initialize(context, gameId, testMode, object : IUnityAdsInitializationListener {
-            override fun onInitializationComplete() {
-                Log.d(TAG, "✅ Unity Ads Initialization Complete")
-                preloadAll()
-            }
+        try {
+            Log.d(TAG, "Initializing Unity Ads... (GameID: $gameId)")
+            UnityAds.initialize(context, gameId, testMode, object : IUnityAdsInitializationListener {
+                override fun onInitializationComplete() {
+                    Log.d(TAG, "✅ Unity Ads Initialization Complete")
+                    // Açılışta HarmonyOS sürecini boğmamak için 3 saniye gecikmeyle yükle
+                    try {
+                        android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
+                            preloadAll()
+                        }, 3000L)
+                    } catch (t: Throwable) { t.printStackTrace() }
+                }
 
-            override fun onInitializationFailed(error: UnityAds.UnityAdsInitializationError?, message: String?) {
-                Log.e(TAG, "❌ Unity Ads Initialization Failed: $message. Retrying in 15s...")
-                // Retry initialization after a delay
-                android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
-                    initializeUnityAds()
-                }, 15000)
-            }
-        })
-    }
-
-    override fun preloadAll() {
-        placementIds.values.distinct().forEach { placementId ->
-            loadWithRetry(placementId)
+                override fun onInitializationFailed(error: UnityAds.UnityAdsInitializationError?, message: String?) {
+                    Log.e(TAG, "❌ Unity Ads Initialization Failed: $message. Retrying in 30s...")
+                    try {
+                        android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
+                            initializeUnityAds()
+                        }, 30000L)
+                    } catch (t: Throwable) { t.printStackTrace() }
+                }
+            })
+        } catch (t: Throwable) {
+            Log.e(TAG, "Exception initializing Unity Ads: ${t.message}", t)
         }
     }
 
-    private fun loadWithRetry(placementId: String, delayMs: Long = 5000L) {
-        Log.d(TAG, "Loading Unity Ad: $placementId (Next retry in ${delayMs/1000}s if fails)")
-        
-        UnityAds.load(placementId, object : IUnityAdsLoadListener {
-            override fun onUnityAdsAdLoaded(placementId: String?) {
-                Log.d(TAG, "✅ Unity Ad Loaded: $placementId")
-                placementId?.let { loadedPlacements.add(it) }
+    override fun preloadAll() {
+        try {
+            placementIds.values.distinct().forEach { placementId ->
+                loadWithRetry(placementId, 30000L)
             }
-
-            override fun onUnityAdsFailedToLoad(placementId: String?, error: UnityAds.UnityAdsLoadError?, message: String?) {
-                Log.e(TAG, "❌ Unity Ad Failed to Load ($placementId): $message. Error Code: $error")
-                placementId?.let { 
-                    loadedPlacements.remove(it) 
-                    // Retry with exponential backoff (max 1 minute)
-                    val nextDelay = (delayMs * 2).coerceAtMost(60000L)
-                    android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
-                        loadWithRetry(it, nextDelay)
-                    }, delayMs)
-                }
-            }
-        })
+        } catch (t: Throwable) { t.printStackTrace() }
     }
 
-    override fun showAd(activity: Activity, placement: IAdManager.Placement, onReward: () -> Unit) {
+    private fun loadWithRetry(placementId: String, delayMs: Long = 30000L) {
+        try {
+            Log.d(TAG, "Loading Unity Ad: $placementId (Next retry in ${delayMs/1000}s if fails)")
+            
+            UnityAds.load(placementId, object : IUnityAdsLoadListener {
+                override fun onUnityAdsAdLoaded(placementId: String?) {
+                    Log.d(TAG, "✅ Unity Ad Loaded: $placementId")
+                    placementId?.let { loadedPlacements.add(it) }
+                }
+
+                override fun onUnityAdsFailedToLoad(placementId: String?, error: UnityAds.UnityAdsLoadError?, message: String?) {
+                    Log.e(TAG, "❌ Unity Ad Failed to Load ($placementId): $message. Error Code: $error")
+                    placementId?.let { 
+                        loadedPlacements.remove(it) 
+                        try {
+                            // Retry with exponential backoff (min 30s, max 2 minutes)
+                            val nextDelay = (delayMs * 2).coerceAtMost(120000L)
+                            android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
+                                loadWithRetry(it, nextDelay)
+                            }, delayMs)
+                        } catch (t: Throwable) { t.printStackTrace() }
+                    }
+                }
+            })
+        } catch (t: Throwable) {
+            Log.e(TAG, "Exception loading Unity Ad: ${t.message}", t)
+        }
+    }
+
+    override fun showAd(activity: Activity, placement: IAdManager.Placement, onReward: () -> Unit, onClosed: () -> Unit) {
         val placementId = placementIds[placement] ?: "Rewarded_Android"
         
         Log.d(TAG, "Attempting to show Unity Ad for $placementId. Loaded: ${loadedPlacements.contains(placementId)}")
 
-        UnityAds.show(activity, placementId, UnityAdsShowOptions(), object : IUnityAdsShowListener {
-            override fun onUnityAdsShowFailure(placementId: String?, error: UnityAds.UnityAdsShowError?, message: String?) {
-                Log.e(TAG, "❌ Unity Ad Show Failure ($placementId): $message. Error: $error")
-                placementId?.let { 
-                    loadedPlacements.remove(it) 
-                    loadWithRetry(it) 
+        try {
+            UnityAds.show(activity, placementId, UnityAdsShowOptions(), object : IUnityAdsShowListener {
+                override fun onUnityAdsShowFailure(placementId: String?, error: UnityAds.UnityAdsShowError?, message: String?) {
+                    Log.e(TAG, "❌ Unity Ad Show Failure ($placementId): $message. Error: $error")
+                    placementId?.let { 
+                        loadedPlacements.remove(it) 
+                        loadWithRetry(it) 
+                    }
+                    try {
+                        android.widget.Toast.makeText(activity, "Reklam gösterilemedi: $message", android.widget.Toast.LENGTH_SHORT).show()
+                    } catch (t: Throwable) { t.printStackTrace() }
+                    onClosed()
                 }
-                android.widget.Toast.makeText(activity, "Reklam gösterilemedi: $message", android.widget.Toast.LENGTH_SHORT).show()
-            }
 
-            override fun onUnityAdsShowStart(placementId: String?) {
-                Log.d(TAG, "Unity Ad Show Start: $placementId")
-            }
-
-            override fun onUnityAdsShowClick(placementId: String?) {
-                Log.d(TAG, "Unity Ad Clicked")
-            }
-
-            override fun onUnityAdsShowComplete(placementId: String?, state: UnityAds.UnityAdsShowCompletionState?) {
-                Log.d(TAG, "Unity Ad Show Complete: $placementId, State: $state")
-                if (state == UnityAds.UnityAdsShowCompletionState.COMPLETED) {
-                    Log.d(TAG, "💰 Unity Reward Earned!")
-                    onReward()
+                override fun onUnityAdsShowStart(placementId: String?) {
+                    Log.d(TAG, "Unity Ad Show Start: $placementId")
                 }
-                placementId?.let { 
-                    loadedPlacements.remove(it) 
-                    loadWithRetry(it) 
+
+                override fun onUnityAdsShowClick(placementId: String?) {
+                    Log.d(TAG, "Unity Ad Clicked")
                 }
-            }
-        })
+
+                override fun onUnityAdsShowComplete(placementId: String?, state: UnityAds.UnityAdsShowCompletionState?) {
+                    Log.d(TAG, "Unity Ad Show Complete: $placementId, State: $state")
+                    if (state == UnityAds.UnityAdsShowCompletionState.COMPLETED) {
+                        Log.d(TAG, "💰 Unity Reward Earned!")
+                        onReward()
+                    }
+                    placementId?.let { 
+                        loadedPlacements.remove(it) 
+                        loadWithRetry(it) 
+                    }
+                    onClosed()
+                }
+            })
+        } catch (t: Throwable) {
+            Log.e(TAG, "Exception showing Unity Ad: ${t.message}", t)
+            onClosed()
+        }
     }
 
     override fun onGameOver(activity: Activity, onAdClosed: () -> Unit) {

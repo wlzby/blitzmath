@@ -1,3 +1,4 @@
 TEAM_ID=
-BUNDLE_ID=com.myapplication.MyApplication
-APP_NAME=My application
+BUNDLE_ID=com.mawelly.blitzmath
+APP_NAME=Blitz Math
+

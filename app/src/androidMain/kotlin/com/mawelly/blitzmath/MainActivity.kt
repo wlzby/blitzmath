@@ -134,56 +134,60 @@ class MainActivity : ComponentActivity() {
 
     override fun onWindowFocusChanged(hasFocus: Boolean) {
         super.onWindowFocusChanged(hasFocus)
-        if (hasFocus) {
-            window.clearFlags(android.view.WindowManager.LayoutParams.FLAG_SECURE)
-        } else {
-            window.addFlags(android.view.WindowManager.LayoutParams.FLAG_SECURE)
-        }
+        // FLAG_SECURE kaldırıldı: Huawei AppGallery ve diğer mağaza inceleme
+        // süreçlerinde ekran kaydını engellememek için bu kısıtlama kaldırıldı.
     }
 
     override fun onResume() {
         super.onResume()
-        // Uygulama açıldığında bekleyen bildirimi iptal et
-        WorkManager.getInstance(this).cancelUniqueWork("engagement_work")
+        try {
+            // Uygulama açıldığında bekleyen bildirimi iptal et
+            WorkManager.getInstance(this).cancelUniqueWork("engagement_work")
+        } catch (t: Throwable) {
+            t.printStackTrace()
+        }
     }
 
     override fun onStop() {
         super.onStop()
-        
-        val workManager = WorkManager.getInstance(this)
-        
-        // İlk bildirim: 12 saat sonra
-        val workRequest12h = OneTimeWorkRequestBuilder<EngagementWorker>()
-            .setInitialDelay(12, TimeUnit.HOURS)
-            .build()
+        try {
+            val workManager = WorkManager.getInstance(this)
             
-        workManager.enqueueUniqueWork(
-            "engagement_work_12h",
-            ExistingWorkPolicy.REPLACE,
-            workRequest12h
-        )
-        
-        // İkinci bildirim: 24 saat sonra
-        val workRequest24h = OneTimeWorkRequestBuilder<EngagementWorker>()
-            .setInitialDelay(24, TimeUnit.HOURS)
-            .build()
+            // İlk bildirim: 12 saat sonra
+            val workRequest12h = OneTimeWorkRequestBuilder<EngagementWorker>()
+                .setInitialDelay(12, TimeUnit.HOURS)
+                .build()
+                
+            workManager.enqueueUniqueWork(
+                "engagement_work_12h",
+                ExistingWorkPolicy.REPLACE,
+                workRequest12h
+            )
             
-        workManager.enqueueUniqueWork(
-            "engagement_work_24h",
-            ExistingWorkPolicy.REPLACE,
-            workRequest24h
-        )
+            // İkinci bildirim: 24 saat sonra
+            val workRequest24h = OneTimeWorkRequestBuilder<EngagementWorker>()
+                .setInitialDelay(24, TimeUnit.HOURS)
+                .build()
+                
+            workManager.enqueueUniqueWork(
+                "engagement_work_24h",
+                ExistingWorkPolicy.REPLACE,
+                workRequest24h
+            )
 
-        // Sıralama Kontrolü: Her 1 saatte bir
-        val rankCheckRequest = PeriodicWorkRequestBuilder<com.mawelly.blitzmath.notifications.RankCheckWorker>(
-            1, TimeUnit.HOURS
-        ).build()
+            // Sıralama Kontrolü: Her 1 saatte bir
+            val rankCheckRequest = PeriodicWorkRequestBuilder<com.mawelly.blitzmath.notifications.RankCheckWorker>(
+                1, TimeUnit.HOURS
+            ).build()
 
-        workManager.enqueueUniquePeriodicWork(
-            "rank_check_work",
-            ExistingPeriodicWorkPolicy.KEEP, // Mevcut olanı bozma, devam etsin
-            rankCheckRequest
-        )
+            workManager.enqueueUniquePeriodicWork(
+                "rank_check_work",
+                ExistingPeriodicWorkPolicy.KEEP, // Mevcut olanı bozma, devam etsin
+                rankCheckRequest
+            )
+        } catch (t: Throwable) {
+            t.printStackTrace()
+        }
     }
 }
 
@@ -206,9 +210,9 @@ fun BlitzMathApp() {
     val lifecycleOwner = LocalLifecycleOwner.current
     
     // Ses Yönetimi: Uygulama arka plana atıldığında müziği duraklat/devam ettir
-    val dataStore = remember { GameDataStore(context) }
-    val soundManager = remember { SoundManager(context) }
-    val voiceManager = remember { VoiceManager(context) }
+    val dataStore = remember(context) { GameDataStore(context) }
+    val soundManager = remember(context) { SoundManager(context) }
+    val voiceManager = remember(context) { VoiceManager(context) }
     val leaderboardManager = remember { com.mawelly.blitzmath.leaderboard.LeaderboardManager() }
     
     // Ses Ayarları ve Seslendirme Dili Senkronizasyonu
@@ -255,7 +259,7 @@ fun BlitzMathApp() {
         }
     }
 
-    val adMobManager = remember { AdsProvider.getInstance(context) }
+    val adMobManager = remember(context) { AdsProvider.getInstance(context) }
     val scope = rememberCoroutineScope()
     val isAutoThemeEnabled by dataStore.autoTheme.collectAsState(initial = false)
     val savedTheme by dataStore.theme.collectAsState(initial = AppTheme.MIDNIGHT)
@@ -276,7 +280,7 @@ fun BlitzMathApp() {
     var analyticsManager by remember { mutableStateOf<AnalyticsManager?>(null) }
     
     // Initialize PlatformServices
-    val platformServices = remember(adMobManager, analyticsManager, soundManager) {
+    val platformServices = remember(context, adMobManager, analyticsManager, soundManager) {
         AndroidPlatformServices(
             activity = context as android.app.Activity,
             context = context,
@@ -286,15 +290,7 @@ fun BlitzMathApp() {
         )
     }
 
-    // YENİ: Reklamı önceden yükle - Güvenli hale getirildi
-    LaunchedEffect(Unit) {
-        try {
-            delay(2500) // Biraz daha bekle
-            adMobManager.preloadAll()
-        } catch (t: Throwable) {
-            t.printStackTrace()
-        }
-    }
+    // Reklam yükleme AdMobManager.init() içinde otomatik yapılıyor, burada tekrar gerekmez
 
     LaunchedEffect(Unit) {
         analyticsManager = AnalyticsManager.getInstance(context)
@@ -404,9 +400,15 @@ fun BlitzMathApp() {
     }
 
     LaunchedEffect(Unit) {
-        // FCM Token Kaydı - Sadece GMS varsa
+        // FCM Token Kaydı ve SDK Etkinleştirme - Sadece GMS varsa
         try {
             if (com.mawelly.blitzmath.utils.ServiceChecker.isGmsAvailable(context)) {
+                // Programatik olarak Firebase Messaging ve Analytics'i etkinleştir
+                try {
+                    com.google.firebase.messaging.FirebaseMessaging.getInstance().isAutoInitEnabled = true
+                    com.google.firebase.analytics.FirebaseAnalytics.getInstance(context).setAnalyticsCollectionEnabled(true)
+                } catch (t: Throwable) { t.printStackTrace() }
+
                 com.google.firebase.messaging.FirebaseMessaging.getInstance().token.addOnSuccessListener { token ->
                     if (token != null) {
                         scope.launch {
@@ -690,8 +692,7 @@ fun BlitzMathApp() {
                 }
                 Screen.VS_SCREEN -> {
                     com.mawelly.blitzmath.ui.screens.VsScreen(
-                        
-                        
+                        dataStore = dataStore,
                         onBackToMenu = { currentScreen = Screen.MAIN_MENU }
                     )
                 }

@@ -2127,6 +2127,163 @@ object Strings {
         else -> "Looking for a suitable opponent..."
     }
 
+    val vsModeSelectionTitle: String get() = when (currentLanguage) {
+        AppLanguage.TURKISH -> "OYNAMA MODUNU SEÇ"
+        AppLanguage.SPANISH -> "SELECCIONAR MODO DE JUEGO"
+        AppLanguage.GERMAN -> "SPIELMODUS WÄHLEN"
+        AppLanguage.FRENCH -> "CHOISIR LE MODE DE JEU"
+        AppLanguage.ITALIAN -> "SELEZIONA MODALITÀ DI GIOCO"
+        AppLanguage.PORTUGUESE -> "SELECIONAR MODO DE JOGO"
+        AppLanguage.HINDI -> "खेलने का मोड चुनें"
+        AppLanguage.CHINESE -> "选择游戏模式"
+        AppLanguage.RUSSIAN -> "ВЫБРАТЬ РЕЖИМ ИГРЫ"
+        else -> "SELECT PLAY MODE"
+    }
+
+    val vsReturnToMainMenu: String get() = when (currentLanguage) {
+        AppLanguage.TURKISH -> "ANA MENÜYE DÖN"
+        AppLanguage.SPANISH -> "VOLVER AL MENÚ PRINCIPAL"
+        AppLanguage.GERMAN -> "ZUM HAUPTMENÜ"
+        AppLanguage.FRENCH -> "RETOUR AU MENU PRINCIPAL"
+        AppLanguage.ITALIAN -> "TORNA AL MENU PRINCIPALE"
+        AppLanguage.PORTUGUESE -> "VOLTAR AO MENU PRINCIPAL"
+        AppLanguage.HINDI -> "मुख्य मेनू पर लौटें"
+        AppLanguage.CHINESE -> "返回主菜单"
+        AppLanguage.RUSSIAN -> "ВЕРНУТЬСЯ В ГЛАВНОЕ МЕНЮ"
+        else -> "RETURN TO MAIN MENU"
+    }
+
+    val vsModeRandomTitle: String get() = when (currentLanguage) {
+        AppLanguage.TURKISH -> "Rastgele VS"
+        AppLanguage.SPANISH -> "VS Aleatorio"
+        AppLanguage.GERMAN -> "Zufälliges VS"
+        AppLanguage.FRENCH -> "VS Aléatoire"
+        AppLanguage.ITALIAN -> "VS Casuale"
+        AppLanguage.PORTUGUESE -> "VS Aleatório"
+        AppLanguage.HINDI -> "रैंडम VS"
+        AppLanguage.CHINESE -> "随机对决"
+        AppLanguage.RUSSIAN -> "Случайный бой VS"
+        else -> "Random VS"
+    }
+
+    val vsModeRandomDesc: String get() = when (currentLanguage) {
+        AppLanguage.TURKISH -> "Dünyadan herhangi bir rakiple anında kapışın"
+        AppLanguage.SPANISH -> "Duelo 1v1 instantáneo con cualquier jugador"
+        AppLanguage.GERMAN -> "Sofortiges 1v1-Duell mit einem Online-Spieler"
+        AppLanguage.FRENCH -> "Duel 1v1 instantané avec un joueur en ligne"
+        AppLanguage.ITALIAN -> "Duello 1v1 istantaneo con un giocatore online"
+        AppLanguage.PORTUGUESE -> "Duelo 1v1 instantâneo com qualquer jogador"
+        AppLanguage.HINDI -> "किसी भी ऑनलाइन खिलाड़ी के साथ 1v1 द्वंद्व"
+        AppLanguage.CHINESE -> "与任何在线玩家进行即时 1v1 对决"
+        AppLanguage.RUSSIAN -> "Мгновенная дуэль 1 на 1 с любым игроком"
+        else -> "Instant 1v1 duel with any online player"
+    }
+
+    val vsModeCustomTitle: String get() = when (currentLanguage) {
+        AppLanguage.TURKISH -> "Arkadaş Düellosu"
+        AppLanguage.SPANISH -> "Duelo de Amigos"
+        AppLanguage.GERMAN -> "Freundesduell"
+        AppLanguage.FRENCH -> "Duel d'Amis"
+        AppLanguage.ITALIAN -> "Duello con Amici"
+        AppLanguage.PORTUGUESE -> "Duelo de Amigos"
+        AppLanguage.HINDI -> "मित्र द्वंद्व"
+        AppLanguage.CHINESE -> "好友对决"
+        AppLanguage.RUSSIAN -> "Дуэль с другом"
+        else -> "Friend Duel"
+    }
+
+    val vsModeCustomDesc: String get() = when (currentLanguage) {
+        AppLanguage.TURKISH -> "Oda kodu oluşturun veya arkadaşınızın odasına katılın"
+        AppLanguage.SPANISH -> "Crea un código de sala o únete a la de un amigo"
+        AppLanguage.GERMAN -> "Erstelle einen Raumcode oder tritt einem Freund bei"
+        AppLanguage.FRENCH -> "Créez un code de salon ou rejoignez un ami"
+        AppLanguage.ITALIAN -> "Crea un codice stanza o unisciti a un amico"
+        AppLanguage.PORTUGUESE -> "Crie um código de sala ou junte-se a um amigo"
+        AppLanguage.HINDI -> "रूम कोड बनाएं या मित्र के रूम में शामिल हों"
+        AppLanguage.CHINESE -> "创建房间代码或加入朋友的房间"
+        AppLanguage.RUSSIAN -> "Создайте код комнаты или присоединитесь к другу"
+        else -> "Create a room code or join a friend's room"
+    }
+
+    val vsCreateRoomBtn: String get() = when (currentLanguage) {
+        AppLanguage.TURKISH -> "Oda Oluştur"
+        AppLanguage.SPANISH -> "Crear Sala"
+        AppLanguage.GERMAN -> "Raum erstellen"
+        AppLanguage.FRENCH -> "Créer Salon"
+        AppLanguage.ITALIAN -> "Crea Stanza"
+        AppLanguage.PORTUGUESE -> "Criar Sala"
+        AppLanguage.HINDI -> "कमरा बनाएं"
+        AppLanguage.CHINESE -> "创建房间"
+        AppLanguage.RUSSIAN -> "Создать комнату"
+        else -> "Create Room"
+    }
+
+    val vsJoinRoomBtn: String get() = when (currentLanguage) {
+        AppLanguage.TURKISH -> "Odaya Katıl"
+        AppLanguage.SPANISH -> "Unirse a Sala"
+        AppLanguage.GERMAN -> "Raum beitreten"
+        AppLanguage.FRENCH -> "Rejoindre Salon"
+        AppLanguage.ITALIAN -> "Entra in Stanza"
+        AppLanguage.PORTUGUESE -> "Entrar na Sala"
+        AppLanguage.HINDI -> "कमरे में शामिल हों"
+        AppLanguage.CHINESE -> "加入房间"
+        AppLanguage.RUSSIAN -> "Войти в комнату"
+        else -> "Join Room"
+    }
+
+    val vsRoomCodeTitle: String get() = when (currentLanguage) {
+        AppLanguage.TURKISH -> "ODA KODUNUZ"
+        AppLanguage.SPANISH -> "TU CÓDIGO DE SALA"
+        AppLanguage.GERMAN -> "DEIN RAUMCODE"
+        AppLanguage.FRENCH -> "VOTRE CODE DE SALON"
+        AppLanguage.ITALIAN -> "IL TUO CODICE STANZA"
+        AppLanguage.PORTUGUESE -> "SEU CÓDIGO DE SALA"
+        AppLanguage.HINDI -> "आपका रूम कोड"
+        AppLanguage.CHINESE -> "您的房间代码"
+        AppLanguage.RUSSIAN -> "КОД ВАШЕЙ КОМНАТЫ"
+        else -> "YOUR ROOM CODE"
+    }
+
+    val vsWaitingForFriend: String get() = when (currentLanguage) {
+        AppLanguage.TURKISH -> "Arkadaşınızın katılması bekleniyor..."
+        AppLanguage.SPANISH -> "Esperando a que se una tu amigo..."
+        AppLanguage.GERMAN -> "Warten auf den Beitritt des Freundes..."
+        AppLanguage.FRENCH -> "En attente de votre ami..."
+        AppLanguage.ITALIAN -> "In attesa che l'amico si unisca..."
+        AppLanguage.PORTUGUESE -> "Esperando o amigo entrar..."
+        AppLanguage.HINDI -> "मित्र के शामिल होने की प्रतीक्षा..."
+        AppLanguage.CHINESE -> "等待朋友加入..."
+        AppLanguage.RUSSIAN -> "Ожидание присоединения друга..."
+        else -> "Waiting for friend to join..."
+    }
+
+    val vsInviteWhatsApp: String get() = when (currentLanguage) {
+        AppLanguage.TURKISH -> "Kodu Paylaş / WhatsApp"
+        AppLanguage.SPANISH -> "Compartir Código / WhatsApp"
+        AppLanguage.GERMAN -> "Code teilen / WhatsApp"
+        AppLanguage.FRENCH -> "Partager le code / WhatsApp"
+        AppLanguage.ITALIAN -> "Condividi codice / WhatsApp"
+        AppLanguage.PORTUGUESE -> "Compartilhar código / WhatsApp"
+        AppLanguage.HINDI -> "код साझा करें / WhatsApp"
+        AppLanguage.CHINESE -> "分享代码 / WhatsApp"
+        AppLanguage.RUSSIAN -> "Поделиться кодом / WhatsApp"
+        else -> "Share Code / WhatsApp"
+    }
+
+    val vsEnterCodePrompt: String get() = when (currentLanguage) {
+        AppLanguage.TURKISH -> "4 Haneli Oda Kodunu Girin"
+        AppLanguage.SPANISH -> "Introduce el código de 4 caracteres"
+        AppLanguage.GERMAN -> "Geben Sie den 4-stelligen Raumcode ein"
+        AppLanguage.FRENCH -> "Entrez le code à 4 caractères"
+        AppLanguage.ITALIAN -> "Inserisci il codice di 4 caratteri"
+        AppLanguage.PORTUGUESE -> "Digite o código de 4 caracteres"
+        AppLanguage.HINDI -> "4-अक्षरों का रूम कोड दर्ज करें"
+        AppLanguage.CHINESE -> "输入4位房间代码"
+        AppLanguage.RUSSIAN -> "Введите 4-значный код комнаты"
+        else -> "Enter 4-Character Room Code"
+    }
+
+
     val vsBtnForfeit: String get() = when (currentLanguage) {
         AppLanguage.TURKISH -> "Çekil"
         AppLanguage.SPANISH -> "Rendirse"
@@ -2183,4 +2340,74 @@ object Strings {
 
     fun isValidUsername(name: String): Boolean = name.length in 3..15 && name.all { it.isLetterOrDigit() }
     fun isUsernameBanned(name: String): Boolean = bannedWords.any { name.lowercase().contains(it) }
+
+    val menuStore: String get() = when (currentLanguage) {
+        AppLanguage.TURKISH -> "MAĞAZA"
+        AppLanguage.ENGLISH -> "STORE"
+        AppLanguage.SPANISH -> "TIENDA"
+        AppLanguage.GERMAN -> "SHOP"
+        AppLanguage.FRENCH -> "BOUTIQUE"
+        AppLanguage.ITALIAN -> "NEGOZIO"
+        AppLanguage.PORTUGUESE -> "LOJA"
+        AppLanguage.HINDI -> "स्टोर"
+        AppLanguage.CHINESE -> "商店"
+        AppLanguage.RUSSIAN -> "МАГАЗИН"
+        else -> "STORE"
+    }
+
+    val menuTasks: String get() = when (currentLanguage) {
+        AppLanguage.TURKISH -> "GÖREVLER"
+        AppLanguage.ENGLISH -> "TASKS"
+        AppLanguage.SPANISH -> "TAREAS"
+        AppLanguage.GERMAN -> "AUFGABEN"
+        AppLanguage.FRENCH -> "TÂCHES"
+        AppLanguage.ITALIAN -> "COMPITI"
+        AppLanguage.PORTUGUESE -> "TAREFAS"
+        AppLanguage.HINDI -> "कार्य"
+        AppLanguage.CHINESE -> "任务"
+        AppLanguage.RUSSIAN -> "ЗАДАНИЯ"
+        else -> "TASKS"
+    }
+
+    val menuRanking: String get() = when (currentLanguage) {
+        AppLanguage.TURKISH -> "SIRALAMA"
+        AppLanguage.ENGLISH -> "RANKING"
+        AppLanguage.SPANISH -> "RANKING"
+        AppLanguage.GERMAN -> "RANGLISTE"
+        AppLanguage.FRENCH -> "CLASSEMENT"
+        AppLanguage.ITALIAN -> "CLASSIFICA"
+        AppLanguage.PORTUGUESE -> "RANKING"
+        AppLanguage.HINDI -> "रैंकिंग"
+        AppLanguage.CHINESE -> "排名"
+        AppLanguage.RUSSIAN -> "РЕЙТИНГ"
+        else -> "RANKING"
+    }
+
+    val menuClassicSubtitle: String get() = when (currentLanguage) {
+        AppLanguage.TURKISH -> "Seviye tabanlı matematik"
+        AppLanguage.ENGLISH -> "Level-based math"
+        AppLanguage.SPANISH -> "Matemáticas por nivel"
+        AppLanguage.GERMAN -> "Stufenbasierte Mathematik"
+        AppLanguage.FRENCH -> "Mathématiques par niveau"
+        AppLanguage.ITALIAN -> "Matematica a livelli"
+        AppLanguage.PORTUGUESE -> "Matemática por nível"
+        AppLanguage.HINDI -> "स्तर-आधारित गणित"
+        AppLanguage.CHINESE -> "分级数学"
+        AppLanguage.RUSSIAN -> "Математика по уровням"
+        else -> "Level-based math"
+    }
+
+    val menuMixedSubtitle: String get() = when (currentLanguage) {
+        AppLanguage.TURKISH -> "Karma işlemler modu"
+        AppLanguage.ENGLISH -> "Mixed operations mode"
+        AppLanguage.SPANISH -> "Modo de operaciones mixtas"
+        AppLanguage.GERMAN -> "Gemischter Modus"
+        AppLanguage.FRENCH -> "Mode opérations mixtes"
+        AppLanguage.ITALIAN -> "Modalità operazioni miste"
+        AppLanguage.PORTUGUESE -> "Modo misto de operações"
+        AppLanguage.HINDI -> "मिश्रित संक्रिया"
+        AppLanguage.CHINESE -> "混合运算"
+        AppLanguage.RUSSIAN -> "Смешанные операции"
+        else -> "Mixed operations mode"
+    }
 }

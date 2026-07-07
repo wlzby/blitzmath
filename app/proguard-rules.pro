@@ -52,3 +52,16 @@
 # Huawei Ads Kit Rules
 -keep class com.huawei.openalliance.ad.** { *; }
 -keep class com.huawei.hms.ads.** { *; }
+
+# Unity Ads Rules (Essential for Huawei/non-GMS devices where Unity Ads is used)
+-keep class com.unity3d.ads.** { *; }
+-keep class com.unity3d.services.** { *; }
+-keep interface com.unity3d.ads.** { *; }
+-keepclassmembers class com.unity3d.ads.** { *; }
+
+# WorkManager & SplashScreen Rules
+-keep class androidx.work.** { *; }
+-keep class androidx.core.splashscreen.** { *; }
+
+# Kotlin Coroutines
+-keep class kotlinx.coroutines.** { *; }

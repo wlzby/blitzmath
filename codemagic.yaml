@@ -1,6 +1,6 @@
 workflows:
-  ios-build:
-    name: iOS Build
+  ios-debug:
+    name: iOS Debug Build (Testing)
     environment:
       vars:
         XCODE_PROJECT: "iosApp/iosApp.xcodeproj"
@@ -12,7 +12,7 @@ workflows:
       - name: Set up local properties
         script: |
           echo "sdk.dir=$HOME/Library/Android/sdk" > local.properties
-      - name: Build iOS
+      - name: Build iOS (Unsigned)
         script: |
           set -o pipefail
           chmod +x gradlew
@@ -28,6 +28,57 @@ workflows:
           echo "Found app at $APP_PATH"
           mkdir -p Payload
           cp -r "$APP_PATH" Payload/
-          zip -r $CM_BUILD_DIR/blitzmath.ipa Payload
+          zip -r $CM_BUILD_DIR/blitzmath_debug.ipa Payload
+    artifacts:
+      - blitzmath_debug.ipa
+
+  ios-release:
+    name: iOS App Store Release (TestFlight)
+    environment:
+      groups:
+        - apple_credentials
+      vars:
+        XCODE_PROJECT: "iosApp/iosApp.xcodeproj"
+        XCODE_SCHEME: "iosApp"
+        BUNDLE_ID: "com.mawelly.blitzmath"
+      xcode: latest
+      cocoapods: default
+      java: 17
+    scripts:
+      - name: Set up local properties
+        script: |
+          echo "sdk.dir=$HOME/Library/Android/sdk" > local.properties
+      - name: Set up Keychain and Fetch Signing Files
+        script: |
+          keychain initialize
+          app-store-connect fetch-signing-files "$BUNDLE_ID" --project-id "$XCODE_PROJECT" --type IOS_APP_STORE --create
+          keychain add-certificates
+      - name: Update Xcode Project Settings
+        script: |
+          xcode-project use-profiles --project "$XCODE_PROJECT"
+      - name: Build and Package Release IPA
+        script: |
+          xcode-project build-ipa --project "$XCODE_PROJECT" --scheme "$XCODE_SCHEME" --configuration Release
+      - name: Prepare Artifact
+        script: |
+          # Find exported ipa and copy to root
+          IPA_PATH=$(find build/ios/ipa -name "*.ipa" -type f | head -n 1)
+          if [ -n "$IPA_PATH" ]; then
+            cp "$IPA_PATH" $CM_BUILD_DIR/blitzmath.ipa
+          else
+            echo "No signed IPA found in build directory, finding elsewhere..."
+            IPA_PATH=$(find . -name "*.ipa" -type f | head -n 1)
+            if [ -n "$IPA_PATH" ]; then
+              cp "$IPA_PATH" $CM_BUILD_DIR/blitzmath.ipa
+            else
+              echo "Error: Could not locate signed IPA!"
+              exit 1
+            fi
+          fi
     artifacts:
       - blitzmath.ipa
+    publishing:
+      app_store_connect:
+        auth: integration
+        submit_to_testflight: true
+

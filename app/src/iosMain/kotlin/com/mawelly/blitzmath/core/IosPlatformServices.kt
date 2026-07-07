@@ -117,8 +117,35 @@ class IosAnalyticsManager : IAnalyticsManager {
 
 class IosShareManager : IShareManager {
     override fun shareScore(score: Int) {
-        val text = "BlitzMath Challenge'da $score skoruna ulaştım! 🧠 Sen de katıl ve zihnini test et! ⚡"
-        val items = listOf(text)
+        val currentLang = com.mawelly.blitzmath.localization.Strings.currentLanguage
+        val shareIntro = when (currentLang) {
+            com.mawelly.blitzmath.localization.AppLanguage.TURKISH -> "BlitzMath Challenge'da $score skoruna ulaştım! 🧠 Sen de katıl ve zihnini test et! ⚡"
+            com.mawelly.blitzmath.localization.AppLanguage.ENGLISH -> "I reached a score of $score in BlitzMath Challenge! 🧠 Are you ready to test your mind? ⚡"
+            com.mawelly.blitzmath.localization.AppLanguage.SPANISH -> "¡Alcancé una puntuación de $score en BlitzMath Challenge! 🧠 ¿Estás listo para poner a prueba tu mente? ⚡"
+            com.mawelly.blitzmath.localization.AppLanguage.GERMAN -> "Ich habe eine Punktzahl von $score in BlitzMath Challenge erreicht! 🧠 Bist du bereit, deinen Verstand zu testen? ⚡"
+            com.mawelly.blitzmath.localization.AppLanguage.FRENCH -> "J'ai atteint un score de $score dans BlitzMath Challenge ! 🧠 Es-tu prêt à tester ton esprit ? ⚡"
+            com.mawelly.blitzmath.localization.AppLanguage.ITALIAN -> "Ho raggiunto un punteggio di $score in BlitzMath Challenge! 🧠 Sei pronto a mettere alla prova la tua mente? ⚡"
+            com.mawelly.blitzmath.localization.AppLanguage.PORTUGUESE -> "Alcancei uma pontuação de $score no BlitzMath Challenge! 🧠 Você está pronto para testar sua mente? ⚡"
+            com.mawelly.blitzmath.localization.AppLanguage.HINDI -> "मैंने BlitzMath Challenge में $score का स्कोर हासिल किया! 🧠 क्या आप अपने दिमाग का परीक्षण करने के लिए तैयार हैं? ⚡"
+            com.mawelly.blitzmath.localization.AppLanguage.CHINESE -> "我在 BlitzMath Challenge 中获得了 $score 分！🧠 你准备好挑战你的大脑了吗？⚡"
+            com.mawelly.blitzmath.localization.AppLanguage.RUSSIAN -> "Я набрал $score очков в BlitzMath Challenge! 🧠 Готовы ли вы проверить свой разум? ⚡"
+            else -> "I reached a score of $score in BlitzMath Challenge! 🧠 Are you ready to test your mind? ⚡"
+        }
+        
+        val quote = com.mawelly.blitzmath.game.mathQuotes.random()
+        val quoteText = quote.getQuote(currentLang)
+        val quoteAuthor = quote.author
+        val formattedQuote = "\n\n\"$quoteText\" - $quoteAuthor"
+        
+        val shareText = "$shareIntro\n\nGoogle Play: https://play.google.com/store/apps/details?id=com.mawelly.blitzmath$formattedQuote"
+        val items = mutableListOf<Any>(shareText)
+        
+        // Eğer iOS AppIcon yüklenirse paylaşıma ekle
+        val appIconImage = platform.UIKit.UIImage.imageNamed("AppIcon")
+        if (appIconImage != null) {
+            items.add(appIconImage)
+        }
+        
         val activityController = platform.UIKit.UIActivityViewController(
             activityItems = items,
             applicationActivities = null
@@ -459,14 +486,121 @@ class IosLeaderboardManager : ILeaderboardManager {
     }
 }
 
-class IosPlatformServices : PlatformServices {
+class IosDummyMultiplayerController : IMultiplayerController {
+    override fun startMatchmaking(
+        playerId: String,
+        playerName: String,
+        level: Int,
+        country: String,
+        onMatched: (
+            lobbyId: String,
+            role: Int,
+            opponentName: String,
+            opponentLevel: Int,
+            opponentCountry: String,
+            seed: Long,
+            startTime: Long
+        ) -> Unit
+    ) {}
+
+    override fun cancelMatchmaking(playerId: String) {}
+
+    override fun createCustomRoom(
+        playerId: String,
+        playerName: String,
+        level: Int,
+        country: String,
+        onRoomCreated: (roomCode: String) -> Unit,
+        onMatched: (
+            lobbyId: String,
+            role: Int,
+            opponentName: String,
+            opponentLevel: Int,
+            opponentCountry: String,
+            seed: Long,
+            startTime: Long
+        ) -> Unit,
+        onError: (String) -> Unit
+    ) {}
+
+    override fun joinCustomRoom(
+        roomCode: String,
+        playerId: String,
+        playerName: String,
+        level: Int,
+        country: String,
+        onMatched: (
+            lobbyId: String,
+            role: Int,
+            opponentName: String,
+            opponentLevel: Int,
+            opponentCountry: String,
+            seed: Long,
+            startTime: Long
+        ) -> Unit,
+        onError: (String) -> Unit
+    ) {}
+
+    override fun cancelCustomRoom(roomCode: String, playerId: String) {}
+
+    override fun observeLobby(
+        lobbyId: String,
+        onUpdate: (LobbyState) -> Unit,
+        onError: (String) -> Unit
+    ) {}
+
+    override fun stopObservingLobby() {}
+    override fun updateScore(lobbyId: String, role: Int, score: Long) {}
+    override fun sendEmote(lobbyId: String, role: Int, emoteText: String) {}
+    override fun requestRematch(lobbyId: String, role: Int, request: Boolean) {}
+    override fun updateLobbyStatus(lobbyId: String, status: String) {}
+    override fun deleteLobby(lobbyId: String) {}
+    override fun acceptRematch(lobbyId: String, role: Int) {}
+    override fun advanceQuestionIndex(
+        lobbyId: String,
+        currentIndex: Long,
+        onResult: (Boolean) -> Unit
+    ) {
+        onResult(false)
+    }
+}
+
+class IosPlatformServices(
+    private val customAdController: IAdController? = null,
+    private val customMultiplayerController: IMultiplayerController? = null
+) : PlatformServices {
+    private var cachedCountry: String = NSLocale.currentLocale.countryCode ?: "US"
+
+    init {
+        CoroutineScope(Dispatchers.Default).launch {
+            try {
+                val url = NSURL.URLWithString("https://ip2c.org/self")
+                if (url != null) {
+                    val responseString = NSString.stringWithContentsOfURL(url, NSUTF8StringEncoding, null) as String?
+                    if (responseString != null) {
+                        val parts = responseString.split(";")
+                        if (parts.size >= 2 && parts[0] == "1") {
+                            val ipCountry = parts[1].uppercase().trim()
+                            if (ipCountry.length == 2) {
+                                cachedCountry = ipCountry
+                            }
+                        }
+                    }
+                }
+            } catch (t: Throwable) {
+                // Keep default/locale fallback
+            }
+        }
+    }
+
     override val soundManager: ISoundManager = IosSoundManager()
     override val hapticManager: IHapticManager = IosHapticManager()
     override val analyticsManager: IAnalyticsManager = IosAnalyticsManager()
     override val shareManager: IShareManager = IosShareManager()
-    override val adController: IAdController = IosAdController()
+    override val adController: IAdController = customAdController ?: IosAdController()
+    override val multiplayerController: IMultiplayerController = customMultiplayerController ?: IosDummyMultiplayerController()
     override val leaderboardManager: ILeaderboardManager = IosLeaderboardManager()
-    override val deviceCountry: String get() = NSLocale.currentLocale.countryCode ?: "US"
+    override val deviceCountry: String get() = cachedCountry
     override fun generateUuid(): String = platform.Foundation.NSUUID.UUID().UUIDString()
 
     override fun getCurrentTimeMillis(): Long {

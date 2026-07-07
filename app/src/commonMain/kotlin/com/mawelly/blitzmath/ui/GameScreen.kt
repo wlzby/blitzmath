@@ -32,6 +32,8 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 
@@ -157,7 +159,7 @@ fun GameScreen(
         return
     }
 
-    val gameState = remember(mode, startLevel) {
+    val gameState = remember(mode) {
         GameState(
             platformServices = platformServices,
             voiceManager = voiceManager,
@@ -1144,6 +1146,18 @@ private fun OptionButton(
     isEliminated: Boolean = false,
     feedback: AnswerFeedback = AnswerFeedback.NONE
 ) {
+    val interactionSource = remember { MutableInteractionSource() }
+    val isPressed by interactionSource.collectIsPressedAsState()
+
+    val pressedScale by animateFloatAsState(
+        targetValue = if (isPressed) 0.92f else 1.0f,
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioMediumBouncy,
+            stiffness = Spring.StiffnessMedium
+        ),
+        label = "pressedScale"
+    )
+
     val feedbackColor by animateColorAsState(
         targetValue = when (feedback) {
             AnswerFeedback.CORRECT -> Color(0xFF4CAF50) // Yeşil
@@ -1167,6 +1181,24 @@ private fun OptionButton(
         label = "scale"
     )
 
+    // Shake offset for wrong answers
+    val shakeOffset = remember { Animatable(0f) }
+    LaunchedEffect(feedback) {
+        if (feedback == AnswerFeedback.WRONG) {
+            val shakeSpec = keyframes<Float> {
+                durationMillis = 350
+                -15f at 50
+                12f at 100
+                -10f at 150
+                8f at 200
+                -5f at 250
+                3f at 300
+                0f at 350
+            }
+            shakeOffset.animateTo(0f, animationSpec = shakeSpec)
+        }
+    }
+
     val textString = if (isEliminated) "⚡" else number.toString()
     val fontSize = when {
         isEliminated -> 36.sp
@@ -1178,9 +1210,11 @@ private fun OptionButton(
 
     Button(
         onClick = { if (!isEliminated) onClick() },
+        interactionSource = interactionSource,
         modifier = modifier
             .size(width = width, height = height)
-            .scale(scale)
+            .scale(scale * pressedScale)
+            .offset(x = shakeOffset.value.dp)
             .alpha(alpha)
             .then(
                 if (feedback == AnswerFeedback.CORRECT) {
@@ -1502,7 +1536,33 @@ private fun CheckpointCompleteScreen(
                 .padding(top = 40.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-        Text(text = "🎉", fontSize = 80.sp, modifier = Modifier.scale(scale))
+        // Golden Success Badge
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier
+                .scale(scale)
+                .size(100.dp)
+                .background(
+                    Brush.radialGradient(
+                        listOf(Color(0xFFFFD700).copy(alpha = 0.4f), Color.Transparent)
+                    )
+                )
+        ) {
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier
+                    .size(72.dp)
+                    .clip(CircleShape)
+                    .background(
+                        Brush.verticalGradient(
+                            listOf(Color(0xFFFFEA00), Color(0xFFFFAB00))
+                        )
+                    )
+                    .border(3.dp, Color.White, CircleShape)
+            ) {
+                Text(text = "🏆", fontSize = 38.sp)
+            }
+        }
         Spacer(modifier = Modifier.height(16.dp))
         Text(
             text = Strings.checkpointComplete,

@@ -15,7 +15,7 @@ class WaterfallAdManager(
         secondary.preloadAll()
     }
 
-    override fun showAd(activity: Activity, placement: IAdManager.Placement, onReward: () -> Unit) {
+    override fun showAd(activity: Activity, placement: IAdManager.Placement, onReward: () -> Unit, onClosed: () -> Unit) {
         val isPrimaryReady = primary.isAdReady(placement)
         val isSecondaryReady = secondary.isAdReady(placement)
         
@@ -24,11 +24,11 @@ class WaterfallAdManager(
         when {
             isPrimaryReady -> {
                 Log.d(TAG, "Waterfall: Using AdMob (Primary)")
-                primary.showAd(activity, placement, onReward)
+                primary.showAd(activity, placement, onReward, onClosed)
             }
             isSecondaryReady -> {
                 Log.d(TAG, "Waterfall: AdMob not ready, using Unity (Secondary)")
-                secondary.showAd(activity, placement, onReward)
+                secondary.showAd(activity, placement, onReward, onClosed)
             }
             else -> {
                 Log.w(TAG, "Waterfall: No ads ready for ${placement.key}")
@@ -42,6 +42,7 @@ class WaterfallAdManager(
                 
                 // Acil yükleme tetikle
                 preloadAll()
+                onClosed()
             }
         }
     }

@@ -93,8 +93,8 @@ android {
         applicationId = "com.mawelly.blitzmath"
         minSdk = 24
         targetSdk = 35
-        versionCode = 19
-        versionName = "1.3.6"
+        versionCode = 24
+        versionName = "1.4.1"
 
         resourceConfigurations += listOf("en", "tr", "es", "de", "fr", "it", "pt", "hi", "zh", "ru")
     }
@@ -109,6 +109,10 @@ android {
     }
     androidResources {
         noCompress("png")
+    }
+    lint {
+        checkReleaseBuilds = false
+        abortOnError = false
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11

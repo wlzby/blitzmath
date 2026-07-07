@@ -33,6 +33,10 @@ import com.mawelly.blitzmath.localization.Strings
 import com.mawelly.blitzmath.ui.theme.LocalBlitzMathColors
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import androidx.compose.ui.layout.ContentScale
+import org.jetbrains.compose.resources.painterResource
+import com.mawelly.blitzmath.ui.components.ScientistResources
+import com.mawelly.blitzmath.game.ScientistCards
 
 @Composable
 fun GlobalLeaderboardScreen(
@@ -52,6 +56,8 @@ fun GlobalLeaderboardScreen(
     var selectedMode by remember { mutableStateOf(initialMode) }
     var lastRefresh by remember { mutableStateOf(0L) }
     var hasScrolledOnce by remember { mutableStateOf(false) }
+
+
 
     val playerId by dataStore.playerId.collectAsState(initial = "")
     val playerName by dataStore.playerName.collectAsState(initial = "")
@@ -74,6 +80,7 @@ fun GlobalLeaderboardScreen(
         "challenge" -> 1
         else -> classicLevel
     }
+
 
     fun loadData() {
         val manager = platformServices.leaderboardManager
@@ -170,40 +177,64 @@ fun GlobalLeaderboardScreen(
                 }
             }
 
-            // Mode Selector Tabs
+
+            // Mode Selector: Classic, Mixed, Challenge
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = 8.dp)
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(Color.White.copy(alpha = 0.05f))
-                    .padding(4.dp),
-                horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    .padding(vertical = 4.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                listOf(
-                    "classic" to Strings.menuClassic,
-                    "mixed" to Strings.menuMixed,
-                    "challenge" to Strings.menuChallenge
-                ).forEach { (mode, label) ->
+                val modes = listOf(
+                    Triple("classic", getCleanModeName(Strings.menuClassic), Color(0xFF00C853)),
+                    Triple("mixed", getCleanModeName(Strings.menuMixed), Color(0xFFD500F9)),
+                    Triple("challenge", getCleanModeName(Strings.menuChallenge), Color(0xFFFFAB00))
+                )
+                
+                modes.forEach { (mode, label, modeColor) ->
                     val isSelected = selectedMode == mode
                     Box(
                         modifier = Modifier
                             .weight(1f)
-                            .height(40.dp)
-                            .clip(RoundedCornerShape(8.dp))
-                            .background(if (isSelected) MaterialTheme.colorScheme.secondary else Color.Transparent)
-                            .clickable { selectedMode = mode }
+                            .height(36.dp)
+                            .clip(RoundedCornerShape(18.dp))
+                            .background(
+                                if (isSelected) {
+                                    modeColor.copy(alpha = 0.2f)
+                                } else {
+                                    Color.White.copy(alpha = 0.03f)
+                                }
+                            )
+                            .border(
+                                width = 1.dp,
+                                color = if (isSelected) modeColor else Color.White.copy(alpha = 0.1f),
+                                shape = RoundedCornerShape(18.dp)
+                            )
+                            .clickable {
+                                selectedMode = mode
+                            }
                             .padding(horizontal = 4.dp),
                         contentAlignment = Alignment.Center
                     ) {
-                        Text(
-                            text = label.replace(" MOD", "").replace(" MODE", ""),
-                            color = if (isSelected) Color.White else Color.White.copy(alpha = 0.5f),
-                            fontSize = 12.sp,
-                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-                            textAlign = TextAlign.Center,
-                            maxLines = 1
-                        )
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(8.dp)
+                                    .clip(CircleShape)
+                                    .background(if (isSelected) modeColor else Color.White.copy(alpha = 0.3f))
+                            )
+                            Text(
+                                text = label,
+                                color = if (isSelected) Color.White else Color.White.copy(alpha = 0.5f),
+                                fontSize = 12.sp,
+                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+                                textAlign = TextAlign.Center,
+                                maxLines = 1
+                            )
+                        }
                     }
                 }
             }
@@ -280,7 +311,7 @@ fun GlobalLeaderboardScreen(
                         Column(horizontalAlignment = Alignment.End) {
                             val currentPlayerEntry = leaderboard.find { it.playerId == playerId }
                             Text(
-                                text = "${currentPlayerEntry?.totalScore ?: myLocalScore.toLong()}",
+                                text = "${formatScore(currentPlayerEntry?.totalScore ?: myLocalScore.toLong())} XP",
                                 fontSize = 20.sp,
                                 fontWeight = FontWeight.Black,
                                 color = MaterialTheme.colorScheme.secondary
@@ -296,11 +327,16 @@ fun GlobalLeaderboardScreen(
             }
 
             // Leaderboard List
-            if (isLoading) {
+            val displayList = leaderboard
+            val showLoading = isLoading
+            val showError = errorMessage != null
+            val showNoScores = leaderboard.isEmpty()
+
+            if (showLoading) {
                 Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.Center) {
                     CircularProgressIndicator(color = Color(0xFFE94560))
                 }
-            } else if (errorMessage != null) {
+            } else if (showError) {
                 Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.Center) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Icon(Icons.Default.ErrorOutline, null, tint = Color.Red, modifier = Modifier.size(64.dp))
@@ -311,7 +347,7 @@ fun GlobalLeaderboardScreen(
                         }
                     }
                 }
-            } else if (leaderboard.isEmpty()) {
+            } else if (showNoScores) {
                 Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.Center) {
                     Text(Strings.noScoresYet, color = Color.White.copy(alpha = 0.5f))
                 }
@@ -322,12 +358,13 @@ fun GlobalLeaderboardScreen(
                     contentPadding = PaddingValues(bottom = 16.dp),
                     verticalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
-                    itemsIndexed(leaderboard) { index, entry ->
+                    itemsIndexed(displayList) { index, entry ->
                         val rank = index + 1
+                        val isMe = entry.playerId == playerId
                         LeaderboardItem(
                             rank = rank,
                             entry = entry,
-                            isCurrentPlayer = entry.playerId == playerId,
+                            isCurrentPlayer = isMe,
                             showLevel = selectedMode != "challenge"
                         )
                     }
@@ -373,26 +410,42 @@ private fun LeaderboardItem(
     isCurrentPlayer: Boolean,
     showLevel: Boolean = true
 ) {
-    val backgroundColor = when (rank) {
-        1 -> Color(0xFFFFD700).copy(alpha = 0.15f)
-        2 -> Color(0xFFC0C0C0).copy(alpha = 0.12f)
-        3 -> Color(0xFFCD7F32).copy(alpha = 0.1f)
-        else -> if (isCurrentPlayer) MaterialTheme.colorScheme.secondary.copy(alpha = 0.15f) else Color.White.copy(alpha = 0.03f)
+    val backgroundColor = if (isCurrentPlayer) {
+        Color(0xFFFF9800).copy(alpha = 0.15f)
+    } else {
+        when (rank) {
+            1 -> Color(0xFFFFD700).copy(alpha = 0.15f)
+            2 -> Color(0xFFC0C0C0).copy(alpha = 0.12f)
+            3 -> Color(0xFFCD7F32).copy(alpha = 0.1f)
+            else -> Color.White.copy(alpha = 0.03f)
+        }
     }
 
-    val borderColor = when (rank) {
-        1 -> Color(0xFFFFD700).copy(alpha = 0.5f)
-        2 -> Color(0xFFC0C0C0).copy(alpha = 0.4f)
-        3 -> Color(0xFFCD7F32).copy(alpha = 0.3f)
-        else -> if (isCurrentPlayer) MaterialTheme.colorScheme.secondary.copy(alpha = 0.4f) else Color.White.copy(alpha = 0.1f)
+    val borderColor = if (isCurrentPlayer) {
+        Color(0xFFFF9800).copy(alpha = 0.8f)
+    } else {
+        when (rank) {
+            1 -> Color(0xFFFFD700).copy(alpha = 0.5f)
+            2 -> Color(0xFFC0C0C0).copy(alpha = 0.4f)
+            3 -> Color(0xFFCD7F32).copy(alpha = 0.3f)
+            else -> Color.White.copy(alpha = 0.1f)
+        }
     }
 
     val rankIcon = when (rank) {
-        1 -> "👑"
+        1 -> "🥇"
         2 -> "🥈"
         3 -> "🥉"
         else -> "#$rank"
     }
+
+    val avatarId = remember(entry.playerId, entry.playerName) {
+        val cards = ScientistCards.cards
+        val hash = entry.playerId.hashCode().coerceAtLeast(0) + entry.playerName.hashCode().coerceAtLeast(0)
+        val index = hash % cards.size
+        cards[index.coerceIn(0, cards.size - 1)].id
+    }
+    val portraitRes = remember(avatarId) { ScientistResources.getPortrait(avatarId) }
 
     Card(
         modifier = Modifier
@@ -408,20 +461,79 @@ private fun LeaderboardItem(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 14.dp),
+                .padding(horizontal = 12.dp, vertical = 10.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             // Rank Number/Icon
             Box(
-                modifier = Modifier.width(44.dp),
+                modifier = Modifier.width(36.dp),
                 contentAlignment = Alignment.CenterStart
             ) {
-                Text(
-                    text = rankIcon,
-                    fontSize = if (rank <= 3) 24.sp else 16.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = if (rank <= 3) Color.Unspecified else Color.White.copy(alpha = 0.7f)
-                )
+                if (rank <= 3) {
+                    Box(
+                        modifier = Modifier
+                            .size(28.dp)
+                            .clip(CircleShape)
+                            .background(
+                                Brush.radialGradient(
+                                    listOf(
+                                        when(rank) {
+                                            1 -> Color(0xFFFFD700)
+                                            2 -> Color(0xFFC0C0C0)
+                                            else -> Color(0xFFCD7F32)
+                                        },
+                                        when(rank) {
+                                            1 -> Color(0xFFB8860B)
+                                            2 -> Color(0xFF808080)
+                                            else -> Color(0xFF8B4513)
+                                        }
+                                    )
+                                )
+                            ),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "$rank",
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Black,
+                            color = Color.White
+                        )
+                    }
+                } else {
+                    Text(
+                        text = rankIcon,
+                        fontSize = 15.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White.copy(alpha = 0.7f)
+                    )
+                }
+            }
+
+            // Circular Avatar
+            Box(
+                modifier = Modifier
+                    .padding(end = 10.dp)
+                    .size(36.dp)
+                    .clip(CircleShape)
+                    .background(Color.White.copy(alpha = 0.1f))
+                    .border(1.dp, Color.White.copy(alpha = 0.2f), CircleShape),
+                contentAlignment = Alignment.Center
+            ) {
+                if (portraitRes != null) {
+                    androidx.compose.foundation.Image(
+                        painter = painterResource(portraitRes),
+                        contentDescription = null,
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop
+                    )
+                } else {
+                    Text(
+                        text = entry.playerName.take(1).uppercase(),
+                        color = Color.White,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 13.sp
+                    )
+                }
             }
 
             // Player Info
@@ -433,14 +545,14 @@ private fun LeaderboardItem(
                 PlatformFlag(
                     countryCode = displayCountry,
                     modifier = Modifier
-                        .padding(end = 10.dp)
-                        .size(24.dp),
-                    fallbackSize = 18.sp
+                        .padding(end = 8.dp)
+                        .size(22.dp),
+                    fallbackSize = 16.sp
                 )
                 Column {
                     Text(
                         text = entry.playerName,
-                        fontSize = 16.sp,
+                        fontSize = 15.sp,
                         fontWeight = if (rank <= 3 || isCurrentPlayer) FontWeight.Bold else FontWeight.Medium,
                         color = Color.White
                     )
@@ -457,14 +569,18 @@ private fun LeaderboardItem(
             // Score
             Column(horizontalAlignment = Alignment.End) {
                 Text(
-                    text = "${entry.totalScore}",
-                    fontSize = 18.sp,
+                    text = "${formatScore(entry.totalScore)} XP",
+                    fontSize = 16.sp,
                     fontWeight = FontWeight.ExtraBold,
-                    color = when (rank) {
-                        1 -> Color(0xFFFFD700)
-                        2 -> Color(0xFFE2E2E2)
-                        3 -> Color(0xFFFFA07A)
-                        else -> Color.White
+                    color = if (isCurrentPlayer) {
+                        Color(0xFFFF9800)
+                    } else {
+                        when (rank) {
+                            1 -> Color(0xFFFFD700)
+                            2 -> Color(0xFFE2E2E2)
+                            3 -> Color(0xFFFFA07A)
+                            else -> Color.White
+                        }
                     }
                 )
                 if (rank == 1) {
@@ -479,4 +595,34 @@ private fun LeaderboardItem(
             }
         }
     }
+}
+
+fun formatScore(score: Long): String {
+    if (score < 0) return "-" + formatScore(-score)
+    val scoreStr = score.toString()
+    val len = scoreStr.length
+    if (len <= 3) return scoreStr
+    val sb = StringBuilder()
+    for (i in 0 until len) {
+        sb.append(scoreStr[i])
+        val remaining = len - 1 - i
+        if (remaining > 0 && remaining % 3 == 0) {
+            sb.append(".")
+        }
+    }
+    return sb.toString()
+}
+
+private fun getCleanModeName(rawName: String): String {
+    return rawName
+        .replace(" MODE", "", ignoreCase = true)
+        .replace("MODE ", "", ignoreCase = true)
+        .replace(" MOD", "", ignoreCase = true)
+        .replace("MODO ", "", ignoreCase = true)
+        .replace(" MODUS", "", ignoreCase = true)
+        .replace("MODALITÀ ", "", ignoreCase = true)
+        .replace(" РЕЖИМ", "", ignoreCase = true)
+        .replace(" मोड", "", ignoreCase = true)
+        .replace("模式", "", ignoreCase = true)
+        .trim()
 }

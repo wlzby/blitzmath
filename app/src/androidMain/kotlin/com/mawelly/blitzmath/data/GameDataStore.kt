@@ -48,6 +48,7 @@ class GameDataStore(private val context: Context) : IGameDataStore {
         val LAST_SYNCED_CLASSIC_SCORE = intPreferencesKey("last_synced_classic_score")
         val LAST_SYNCED_MIXED_SCORE = intPreferencesKey("last_synced_mixed_score")
         val LAST_SYNCED_CHALLENGE_SCORE = intPreferencesKey("last_synced_challenge_score")
+        val DAILY_TASKS_CLAIMED = stringPreferencesKey("daily_tasks_claimed")
     }
 
     // Ses Ayarları
@@ -69,6 +70,7 @@ class GameDataStore(private val context: Context) : IGameDataStore {
     override val lastSyncedClassicScore: Flow<Int> = context.dataStore.data.map { it[LAST_SYNCED_CLASSIC_SCORE] ?: 0 }
     override val lastSyncedMixedScore: Flow<Int> = context.dataStore.data.map { it[LAST_SYNCED_MIXED_SCORE] ?: 0 }
     override val lastSyncedChallengeScore: Flow<Int> = context.dataStore.data.map { it[LAST_SYNCED_CHALLENGE_SCORE] ?: 0 }
+    override val dailyTasksClaimed: Flow<String> = context.dataStore.data.map { it[DAILY_TASKS_CLAIMED] ?: "" }
 
     // Dil
     override val language: Flow<AppLanguage> = context.dataStore.data.map {
@@ -385,5 +387,9 @@ class GameDataStore(private val context: Context) : IGameDataStore {
 
     override suspend fun saveLastSyncedChallengeScore(score: Int) {
         context.dataStore.edit { it[LAST_SYNCED_CHALLENGE_SCORE] = score }
+    }
+
+    override suspend fun saveDailyTasksClaimed(claimed: String) {
+        context.dataStore.edit { it[DAILY_TASKS_CLAIMED] = claimed }
     }
 }

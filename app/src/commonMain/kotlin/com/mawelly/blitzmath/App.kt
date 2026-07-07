@@ -331,6 +331,7 @@ fun App(dataStore: IGameDataStore) {
                     }
                     AppScreen.VS_SCREEN -> {
                         VsScreen(
+                            dataStore = dataStore,
                             onBackToMenu = { currentScreen = AppScreen.MAIN_MENU }
                         )
                     }

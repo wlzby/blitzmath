@@ -11,11 +11,9 @@ class BlitzMathApplication : Application() {
         super.onCreate()
         val context = this
         try {
-            // Firebase'i başlat (Sadece GMS varsa veya güvenli şekilde)
+            // Firebase'i başlat (GMS olsa da olmasa da Firestore ve Crashlytics için gereklidir)
             try {
-                if (com.mawelly.blitzmath.utils.ServiceChecker.isGmsAvailable(context)) {
-                    FirebaseApp.initializeApp(context)
-                }
+                FirebaseApp.initializeApp(context)
             } catch (t: Throwable) {
                 android.util.Log.e("BlitzMathApp", "Firebase initialization failed: ${t.message}")
             }

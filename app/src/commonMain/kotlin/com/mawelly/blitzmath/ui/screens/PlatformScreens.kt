@@ -6,9 +6,6 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.sp
 
 @Composable
-expect fun VsScreen(onBackToMenu: () -> Unit)
-
-@Composable
 expect fun AppLifecycleObserver(onPause: () -> Unit, onResume: () -> Unit)
 
 @Composable

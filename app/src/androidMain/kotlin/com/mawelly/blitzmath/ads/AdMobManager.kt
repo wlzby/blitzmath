@@ -11,6 +11,8 @@ import com.google.android.gms.ads.MobileAds
 import com.google.android.gms.ads.RequestConfiguration
 import com.google.android.gms.ads.rewarded.RewardedAd
 import com.google.android.gms.ads.rewarded.RewardedAdLoadCallback
+import com.google.android.gms.ads.interstitial.InterstitialAd
+import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback
 import com.mawelly.blitzmath.BuildConfig
 
 /**
@@ -25,6 +27,19 @@ class AdMobManager(private val context: Context) : IAdManager {
     private val loadingPlacements = mutableSetOf<IAdManager.Placement>()
     private val maxPoolSize = 1 // 1 adet önbelleğe alma yeterlidir, istek birikmesini engeller
     private val retryDelays = mutableMapOf<IAdManager.Placement, Long>()
+
+    // Geçiş Reklamı (Interstitial)
+    private var interstitialAd: InterstitialAd? = null
+    private var loadingInterstitial = false
+    private var lastInterstitialShownTime = 0L
+
+    private fun getInterstitialAdUnitId(): String {
+        return if (BuildConfig.DEBUG) {
+            "ca-app-pub-3940256099942544/1033061715" // Google Test Interstitial ID
+        } else {
+            "ca-app-pub-7719335438184188/9651528659" // Put production Interstitial ID here
+        }
+    }
 
     // Reklam Kimlikleri (Ad Unit IDs)
     private fun getAdUnitId(placement: IAdManager.Placement): String {
@@ -74,7 +89,55 @@ class AdMobManager(private val context: Context) : IAdManager {
     }
 
     override fun preloadAll() {
-        IAdManager.Placement.entries.forEach { fillPool(it) }
+        // Sadece en çok kullanılan 2 placement'ı önceden yükle
+        // Geri kalanlar kullanıcı ilgili ekrana gelince yüklenir (lazy)
+        fillPool(IAdManager.Placement.SAVE_ME)
+        fillPool(IAdManager.Placement.REFILL_CHARGES)
+        loadInterstitialAd()
+    }
+
+    // Belirli bir yerleşimi bağlam odaklı önceden yükle (oyun başlarken, bitince, vs.)
+    fun preloadForPlacement(placement: IAdManager.Placement) {
+        fillPool(placement)
+    }
+
+    private fun loadInterstitialAd() {
+        if (loadingInterstitial || interstitialAd != null) return
+        loadingInterstitial = true
+        val adRequest = AdRequest.Builder().build()
+        
+        Log.d(TAG, "Loading AdMob Interstitial Ad...")
+        InterstitialAd.load(
+            context,
+            getInterstitialAdUnitId(),
+            adRequest,
+            object : InterstitialAdLoadCallback() {
+                override fun onAdLoaded(ad: InterstitialAd) {
+                    loadingInterstitial = false
+                    interstitialAd = ad
+                    Log.d(TAG, "✅ AdMob Interstitial Ad Loaded")
+                    
+                    ad.fullScreenContentCallback = object : FullScreenContentCallback() {
+                        override fun onAdDismissedFullScreenContent() {
+                            interstitialAd = null
+                            loadInterstitialAd()
+                        }
+                        override fun onAdFailedToShowFullScreenContent(adError: AdError) {
+                            interstitialAd = null
+                            loadInterstitialAd()
+                        }
+                    }
+                }
+
+                override fun onAdFailedToLoad(loadAdError: LoadAdError) {
+                    loadingInterstitial = false
+                    Log.e(TAG, "❌ AdMob Interstitial Failed to Load: ${loadAdError.message}. Retrying in 30s...")
+                    android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
+                        loadInterstitialAd()
+                    }, 30000L)
+                }
+            }
+        )
     }
 
     private fun fillPool(placement: IAdManager.Placement) {
@@ -119,12 +182,11 @@ class AdMobManager(private val context: Context) : IAdManager {
 
                 override fun onAdFailedToLoad(loadAdError: LoadAdError) {
                     loadingPlacements.remove(placement)
-                    val currentDelay = retryDelays[placement] ?: 15000L
-                    // Üstel geri çekilme: Gecikmeyi ikiye katla, en fazla 5 dakika (300.000 ms) yap
+                    val currentDelay = retryDelays[placement] ?: 30000L
+                    // Üstel geri çekilme: 30s → 60s → 120s → ... en fazla 5 dakika
                     val nextDelay = (currentDelay * 2).coerceAtMost(300000L)
                     retryDelays[placement] = nextDelay
-                    
-                    Log.e(TAG, "❌ Ad Failed to Load for ${placement.key}: ${loadAdError.message}. Retrying in ${currentDelay / 1000}s.")
+                    Log.e(TAG, "❌ Ad Failed for ${placement.key}: ${loadAdError.message}. Retry in ${currentDelay / 1000}s")
                     android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
                         fillPool(placement)
                     }, currentDelay)
@@ -133,7 +195,7 @@ class AdMobManager(private val context: Context) : IAdManager {
         )
     }
 
-    override fun showAd(activity: Activity, placement: IAdManager.Placement, onReward: () -> Unit) {
+    override fun showAd(activity: Activity, placement: IAdManager.Placement, onReward: () -> Unit, onClosed: () -> Unit) {
         val pool = adPool[placement]
         if (!pool.isNullOrEmpty()) {
             val ad = pool.removeAt(0)
@@ -144,11 +206,13 @@ class AdMobManager(private val context: Context) : IAdManager {
                     Log.d(TAG, "AdMob: Ad Dismissed")
                     fillPool(placement)
                     if (isRewarded) onReward()
+                    onClosed()
                 }
 
                 override fun onAdFailedToShowFullScreenContent(error: AdError) {
                     Log.e(TAG, "❌ AdMob: Failed to show: ${error.message}")
                     fillPool(placement)
+                    onClosed()
                 }
             }
 
@@ -157,18 +221,50 @@ class AdMobManager(private val context: Context) : IAdManager {
                 Log.d(TAG, "💰 AdMob: Reward earned for ${placement.key}")
             }
         } else {
-            Log.d(TAG, "⚠️ AdMob: Pool empty for ${placement.key}, triggering load...")
+            Log.d(TAG, "⚠️ AdMob: Pool empty for ${placement.key}, loading on-demand...")
+            // Reklam henüz yüklenmemişse hemen yükle ve kullanıcıya 'yükleniyor' durumu göster
             loadRewardedAd(placement)
+            onClosed() // UI'yi kilitleme, kullanıcıya geri dön
         }
     }
 
     // Geriye dönük uyumluluk için eski fonksiyonları güncelleyelim
     fun showAdForCharges(activity: Activity, onAdFinished: () -> Unit) {
-        showAd(activity, IAdManager.Placement.REFILL_CHARGES, onAdFinished)
+        showAd(activity, IAdManager.Placement.REFILL_CHARGES, onAdFinished, {})
     }
 
     override fun onGameOver(activity: Activity, onAdClosed: () -> Unit) {
-        onAdClosed()
+        val now = System.currentTimeMillis()
+        val cooldownMs = 120000L // 2 minutes cooldown
+        val isCooldownOver = (now - lastInterstitialShownTime) >= cooldownMs
+        
+        Log.d(TAG, "onGameOver called. Interstitial ready: ${interstitialAd != null}, cooldown over: $isCooldownOver")
+        
+        val ad = interstitialAd
+        if (ad != null && isCooldownOver) {
+            ad.fullScreenContentCallback = object : FullScreenContentCallback() {
+                override fun onAdDismissedFullScreenContent() {
+                    Log.d(TAG, "AdMob Interstitial Dismissed")
+                    interstitialAd = null
+                    lastInterstitialShownTime = System.currentTimeMillis()
+                    loadInterstitialAd()
+                    onAdClosed()
+                }
+                override fun onAdFailedToShowFullScreenContent(adError: AdError) {
+                    Log.e(TAG, "❌ AdMob Interstitial Failed to Show: ${adError.message}")
+                    interstitialAd = null
+                    loadInterstitialAd()
+                    onAdClosed()
+                }
+            }
+            ad.show(activity)
+        } else {
+            Log.d(TAG, "AdMob: Skipping interstitial ad (ready=${ad != null}, cooldownOver=$isCooldownOver)")
+            if (ad == null) {
+                loadInterstitialAd()
+            }
+            onAdClosed()
+        }
     }
 
     override fun isAdReady(): Boolean {

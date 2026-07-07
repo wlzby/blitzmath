@@ -11,7 +11,7 @@ interface IAdManager {
     }
 
     fun preloadAll()
-    fun showAd(activity: Activity, placement: Placement, onReward: () -> Unit)
+    fun showAd(activity: Activity, placement: Placement, onReward: () -> Unit, onClosed: () -> Unit = {})
     fun onGameOver(activity: Activity, onAdClosed: () -> Unit = {})
     fun isAdReady(): Boolean
     fun isAdReady(placement: Placement): Boolean

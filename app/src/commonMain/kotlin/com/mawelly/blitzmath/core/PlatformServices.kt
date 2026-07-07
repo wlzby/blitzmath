@@ -55,6 +55,7 @@ interface PlatformServices {
     val analyticsManager: IAnalyticsManager
     val shareManager: IShareManager
     val adController: IAdController
+    val multiplayerController: IMultiplayerController
     fun getCurrentDateString(): String
     fun openUrl(url: String)
     fun scheduleCardRecharge(cardId: String, delayMinutes: Long) {}
