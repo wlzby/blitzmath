@@ -131,6 +131,9 @@ class IosGameDataStore : IGameDataStore {
     override val playerXp = MutableStateFlow(
         if (defaults.objectForKey("player_xp") != null) defaults.integerForKey("player_xp").toInt() else 0
     )
+    override val dailyTasksClaimed = MutableStateFlow(
+        defaults.stringForKey("daily_tasks_claimed") ?: ""
+    )
 
     private fun parseCharges(raw: String): Map<String, Int> {
         if (raw.isEmpty()) return emptyMap()
@@ -372,6 +375,11 @@ class IosGameDataStore : IGameDataStore {
     override suspend fun savePlayerXp(xp: Int) {
         playerXp.value = xp
         defaults.setInteger(xp.toLong(), forKey = "player_xp")
+    }
+
+    override suspend fun saveDailyTasksClaimed(claimed: String) {
+        dailyTasksClaimed.value = claimed
+        defaults.setObject(claimed, forKey = "daily_tasks_claimed")
     }
 
     override suspend fun saveLastSyncedClassicScore(score: Int) {

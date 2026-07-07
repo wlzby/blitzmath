@@ -556,6 +556,26 @@ class IosDummyMultiplayerController : IMultiplayerController {
     override fun updateLobbyStatus(lobbyId: String, status: String) {}
     override fun deleteLobby(lobbyId: String) {}
     override fun acceptRematch(lobbyId: String, role: Int) {}
+
+    override fun submitCorrectAnswer(
+        lobbyId: String,
+        role: Int,
+        playerId: String,
+        questionIndex: Long,
+        onResult: (Boolean) -> Unit
+    ) {
+        onResult(true)
+    }
+
+    override fun submitWrongAnswer(
+        lobbyId: String,
+        role: Int,
+        questionIndex: Long,
+        onResult: (Boolean) -> Unit
+    ) {
+        onResult(true)
+    }
+
     override fun advanceQuestionIndex(
         lobbyId: String,
         currentIndex: Long,
