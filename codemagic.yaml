@@ -34,9 +34,12 @@ workflows:
 
   ios-release:
     name: iOS App Store Release (TestFlight)
+    integrations:
+      app_store_connect: app_store_connect
     environment:
       groups:
         - apple_credentials
+
       vars:
         XCODE_PROJECT: "iosApp/iosApp.xcodeproj"
         XCODE_SCHEME: "iosApp"
