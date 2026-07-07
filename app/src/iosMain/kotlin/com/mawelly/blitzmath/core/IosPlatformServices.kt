@@ -137,7 +137,13 @@ class IosShareManager : IShareManager {
         val quoteAuthor = quote.author
         val formattedQuote = "\n\n\"$quoteText\" - $quoteAuthor"
         
-        val shareText = "$shareIntro\n\nGoogle Play: https://play.google.com/store/apps/details?id=com.mawelly.blitzmath$formattedQuote"
+        val storeLinks = when (currentLang) {
+            com.mawelly.blitzmath.localization.AppLanguage.TURKISH -> 
+                "\n\n📲 Hemen İndir ve Yarış:\nAndroid (Google Play): https://play.google.com/store/apps/details?id=com.mawelly.blitzmath\niOS (App Store): https://apps.apple.com/app/blitzmath/id6503923303"
+            else -> 
+                "\n\n📲 Download & Play now:\nAndroid (Google Play): https://play.google.com/store/apps/details?id=com.mawelly.blitzmath\niOS (App Store): https://apps.apple.com/app/blitzmath/id6503923303"
+        }
+        val shareText = "$shareIntro$storeLinks$formattedQuote"
         val items = mutableListOf<Any>(shareText)
         
         // Eğer iOS AppIcon yüklenirse paylaşıma ekle

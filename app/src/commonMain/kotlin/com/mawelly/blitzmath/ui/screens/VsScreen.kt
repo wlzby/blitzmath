@@ -729,7 +729,31 @@ fun VsScreen(
                     roomCode = createdRoomCode,
                     playerName = playerName,
                     onShareCode = { code ->
-                        val shareText = "BlitzMath Challenge'da seninle düello yapmak istiyorum! 🧠⚡\n\nOda Kodum: $code\n\nOyunu açıp VS modunda 'Odaya Katıl'a basarak kodumu gir ve kapışalım!\nGoogle Play: https://play.google.com/store/apps/details?id=com.mawelly.blitzmath"
+                        val shareText = when (currentLang) {
+                            AppLanguage.TURKISH -> 
+                                "🧠 *BlitzMath Challenge: Düello Daveti!* ⚡\n\n" +
+                                "Seninle matematikte kapışmak istiyorum! Bakalım kim daha hızlı düşünecek? 😉\n\n" +
+                                "🔑 *Oda Kodum:* `$code`\n\n" +
+                                "🎮 *Nasıl Katılırsın?*\n" +
+                                "1️⃣ BlitzMath oyununu aç\n" +
+                                "2️⃣ Ana menüden *VS (Düello)* moduna gir\n" +
+                                "3️⃣ *Odaya Katıl* seçeneğine basıp kodumu gir ve savaşa katıl!\n\n" +
+                                "📲 *Hemen İndir ve Yarış:*\n" +
+                                "Android (Google Play): https://play.google.com/store/apps/details?id=com.mawelly.blitzmath\n" +
+                                "iOS (App Store): https://apps.apple.com/app/blitzmath/id6503923303"
+                            
+                            else -> 
+                                "🧠 *BlitzMath Challenge: Duel Invitation!* ⚡\n\n" +
+                                "I want to duel you in math! Let's see who thinks faster! 😉\n\n" +
+                                "🔑 *My Room Code:* `$code`\n\n" +
+                                "🎮 *How to Join?*\n" +
+                                "1️⃣ Open BlitzMath\n" +
+                                "2️⃣ Go to *VS (Duel)* mode from the main menu\n" +
+                                "3️⃣ Tap *Join Room*, enter my code, and join the battle!\n\n" +
+                                "📲 *Download & Play now:*\n" +
+                                "Android (Google Play): https://play.google.com/store/apps/details?id=com.mawelly.blitzmath\n" +
+                                "iOS (App Store): https://apps.apple.com/app/blitzmath/id6503923303"
+                        }
                         platformServices.openUrl("https://api.whatsapp.com/send?text=" + urlEncode(shareText))
                     },
                     onCancel = {
