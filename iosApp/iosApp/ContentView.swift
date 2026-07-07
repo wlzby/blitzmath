@@ -455,6 +455,8 @@ class SwiftMultiplayerController: NSObject, IMultiplayerController {
             let res = result as? Bool ?? false
             onResult(KotlinBoolean(value: res))
         }
+    }
+    
     func createCustomRoom(
         playerId: String,
         playerName: String,
