@@ -68,9 +68,43 @@ enum class RematchState {
 
 fun getFlagEmojiForCountryCode(countryCode: String): String {
     if (countryCode.length != 2) return "❓"
-    val firstLetter = Character.codePointAt(countryCode.uppercase(java.util.Locale.ROOT), 0) - 0x41 + 0x1F1E6
-    val secondLetter = Character.codePointAt(countryCode.uppercase(java.util.Locale.ROOT), 1) - 0x41 + 0x1F1E6
-    return try { String(Character.toChars(firstLetter)) + String(Character.toChars(secondLetter)) } catch (e: Exception) { "❓" }
+    val uppercase = countryCode.uppercase()
+    val firstChar = uppercase[0]
+    val secondChar = uppercase[1]
+    
+    if (firstChar !in 'A'..'Z' || secondChar !in 'A'..'Z') return "❓"
+    
+    val cp1 = firstChar.code - 65 + 0x1F1E6
+    val cp2 = secondChar.code - 65 + 0x1F1E6
+    
+    return codePointToString(cp1) + codePointToString(cp2)
+}
+
+private fun codePointToString(cp: Int): String {
+    val high = ((cp - 0x10000) ushr 10) + 0xD800
+    val low = ((cp - 0x10000) and 0x3FF) + 0xDC00
+    return charArrayOf(high.toChar(), low.toChar()).concatToString()
+}
+
+private fun urlEncode(value: String): String {
+    val sb = StringBuilder()
+    val hexChars = "0123456789ABCDEF"
+    for (char in value) {
+        if (char in 'a'..'z' || char in 'A'..'Z' || char in '0'..'9' || char == '-' || char == '_' || char == '.' || char == '~') {
+            sb.append(char)
+        } else if (char == ' ') {
+            sb.append("%20")
+        } else {
+            val bytes = char.toString().encodeToByteArray()
+            for (b in bytes) {
+                val byteValue = b.toInt() and 0xFF
+                val upper = (byteValue and 0xF0) shr 4
+                val lower = byteValue and 0x0F
+                sb.append('%').append(hexChars[upper]).append(hexChars[lower])
+            }
+        }
+    }
+    return sb.toString()
 }
 
 @Composable
@@ -175,7 +209,7 @@ fun VsScreen(
     var activeLobbyId by remember { mutableStateOf("") }
     var myRole by remember { mutableIntStateOf(1) } // 1: Player 1, 2: Player 2
     
-    var myCountryCode by remember { mutableStateOf(java.util.Locale.getDefault().country.takeIf { it.isNotBlank() } ?: "US") }
+    var myCountryCode by remember { mutableStateOf(platformServices.deviceCountry) }
     var opponentCountryCode by remember { mutableStateOf("") }
     
     var opponentName by remember { mutableStateOf("") }
@@ -696,7 +730,7 @@ fun VsScreen(
                     playerName = playerName,
                     onShareCode = { code ->
                         val shareText = "BlitzMath Challenge'da seninle düello yapmak istiyorum! 🧠⚡\n\nOda Kodum: $code\n\nOyunu açıp VS modunda 'Odaya Katıl'a basarak kodumu gir ve kapışalım!\nGoogle Play: https://play.google.com/store/apps/details?id=com.mawelly.blitzmath"
-                        platformServices.openUrl("https://api.whatsapp.com/send?text=" + java.net.URLEncoder.encode(shareText, "UTF-8"))
+                        platformServices.openUrl("https://api.whatsapp.com/send?text=" + urlEncode(shareText))
                     },
                     onCancel = {
                         if (createdRoomCode.isNotEmpty()) {
@@ -1993,7 +2027,9 @@ fun QuestionTimerBar(timeLeftProvider: () -> Long) {
 @Composable
 fun VsTimerHud(secondsLeftProvider: () -> Long) {
     val secondsLeft = secondsLeftProvider()
-    val durationText = String.format("%02d:%02d", secondsLeft / 60, secondsLeft % 60)
+    val minutes = secondsLeft / 60
+    val seconds = secondsLeft % 60
+    val durationText = "${if (minutes < 10) "0" else ""}$minutes:${if (seconds < 10) "0" else ""}$seconds"
     
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         CircularTimerIndicator(secondsLeftProvider)
@@ -2106,7 +2142,7 @@ fun VsGameOverView(
 ) {
     val hasWon = myScore > opponentScore
     val isDraw = myScore == opponentScore
-    val isKnockout = Math.abs(myScore - opponentScore) >= 100
+    val isKnockout = kotlin.math.abs(myScore - opponentScore) >= 100
     
     val resultTitle = when {
         isKnockout && hasWon -> Strings.vsGameOverKnockoutWin
