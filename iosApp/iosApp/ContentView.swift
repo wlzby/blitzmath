@@ -129,7 +129,7 @@ class SwiftMultiplayerController: NSObject, IMultiplayerController {
         playerName: String,
         level: Int32,
         country: String,
-        onMatched: @escaping (String, Int32, String, Int32, String, Int64, Int64) -> Void
+        onMatched: @escaping (String, KotlinInt, String, KotlinInt, String, KotlinLong, KotlinLong) -> Void
     ) {
         let validPlayerId = playerId.isEmpty ? UUID().uuidString : playerId
         cancelMatchmaking(validPlayerId)
@@ -176,7 +176,7 @@ class SwiftMultiplayerController: NSObject, IMultiplayerController {
                                     let seed = lobbyData["seed"] as? Int64 ?? 0
                                     
                                     self.cancelMatchmaking(validPlayerId)
-                                    onMatched(lobbyId, 1, p2Name, p2Level, p2Country, seed, startTime)
+                                    onMatched(lobbyId, KotlinInt(value: 1), p2Name, KotlinInt(value: p2Level), p2Country, KotlinLong(value: seed), KotlinLong(value: startTime))
                                 } else if attempts < 5 {
                                     attempts += 1
                                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
@@ -273,7 +273,7 @@ class SwiftMultiplayerController: NSObject, IMultiplayerController {
                                 let success = result as? Bool ?? false
                                 if success {
                                     self.cancelMatchmaking(validPlayerId)
-                                    onMatched(lobbyId, 2, oppName, oppLevel, oppCountry, seed, startTime)
+                                    onMatched(lobbyId, KotlinInt(value: 2), oppName, KotlinInt(value: oppLevel), oppCountry, KotlinLong(value: seed), KotlinLong(value: startTime))
                                 }
                             }
                         }
@@ -463,7 +463,7 @@ class SwiftMultiplayerController: NSObject, IMultiplayerController {
         level: Int32,
         country: String,
         onRoomCreated: @escaping (String) -> Void,
-        onMatched: @escaping (String, Int32, String, Int32, String, Int64, Int64) -> Void,
+        onMatched: @escaping (String, KotlinInt, String, KotlinInt, String, KotlinLong, KotlinLong) -> Void,
         onError: @escaping (String) -> Void
     ) {
         let validPlayerId = playerId.isEmpty ? UUID().uuidString : playerId
@@ -514,7 +514,7 @@ class SwiftMultiplayerController: NSObject, IMultiplayerController {
                     
                     self.lobbyListener?.remove()
                     self.lobbyListener = nil
-                    onMatched(lobbyId, 1, guestName, guestLevel, guestCountry, seed, startTime)
+                    onMatched(lobbyId, KotlinInt(value: 1), guestName, KotlinInt(value: guestLevel), guestCountry, KotlinLong(value: seed), KotlinLong(value: startTime))
                 }
             }
         }
@@ -526,7 +526,7 @@ class SwiftMultiplayerController: NSObject, IMultiplayerController {
         playerName: String,
         level: Int32,
         country: String,
-        onMatched: @escaping (String, Int32, String, Int32, String, Int64, Int64) -> Void,
+        onMatched: @escaping (String, KotlinInt, String, KotlinInt, String, KotlinLong, KotlinLong) -> Void,
         onError: @escaping (String) -> Void
     ) {
         let cleanCode = roomCode.trimmingCharacters(in: .whitespacesAndNewlines).uppercased()
@@ -617,7 +617,7 @@ class SwiftMultiplayerController: NSObject, IMultiplayerController {
             }) { (result, error) in
                 let success = result as? Bool ?? false
                 if success {
-                    onMatched(lobbyId, 2, hostName, hostLevel, hostCountry, seed, startTime)
+                    onMatched(lobbyId, KotlinInt(value: 2), hostName, KotlinInt(value: hostLevel), hostCountry, KotlinLong(value: seed), KotlinLong(value: startTime))
                 } else {
                     onError("Odaya katılırken hata oluştu!")
                 }
