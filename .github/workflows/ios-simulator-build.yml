@@ -1,0 +1,44 @@
+name: iOS Simulator Build
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-14
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: Build simulator app
+        run: |
+          echo "sdk.dir=$HOME/Library/Android/sdk" > local.properties
+          chmod +x gradlew
+          cd iosApp
+          xcodebuild build -project iosApp.xcodeproj -scheme iosApp -sdk iphonesimulator -derivedDataPath ../build_output CODE_SIGNING_ALLOWED=NO CODE_SIGNING_IDENTITY="" PROVISIONING_PROFILE=""
+
+      - name: Zip Simulator App
+        run: |
+          APP_PATH=$(find build_output/Build/Products/Debug-iphonesimulator -name "*.app" -type d | head -n 1)
+          if [ -z "$APP_PATH" ]; then
+            echo "Error: No .app found!"
+            exit 1
+          fi
+          echo "Found app at $APP_PATH"
+          cd $(dirname "$APP_PATH")
+          zip -r $GITHUB_WORKSPACE/blitzmath_simulator.zip $(basename "$APP_PATH")
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: blitzmath_simulator
+          path: blitzmath_simulator.zip
