@@ -309,17 +309,28 @@ class SwiftMultiplayerController: NSObject, IMultiplayerController {
                     return
                 }
                 
+                let status: String = data["status"] as? String ?? ""
+                let player1Score: Int64 = data["player1Score"] as? Int64 ?? 0
+                let player2Score: Int64 = data["player2Score"] as? Int64 ?? 0
+                let currentQuestionIndex: Int64 = data["currentQuestionIndex"] as? Int64 ?? 0
+                let lastAnswererId: String = data["lastAnswererId"] as? String ?? ""
+                let p1Emote: String? = data["p1Emote"] as? String
+                let p2Emote: String? = data["p2Emote"] as? String
+                let rematchP1: Bool = data["rematchP1"] as? Bool ?? false
+                let rematchP2: Bool = data["rematchP2"] as? Bool ?? false
+                let gameStartTimestamp: Int64 = data["gameStartTimestamp"] as? Int64 ?? 0
+                
                 let state = LobbyState(
-                    status: data["status"] as? String ?? "",
-                    player1Score: data["player1Score"] as? Int64 ?? 0,
-                    player2Score: data["player2Score"] as? Int64 ?? 0,
-                    currentQuestionIndex: data["currentQuestionIndex"] as? Int64 ?? 0,
-                    lastAnswererId: data["lastAnswererId"] as? String ?? "",
-                    p1Emote: data["p1Emote"] as? String,
-                    p2Emote: data["p2Emote"] as? String,
-                    rematchP1: data["rematchP1"] as? Bool ?? false,
-                    rematchP2: data["rematchP2"] as? Bool ?? false,
-                    gameStartTimestamp: data["gameStartTimestamp"] as? Int64 ?? 0
+                    status: status,
+                    player1Score: player1Score,
+                    player2Score: player2Score,
+                    currentQuestionIndex: currentQuestionIndex,
+                    lastAnswererId: lastAnswererId,
+                    p1Emote: p1Emote,
+                    p2Emote: p2Emote,
+                    rematchP1: rematchP1,
+                    rematchP2: rematchP2,
+                    gameStartTimestamp: gameStartTimestamp
                 )
                 onUpdate(state)
             }
