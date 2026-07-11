@@ -318,7 +318,6 @@ class SwiftMultiplayerController: NSObject, IMultiplayerController {
                 let p2Emote: String? = data["p2Emote"] as? String
                 let rematchP1: Bool = data["rematchP1"] as? Bool ?? false
                 let rematchP2: Bool = data["rematchP2"] as? Bool ?? false
-                let gameStartTimestamp: Int64 = data["gameStartTimestamp"] as? Int64 ?? 0
                 
                 let state = LobbyState(
                     status: status,
@@ -329,8 +328,7 @@ class SwiftMultiplayerController: NSObject, IMultiplayerController {
                     p1Emote: p1Emote,
                     p2Emote: p2Emote,
                     rematchP1: rematchP1,
-                    rematchP2: rematchP2,
-                    gameStartTimestamp: gameStartTimestamp
+                    rematchP2: rematchP2
                 )
                 onUpdate(state)
             }
