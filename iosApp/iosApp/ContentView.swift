@@ -165,7 +165,8 @@ class SwiftMultiplayerController: NSObject, IMultiplayerController {
                     let lobbyId = data["matchedLobbyId"] as? String ?? ""
                     if status == "matched", !lobbyId.isEmpty {
                         var attempts = 0
-                        let fetchLobby: () -> Void = {
+                        var fetchLobby: (() -> Void)? = nil
+                        fetchLobby = {
                             self.db.collection("vs_lobbies").document(lobbyId).getDocument { [weak self] lobbySnap, lobbyErr in
                                 guard let self = self else { return }
                                 if let lobbySnap = lobbySnap, lobbySnap.exists, let lobbyData = lobbySnap.data() {
@@ -178,14 +179,14 @@ class SwiftMultiplayerController: NSObject, IMultiplayerController {
                                     self.cancelMatchmaking(playerId: validPlayerId)
                                     onMatched(lobbyId, KotlinInt(value: 1), p2Name, KotlinInt(value: p2Level), p2Country, KotlinLong(value: seed), KotlinLong(value: startTime))
                                 } else if attempts < 5 {
-                                    attempts += 1
-                                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
-                                        fetchLobby()
-                                    }
-                                }
+                                     attempts += 1
+                                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+                                         fetchLobby?()
+                                     }
+                                 }
                             }
                         }
-                        fetchLobby()
+                        fetchLobby?()
                     }
                 }
             }
