@@ -132,7 +132,7 @@ class SwiftMultiplayerController: NSObject, IMultiplayerController {
         onMatched: @escaping (String, KotlinInt, String, KotlinInt, String, KotlinLong, KotlinLong) -> Void
     ) {
         let validPlayerId = playerId.isEmpty ? UUID().uuidString : playerId
-        cancelMatchmaking(validPlayerId)
+        cancelMatchmaking(playerId: validPlayerId)
         
         let myCreatedAt = Int64(Date().timeIntervalSince1970 * 1000)
         let myTicketRef = db.collection("vs_queue").document(validPlayerId)
@@ -175,7 +175,7 @@ class SwiftMultiplayerController: NSObject, IMultiplayerController {
                                     let startTime = lobbyData["gameStartTimestamp"] as? Int64 ?? 0
                                     let seed = lobbyData["seed"] as? Int64 ?? 0
                                     
-                                    self.cancelMatchmaking(validPlayerId)
+                                    self.cancelMatchmaking(playerId: validPlayerId)
                                     onMatched(lobbyId, KotlinInt(value: 1), p2Name, KotlinInt(value: p2Level), p2Country, KotlinLong(value: seed), KotlinLong(value: startTime))
                                 } else if attempts < 5 {
                                     attempts += 1
@@ -272,7 +272,7 @@ class SwiftMultiplayerController: NSObject, IMultiplayerController {
                                 guard let self = self else { return }
                                 let success = result as? Bool ?? false
                                 if success {
-                                    self.cancelMatchmaking(validPlayerId)
+                                    self.cancelMatchmaking(playerId: validPlayerId)
                                     onMatched(lobbyId, KotlinInt(value: 2), oppName, KotlinInt(value: oppLevel), oppCountry, KotlinLong(value: seed), KotlinLong(value: startTime))
                                 }
                             }
@@ -282,7 +282,7 @@ class SwiftMultiplayerController: NSObject, IMultiplayerController {
         }
     }
     
-    func cancelMatchmaking(_ playerId: String) {
+    func cancelMatchmaking(playerId: String) {
         matchmakingTimer?.invalidate()
         matchmakingTimer = nil
         lobbyListener?.remove()
