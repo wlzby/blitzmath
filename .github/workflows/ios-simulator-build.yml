@@ -34,8 +34,8 @@ jobs:
             exit 1
           fi
           echo "Found app at $APP_PATH"
-          cd $(dirname "$APP_PATH")
-          zip -r $GITHUB_WORKSPACE/blitzmath_simulator.zip $(basename "$APP_PATH")
+          cd "$(dirname "$APP_PATH")"
+          zip -r "$GITHUB_WORKSPACE/blitzmath_simulator.zip" "$(basename "$APP_PATH")"
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4

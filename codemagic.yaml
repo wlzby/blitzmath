@@ -26,8 +26,8 @@ workflows:
             exit 1
           fi
           echo "Found app at $APP_PATH"
-          cd $(dirname "$APP_PATH")
-          zip -r $CM_BUILD_DIR/blitzmath_simulator.zip $(basename "$APP_PATH")
+          cd "$(dirname "$APP_PATH")"
+          zip -r "$CM_BUILD_DIR/blitzmath_simulator.zip" "$(basename "$APP_PATH")"
     artifacts:
       - blitzmath_simulator.zip
 
