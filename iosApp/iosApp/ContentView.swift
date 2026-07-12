@@ -122,7 +122,7 @@ class AdDelegate: NSObject, GADFullScreenContentDelegate {
 import FirebaseFirestore
 
 class SwiftMultiplayerController: NSObject, IMultiplayerController {
-    private let db = Firestore.firestore()
+    private lazy var db = Firestore.firestore()
     private var lobbyListener: ListenerRegistration?
     
     private var matchmakingTimer: Timer?

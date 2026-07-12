@@ -5,7 +5,11 @@ import FirebaseCore
 @main
 struct iOSApp: App {
     init() {
-        FirebaseApp.configure()
+        if Bundle.main.path(forResource: "GoogleService-Info", ofType: "plist") != nil {
+            FirebaseApp.configure()
+        } else {
+            print("Firebase configuration skipped: GoogleService-Info.plist is missing.")
+        }
         GADMobileAds.sharedInstance().start(completionHandler: nil)
     }
 
