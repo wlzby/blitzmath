@@ -1,9 +1,9 @@
 package com.mawelly.blitzmath.audio
 
-import platform.AVFoundation.AVSpeechSynthesizer
-import platform.AVFoundation.AVSpeechUtterance
-import platform.AVFoundation.AVSpeechSynthesisVoice
-import platform.AVFoundation.AVSpeechBoundaryImmediate
+import platform.AVFAudio.AVSpeechSynthesizer
+import platform.AVFAudio.AVSpeechUtterance
+import platform.AVFAudio.AVSpeechSynthesisVoice
+import platform.AVFAudio.AVSpeechBoundaryImmediate
 import com.mawelly.blitzmath.localization.AppLanguage
 import com.mawelly.blitzmath.localization.Strings
 
