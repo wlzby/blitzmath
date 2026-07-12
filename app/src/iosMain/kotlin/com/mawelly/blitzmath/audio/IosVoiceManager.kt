@@ -3,7 +3,7 @@ package com.mawelly.blitzmath.audio
 import platform.AVFAudio.AVSpeechSynthesizer
 import platform.AVFAudio.AVSpeechUtterance
 import platform.AVFAudio.AVSpeechSynthesisVoice
-import platform.AVFAudio.AVSpeechBoundaryImmediate
+import platform.AVFAudio.AVSpeechBoundary
 import com.mawelly.blitzmath.localization.AppLanguage
 import com.mawelly.blitzmath.localization.Strings
 
@@ -40,7 +40,7 @@ class IosVoiceManager : IVoiceManager {
         val basePitch = if (isProfessional) 1.0f else 1.15f
         utterance.pitchMultiplier = basePitch
 
-        synthesizer.stopSpeakingAtBoundary(AVSpeechBoundaryImmediate)
+        synthesizer.stopSpeakingAtBoundary(AVSpeechBoundary.AVSpeechBoundaryImmediate)
         synthesizer.speakUtterance(utterance)
     }
 
@@ -107,7 +107,7 @@ class IosVoiceManager : IVoiceManager {
     }
 
     override fun stop() {
-        synthesizer.stopSpeakingAtBoundary(AVSpeechBoundaryImmediate)
+        synthesizer.stopSpeakingAtBoundary(AVSpeechBoundary.AVSpeechBoundaryImmediate)
     }
 
     override fun release() {
