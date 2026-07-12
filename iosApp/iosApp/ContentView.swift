@@ -8,15 +8,18 @@ class SwiftAdController: NSObject, IAdController {
     private var rewardedAd: GADRewardedAd?
     
     // MARK: - AdMob Ad Unit Configurations
-    // Set this to false for production release
+    #if DEBUG
     private let isDebug = true
+    #else
+    private let isDebug = false
+    #endif
     
     private var interstitialAdUnitID: String {
-        return isDebug ? "ca-app-pub-3940256099942544/1033173712" : "YOUR_IOS_PRODUCTION_INTERSTITIAL_AD_UNIT_ID"
+        return isDebug ? "ca-app-pub-3940256099942544/1033173712" : "ca-app-pub-7719335438184188/3386365176"
     }
     
     private var rewardedAdUnitID: String {
-        return isDebug ? "ca-app-pub-3940256099942544/1712485313" : "YOUR_IOS_PRODUCTION_REWARDED_AD_UNIT_ID"
+        return isDebug ? "ca-app-pub-3940256099942544/1712485313" : "ca-app-pub-7719335438184188/2666777503"
     }
     
     override init() {
