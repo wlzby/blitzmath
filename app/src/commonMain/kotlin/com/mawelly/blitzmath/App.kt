@@ -23,6 +23,7 @@ import com.mawelly.blitzmath.data.IGameDataStore
 import com.mawelly.blitzmath.data.AppTheme
 import com.mawelly.blitzmath.localization.Strings
 import com.mawelly.blitzmath.localization.AppLanguage
+import com.mawelly.blitzmath.audio.IVoiceManager
 import kotlin.math.floor
 import kotlin.math.sqrt
 import kotlin.math.pow
@@ -53,7 +54,7 @@ enum class AppScreen {
 }
 
 @Composable
-fun App(dataStore: IGameDataStore) {
+fun App(dataStore: IGameDataStore, voiceManager: IVoiceManager? = null) {
     // Save dataStore to PlatformDataStoreHolder for static access on iOS
     com.mawelly.blitzmath.data.PlatformDataStoreHolder.instance = dataStore
 
@@ -231,8 +232,8 @@ fun App(dataStore: IGameDataStore) {
                             onExitClick = {
                                 // No-op on iOS
                             },
-                            onPromptVoice = { _, _, _ ->
-                                // Optional voice synthesis
+                            onPromptVoice = { message, multiplier, isProfessional ->
+                                voiceManager?.speak(message, multiplier, isProfessional)
                             },
                             platformServices = platformServices,
                             pLevel = level,
@@ -245,6 +246,7 @@ fun App(dataStore: IGameDataStore) {
                             mode = GameMode.CLASSIC,
                             startLevel = currentLevel,
                             dataStore = dataStore,
+                            voiceManager = voiceManager,
                             leaderboardManager = platformServices.leaderboardManager,
                             onLevelComplete = { level ->
                                 currentLevel = level
@@ -261,6 +263,7 @@ fun App(dataStore: IGameDataStore) {
                             mode = GameMode.MIXED,
                             startLevel = currentLevel,
                             dataStore = dataStore,
+                            voiceManager = voiceManager,
                             leaderboardManager = platformServices.leaderboardManager,
                             onLevelComplete = { level ->
                                 currentLevel = level
@@ -277,6 +280,7 @@ fun App(dataStore: IGameDataStore) {
                             mode = GameMode.CHALLENGE,
                             startLevel = 1,
                             dataStore = dataStore,
+                            voiceManager = voiceManager,
                             leaderboardManager = platformServices.leaderboardManager,
                             onLevelComplete = {},
                             onBackToMenu = { currentScreen = AppScreen.MAIN_MENU },

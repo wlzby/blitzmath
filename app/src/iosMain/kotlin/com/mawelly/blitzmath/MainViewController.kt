@@ -8,6 +8,7 @@ import com.mawelly.blitzmath.core.IosPlatformServices
 import com.mawelly.blitzmath.core.LocalPlatformServices
 import com.mawelly.blitzmath.core.IMultiplayerController
 import com.mawelly.blitzmath.data.IosGameDataStore
+import com.mawelly.blitzmath.audio.IosVoiceManager
 
 
 fun MainViewController(
@@ -15,7 +16,8 @@ fun MainViewController(
     customMultiplayerController: IMultiplayerController? = null
 ) = ComposeUIViewController {
     val dataStore = remember { IosGameDataStore() }
+    val voiceManager = remember { IosVoiceManager() }
     CompositionLocalProvider(LocalPlatformServices provides IosPlatformServices(customAdController, customMultiplayerController)) {
-        App(dataStore = dataStore)
+        App(dataStore = dataStore, voiceManager = voiceManager)
     }
 }
