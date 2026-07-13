@@ -224,40 +224,42 @@ class IosLeaderboardManager : ILeaderboardManager {
         val task = NSURLSession.sharedSession.dataTaskWithRequest(
             request = request,
             completionHandler = { data: NSData?, response: NSURLResponse?, error: NSError? ->
-                if (error != null) {
-                    println("IosLeaderboard: Network error: ${error.localizedDescription}")
-                    continuation.resumeWithException(Exception("Ağ hatası: ${error.localizedDescription}"))
-                } else {
-                    val httpResponse = response as? NSHTTPURLResponse
-                    val statusCode = httpResponse?.statusCode?.toInt() ?: 200
-                    println("IosLeaderboard: HTTP $statusCode")
-                    if (statusCode == 429) {
-                        println("IosLeaderboard: RATE LIMITED (429)")
-                        continuation.resumeWithException(Exception("429: Sunucu meşgul. Lütfen bekleyin."))
-                    } else if (statusCode == 404) {
-                        println("IosLeaderboard: 404 Not Found (Document does not exist)")
-                        continuation.resume(null)
-                    } else if (statusCode >= 400) {
-                        println("IosLeaderboard: HTTP error $statusCode")
-                        var errorMsg = "HTTP $statusCode hatası"
-                        if (data != null) {
-                            try {
-                                val json = NSJSONSerialization.JSONObjectWithData(data, 0uL, null) as? NSDictionary
-                                val errorObj = json?.objectForKey("error") as? NSDictionary
-                                val msg = errorObj?.objectForKey("message") as? String
-                                if (msg != null) {
-                                    errorMsg = msg
-                                }
-                            } catch (e: Exception) {
-                                // ignore
-                            }
-                        }
-                        continuation.resumeWithException(Exception(errorMsg))
-                    } else if (data != null) {
-                        val nsString = NSString.create(data = data, encoding = NSUTF8StringEncoding)
-                        continuation.resume(nsString?.toString())
+                platform.darwin.dispatch_async(platform.darwin.dispatch_get_main_queue()) {
+                    if (error != null) {
+                        println("IosLeaderboard: Network error: ${error.localizedDescription}")
+                        continuation.resumeWithException(Exception("Ağ hatası: ${error.localizedDescription}"))
                     } else {
-                        continuation.resume(null)
+                        val httpResponse = response as? NSHTTPURLResponse
+                        val statusCode = httpResponse?.statusCode?.toInt() ?: 200
+                        println("IosLeaderboard: HTTP $statusCode")
+                        if (statusCode == 429) {
+                            println("IosLeaderboard: RATE LIMITED (429)")
+                            continuation.resumeWithException(Exception("429: Sunucu meşgul. Lütfen bekleyin."))
+                        } else if (statusCode == 404) {
+                            println("IosLeaderboard: 404 Not Found (Document does not exist)")
+                            continuation.resume(null)
+                        } else if (statusCode >= 400) {
+                            println("IosLeaderboard: HTTP error $statusCode")
+                            var errorMsg = "HTTP $statusCode hatası"
+                            if (data != null) {
+                                try {
+                                    val json = NSJSONSerialization.JSONObjectWithData(data, 0uL, null) as? NSDictionary
+                                    val errorObj = json?.objectForKey("error") as? NSDictionary
+                                    val msg = errorObj?.objectForKey("message") as? String
+                                    if (msg != null) {
+                                        errorMsg = msg
+                                    }
+                                } catch (e: Exception) {
+                                    // ignore
+                                }
+                            }
+                            continuation.resumeWithException(Exception(errorMsg))
+                        } else if (data != null) {
+                            val nsString = NSString.create(data = data, encoding = NSUTF8StringEncoding)
+                            continuation.resume(nsString?.toString())
+                        } else {
+                            continuation.resume(null)
+                        }
                     }
                 }
             }
