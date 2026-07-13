@@ -53,13 +53,13 @@ class SwiftAdController: NSObject, IAdController {
     
     func showInterstitialAd(onClosed: @escaping () -> Void) {
         DispatchQueue.main.async { [weak self] in
-            guard let self = self else {
+            guard let strongSelf = self else {
                 onClosed()
                 return
             }
             let windows = UIApplication.shared.windows
             let window = UIApplication.shared.keyWindow ?? windows.first
-            guard let rootVC = window?.rootViewController, let interstitial = self.interstitial else {
+            guard let rootVC = window?.rootViewController, let interstitial = strongSelf.interstitial else {
                 print("Interstitial ad not ready or rootViewController missing")
                 onClosed()
                 return
@@ -67,12 +67,12 @@ class SwiftAdController: NSObject, IAdController {
             
             let delegate = AdDelegate(
                 onClosed: onClosed,
-                onReload: { [weak self] in
-                    self?.loadInterstitial()
-                    self?.adDelegate = nil
+                onReload: { [weak strongSelf] in
+                    strongSelf?.loadInterstitial()
+                    strongSelf?.adDelegate = nil
                 }
             )
-            self.adDelegate = delegate
+            strongSelf.adDelegate = delegate
             interstitial.fullScreenContentDelegate = delegate
             interstitial.present(fromRootViewController: rootVC)
         }
@@ -80,13 +80,13 @@ class SwiftAdController: NSObject, IAdController {
     
     func showRewardedAd(placement: AdPlacement, onReward: @escaping () -> Void, onClosed: @escaping () -> Void) {
         DispatchQueue.main.async { [weak self] in
-            guard let self = self else {
+            guard let strongSelf = self else {
                 onClosed()
                 return
             }
             let windows = UIApplication.shared.windows
             let window = UIApplication.shared.keyWindow ?? windows.first
-            guard let rootVC = window?.rootViewController, let rewardedAd = self.rewardedAd else {
+            guard let rootVC = window?.rootViewController, let rewardedAd = strongSelf.rewardedAd else {
                 print("Rewarded ad not ready or rootViewController missing. Simulation fallback.")
                 onReward()
                 onClosed()
@@ -95,12 +95,12 @@ class SwiftAdController: NSObject, IAdController {
             
             let delegate = AdDelegate(
                 onClosed: onClosed,
-                onReload: { [weak self] in
-                    self?.loadRewarded()
-                    self?.adDelegate = nil
+                onReload: { [weak strongSelf] in
+                    strongSelf?.loadRewarded()
+                    strongSelf?.adDelegate = nil
                 }
             )
-            self.adDelegate = delegate
+            strongSelf.adDelegate = delegate
             rewardedAd.fullScreenContentDelegate = delegate
             rewardedAd.present(fromRootViewController: rootVC) {
                 onReward()
