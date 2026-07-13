@@ -6,6 +6,7 @@ import GoogleMobileAds
 class SwiftAdController: NSObject, IAdController {
     private var interstitial: GADInterstitialAd?
     private var rewardedAd: GADRewardedAd?
+    private var adDelegate: AdDelegate?
     
     // MARK: - AdMob Ad Unit Configurations
     #if DEBUG
@@ -64,10 +65,15 @@ class SwiftAdController: NSObject, IAdController {
                 return
             }
             
-            interstitial.fullScreenContentDelegate = AdDelegate(
+            let delegate = AdDelegate(
                 onClosed: onClosed,
-                onReload: { [weak self] in self?.loadInterstitial() }
+                onReload: { [weak self] in
+                    self?.loadInterstitial()
+                    self?.adDelegate = nil
+                }
             )
+            self.adDelegate = delegate
+            interstitial.fullScreenContentDelegate = delegate
             interstitial.present(fromRootViewController: rootVC)
         }
     }
@@ -87,10 +93,15 @@ class SwiftAdController: NSObject, IAdController {
                 return
             }
             
-            rewardedAd.fullScreenContentDelegate = AdDelegate(
+            let delegate = AdDelegate(
                 onClosed: onClosed,
-                onReload: { [weak self] in self?.loadRewarded() }
+                onReload: { [weak self] in
+                    self?.loadRewarded()
+                    self?.adDelegate = nil
+                }
             )
+            self.adDelegate = delegate
+            rewardedAd.fullScreenContentDelegate = delegate
             rewardedAd.present(fromRootViewController: rootVC) {
                 onReward()
             }
