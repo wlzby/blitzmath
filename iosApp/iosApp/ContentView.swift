@@ -122,6 +122,30 @@ class AdDelegate: NSObject, GADFullScreenContentDelegate {
 import FirebaseFirestore
 
 class SwiftMultiplayerController: NSObject, IMultiplayerController {
+    private var isFirebaseReady: Bool {
+        return FirebaseApp.app() != nil
+    }
+
+    private func showFirebaseMissingAlert() {
+        DispatchQueue.main.async {
+            guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+                  let rootVC = windowScene.windows.first(where: { $0.isKeyWindow })?.rootViewController else {
+                return
+            }
+            var topVC = rootVC
+            while let presented = topVC.presentedViewController {
+                topVC = presented
+            }
+            let alert = UIAlertController(
+                title: "Firebase Yapılandırması Eksik",
+                message: "Çok oyunculu (VS) modu için GoogleService-Info.plist dosyası gereklidir. Lütfen bu dosyayı projenize ekleyin.",
+                preferredStyle: .alert
+            )
+            alert.addAction(UIAlertAction(title: "Tamam", style: .default, handler: nil))
+            topVC.present(alert, animated: true, completion: nil)
+        }
+    }
+
     private lazy var db = Firestore.firestore()
     private var lobbyListener: ListenerRegistration?
     
@@ -134,6 +158,10 @@ class SwiftMultiplayerController: NSObject, IMultiplayerController {
         country: String,
         onMatched: @escaping (String, KotlinInt, String, KotlinInt, String, KotlinLong, KotlinLong) -> Void
     ) {
+        guard isFirebaseReady else {
+            showFirebaseMissingAlert()
+            return
+        }
         let validPlayerId = playerId.isEmpty ? UUID().uuidString : playerId
         cancelMatchmaking(playerId: validPlayerId)
         
@@ -287,6 +315,7 @@ class SwiftMultiplayerController: NSObject, IMultiplayerController {
     }
     
     func cancelMatchmaking(playerId: String) {
+        guard isFirebaseReady else { return }
         matchmakingTimer?.invalidate()
         matchmakingTimer = nil
         lobbyListener?.remove()
@@ -301,6 +330,10 @@ class SwiftMultiplayerController: NSObject, IMultiplayerController {
         onUpdate: @escaping (LobbyState) -> Void,
         onError: @escaping (String) -> Void
     ) {
+        guard isFirebaseReady else {
+            onError("Firebase not configured")
+            return
+        }
         lobbyListener?.remove()
         lobbyListener = db.collection("vs_lobbies").document(lobbyId)
             .addSnapshotListener { docSnap, error in
@@ -344,30 +377,36 @@ class SwiftMultiplayerController: NSObject, IMultiplayerController {
     }
     
     func updateScore(lobbyId: String, role: Int32, score: Int64) {
+        guard isFirebaseReady else { return }
         let field = role == 1 ? "player1Score" : "player2Score"
         db.collection("vs_lobbies").document(lobbyId).updateData([field: score])
     }
     
     func sendEmote(lobbyId: String, role: Int32, emoteText: String) {
+        guard isFirebaseReady else { return }
         let field = role == 1 ? "p1Emote" : "p2Emote"
         let payload = "\(emoteText)|\(Int64(Date().timeIntervalSince1970 * 1000))"
         db.collection("vs_lobbies").document(lobbyId).updateData([field: payload])
     }
     
     func requestRematch(lobbyId: String, role: Int32, request: Bool) {
+        guard isFirebaseReady else { return }
         let field = role == 1 ? "rematchP1" : "rematchP2"
         db.collection("vs_lobbies").document(lobbyId).updateData([field: request])
     }
     
     func updateLobbyStatus(lobbyId: String, status: String) {
+        guard isFirebaseReady else { return }
         db.collection("vs_lobbies").document(lobbyId).updateData(["status": status])
     }
     
     func deleteLobby(lobbyId: String) {
+        guard isFirebaseReady else { return }
         db.collection("vs_lobbies").document(lobbyId).delete()
     }
     
     func acceptRematch(lobbyId: String, role: Int32) {
+        guard isFirebaseReady else { return }
         let lobbyRef = db.collection("vs_lobbies").document(lobbyId)
         let updateField = role == 1 ? "rematchP1" : "rematchP2"
         
@@ -400,6 +439,7 @@ class SwiftMultiplayerController: NSObject, IMultiplayerController {
     }
     
     func submitCorrectAnswer(lobbyId: String, role: Int32, playerId: String, questionIndex: Int64, onResult: @escaping (KotlinBoolean) -> Void) {
+        guard isFirebaseReady else { return }
         let lobbyRef = db.collection("vs_lobbies").document(lobbyId)
         db.runTransaction({ (transaction, errorPointer) -> Any? in
             do {
@@ -424,6 +464,7 @@ class SwiftMultiplayerController: NSObject, IMultiplayerController {
     }
     
     func submitWrongAnswer(lobbyId: String, role: Int32, questionIndex: Int64, onResult: @escaping (KotlinBoolean) -> Void) {
+        guard isFirebaseReady else { return }
         let lobbyRef = db.collection("vs_lobbies").document(lobbyId)
         db.runTransaction({ (transaction, errorPointer) -> Any? in
             do {
@@ -453,6 +494,7 @@ class SwiftMultiplayerController: NSObject, IMultiplayerController {
     }
     
     func advanceQuestionIndex(lobbyId: String, currentIndex: Int64, onResult: @escaping (KotlinBoolean) -> Void) {
+        guard isFirebaseReady else { return }
         let lobbyRef = db.collection("vs_lobbies").document(lobbyId)
         db.runTransaction({ (transaction, errorPointer) -> Any? in
             do {
@@ -479,6 +521,11 @@ class SwiftMultiplayerController: NSObject, IMultiplayerController {
         onMatched: @escaping (String, KotlinInt, String, KotlinInt, String, KotlinLong, KotlinLong) -> Void,
         onError: @escaping (String) -> Void
     ) {
+        guard isFirebaseReady else {
+            showFirebaseMissingAlert()
+            onError("Firebase not configured")
+            return
+        }
         let validPlayerId = playerId.isEmpty ? UUID().uuidString : playerId
         let roomCode = generateRoomCode()
         onRoomCreated(roomCode)
@@ -542,6 +589,11 @@ class SwiftMultiplayerController: NSObject, IMultiplayerController {
         onMatched: @escaping (String, KotlinInt, String, KotlinInt, String, KotlinLong, KotlinLong) -> Void,
         onError: @escaping (String) -> Void
     ) {
+        guard isFirebaseReady else {
+            showFirebaseMissingAlert()
+            onError("Firebase not configured")
+            return
+        }
         let cleanCode = roomCode.trimmingCharacters(in: .whitespacesAndNewlines).uppercased()
         if cleanCode.count != 4 {
             onError("Lütfen 4 haneli oda kodunu girin!")
@@ -639,6 +691,7 @@ class SwiftMultiplayerController: NSObject, IMultiplayerController {
     }
     
     func cancelCustomRoom(roomCode: String, playerId: String) {
+        guard isFirebaseReady else { return }
         lobbyListener?.remove()
         lobbyListener = nil
         if !roomCode.isEmpty {
