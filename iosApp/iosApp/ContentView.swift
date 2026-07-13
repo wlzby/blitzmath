@@ -119,6 +119,7 @@ class AdDelegate: NSObject, GADFullScreenContentDelegate {
     }
 }
 
+import FirebaseCore
 import FirebaseFirestore
 
 class SwiftMultiplayerController: NSObject, IMultiplayerController {
