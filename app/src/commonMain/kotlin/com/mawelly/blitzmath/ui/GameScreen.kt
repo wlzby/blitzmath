@@ -374,7 +374,8 @@ fun GameScreen(
                 // Normal UI content
                 when {
                     gameState.isSaveMePending -> SaveMeScreen(
-                        gameState = gameState
+                        gameState = gameState,
+                        voiceManager = voiceManager
                     )
                     gameState.isGameOver -> {
                         if (showInitialLeaderboard) {
@@ -393,7 +394,8 @@ fun GameScreen(
                                 onBackToMenu = onBackToMenu,
                                 onShowRanking = onShowRanking,
                                 currentLang = currentLang,
-                                leaderboardManager = leaderboardManager
+                                leaderboardManager = leaderboardManager,
+                                voiceManager = voiceManager
                             )
                         }
                     }
@@ -594,6 +596,7 @@ private fun GamePlayScreen(gameState: GameState) {
 
                     JokerSkillBar(
                         gameState = gameState,
+                        voiceManager = voiceManager,
                         isSmall = true,
                         modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp)
                     )
@@ -717,6 +720,7 @@ private fun GamePlayScreen(gameState: GameState) {
                 ) {
                     JokerSkillBar(
                         gameState = gameState,
+                        voiceManager = voiceManager,
                         isSmall = isSmallScreen,
                         modifier = Modifier
                             .fillMaxWidth()
@@ -1261,6 +1265,7 @@ private fun OptionButton(
 @Composable
 private fun JokerSkillBar(
     gameState: GameState,
+    voiceManager: IVoiceManager? = null,
     isSmall: Boolean = false,
     modifier: Modifier = Modifier
 ) {
@@ -1683,7 +1688,8 @@ private fun CheckpointCompleteScreen(
 
 @Composable
 private fun SaveMeScreen(
-    gameState: GameState
+    gameState: GameState,
+    voiceManager: IVoiceManager? = null
 ) {
     val progress = (gameState.saveMeTimeLeft / 3.0f).coerceIn(0f, 1f)
     
@@ -1981,7 +1987,8 @@ private fun GameOverScreen(
     onBackToMenu: () -> Unit,
     onShowRanking: (String) -> Unit,
     currentLang: AppLanguage,
-    leaderboardManager: ILeaderboardManager? = null
+    leaderboardManager: ILeaderboardManager? = null,
+    voiceManager: IVoiceManager? = null
 ) {
     val platformServices = LocalPlatformServices.current
     val nextQuote = remember { QuoteManager.getNextQuote() }
