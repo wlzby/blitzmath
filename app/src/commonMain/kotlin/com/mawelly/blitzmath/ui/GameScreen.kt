@@ -1279,6 +1279,7 @@ private fun JokerSkillBar(
         refillCardId = cardId
         
         analyticsManager.logAdClick("RefillAbility_Single_$cardId")
+        voiceManager?.stop()
         platformServices.adController.showRewardedAd(
             placement = com.mawelly.blitzmath.core.AdPlacement.UNLOCK_SCIENTIST,
             onReward = {
@@ -1771,6 +1772,7 @@ private fun SaveMeScreen(
                 onClick = {
                     analyticsManager.logRefillLivesClick("Gameplay")
                     analyticsManager.logAdClick("RevillLives_InGame")
+                    voiceManager?.stop()
                     platformServices.adController.showRewardedAd(
                         placement = com.mawelly.blitzmath.core.AdPlacement.SAVE_ME,
                         onReward = {
@@ -2033,6 +2035,7 @@ private fun GameOverScreen(
     LaunchedEffect(Unit) {
         if (!adCalled.value && gameState.showAdOnGameOver) {
             adCalled.value = true
+            voiceManager?.stop()
             platformServices.adController.showInterstitialAd {
                 gameState.onAdShown()
             }
@@ -2245,6 +2248,7 @@ private fun GameOverScreen(
                         hasUsedSecondChance.value = true
                         val analyticsManager = platformServices.analyticsManager
                         analyticsManager.logAdClick("Revive_GameOver")
+                        voiceManager?.stop()
                         platformServices.adController.showRewardedAd(
                             placement = com.mawelly.blitzmath.core.AdPlacement.SAVE_ME,
                             onReward = {
