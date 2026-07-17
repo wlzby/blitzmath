@@ -403,7 +403,10 @@ fun GameScreen(
                         gameState = gameState,
                         onNextCheckpoint = { gameState.nextCheckpoint() }
                     )
-                    else -> GamePlayScreen(gameState = gameState)
+                    else -> GamePlayScreen(
+                        gameState = gameState,
+                        voiceManager = voiceManager
+                    )
                 }
             }
         }
@@ -507,7 +510,10 @@ fun GameScreen(
 enum class AnswerFeedback { NONE, CORRECT, WRONG }
 
 @Composable
-private fun GamePlayScreen(gameState: GameState) {
+private fun GamePlayScreen(
+    gameState: GameState,
+    voiceManager: IVoiceManager? = null
+) {
     var selectedOptionIndex by remember { mutableStateOf<Int?>(null) }
     var feedbackType by remember { mutableStateOf(AnswerFeedback.NONE) }
     val scope = rememberCoroutineScope()
