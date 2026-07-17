@@ -3,10 +3,13 @@ import SwiftUI
 import ComposeApp
 import GoogleMobileAds
 
-class SwiftAdController: NSObject, IAdController {
+class SwiftAdController: NSObject, IAdController, GADFullScreenContentDelegate {
     private var interstitial: GADInterstitialAd?
     private var rewardedAd: GADRewardedAd?
-    private var adDelegate: AdDelegate?
+    
+    private var onInterstitialClosed: (() -> Void)?
+    private var onRewardedClosed: (() -> Void)?
+    private var onRewardedEarned: (() -> Void)?
     
     // MARK: - AdMob Ad Unit Configurations
     #if DEBUG
@@ -65,15 +68,8 @@ class SwiftAdController: NSObject, IAdController {
                 return
             }
             
-            let delegate = AdDelegate(
-                onClosed: onClosed,
-                onReload: { [weak strongSelf] in
-                    strongSelf?.loadInterstitial()
-                    strongSelf?.adDelegate = nil
-                }
-            )
-            strongSelf.adDelegate = delegate
-            interstitial.fullScreenContentDelegate = delegate
+            strongSelf.onInterstitialClosed = onClosed
+            interstitial.fullScreenContentDelegate = strongSelf
             interstitial.present(fromRootViewController: rootVC)
         }
     }
@@ -93,40 +89,42 @@ class SwiftAdController: NSObject, IAdController {
                 return
             }
             
-            let delegate = AdDelegate(
-                onClosed: onClosed,
-                onReload: { [weak strongSelf] in
-                    strongSelf?.loadRewarded()
-                    strongSelf?.adDelegate = nil
-                }
-            )
-            strongSelf.adDelegate = delegate
-            rewardedAd.fullScreenContentDelegate = delegate
+            strongSelf.onRewardedClosed = onClosed
+            strongSelf.onRewardedEarned = onReward
+            rewardedAd.fullScreenContentDelegate = strongSelf
             rewardedAd.present(fromRootViewController: rootVC) {
-                onReward()
+                strongSelf.onRewardedEarned?()
             }
         }
     }
-}
-
-class AdDelegate: NSObject, GADFullScreenContentDelegate {
-    let onClosed: () -> Void
-    let onReload: () -> Void
     
-    init(onClosed: @escaping () -> Void, onReload: @escaping () -> Void) {
-        self.onClosed = onClosed
-        self.onReload = onReload
-    }
+    // MARK: - GADFullScreenContentDelegate Implementation
     
     func adDidDismissFullScreenContent(_ ad: GADFullScreenPresentingAd) {
-        onClosed()
-        onReload()
+        if ad === interstitial {
+            onInterstitialClosed?()
+            onInterstitialClosed = nil
+            loadInterstitial()
+        } else if ad === rewardedAd {
+            onRewardedClosed?()
+            onRewardedClosed = nil
+            onRewardedEarned = nil
+            loadRewarded()
+        }
     }
     
     func ad(_ ad: GADFullScreenPresentingAd, didFailToPresentFullScreenContentWithError error: Error) {
         print("Ad failed to present: \(error.localizedDescription)")
-        onClosed()
-        onReload()
+        if ad === interstitial {
+            onInterstitialClosed?()
+            onInterstitialClosed = nil
+            loadInterstitial()
+        } else if ad === rewardedAd {
+            onRewardedClosed?()
+            onRewardedClosed = nil
+            onRewardedEarned = nil
+            loadRewarded()
+        }
     }
 }
 
