@@ -7,6 +7,10 @@ import android.os.Bundle
 import android.speech.tts.Voice
 import com.mawelly.blitzmath.localization.AppLanguage
 import java.util.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class VoiceManager(private val context: Context) : TextToSpeech.OnInitListener, IVoiceManager {
 
@@ -67,34 +71,40 @@ class VoiceManager(private val context: Context) : TextToSpeech.OnInitListener, 
     }
 
     private fun selectBestVoice(locale: Locale) {
-        try {
-            val allVoices = tts?.voices ?: return
-            val targetVoices = allVoices.filter { it.locale.language == locale.language }
-            
-            // Müsait ses adaylarını logla
-            Log.d("VoiceManager", "--- Uygun Ses Adayları ---")
-            val bestVoices = targetVoices.filter { 
-                val n = it.name.lowercase()
-                n.contains("network") || n.contains("neural") || n.contains("female") || n.contains("male")
-            }.sortedByDescending { it.isNetworkConnectionRequired }
-            
-            bestVoices.forEach { 
-                Log.d("VoiceManager", "Ses: ${it.name}, Network: ${it.isNetworkConnectionRequired}, Kalite: ${it.quality}")
+        // Run voice selection in background thread to prevent ANR from blocking IPC call tts?.voices
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val ttsInstance = tts ?: return@launch
+                val allVoices = ttsInstance.voices ?: return@launch
+                val targetVoices = allVoices.filter { it.locale.language == locale.language }
+                
+                // Müsait ses adaylarını logla
+                Log.d("VoiceManager", "--- Uygun Ses Adayları ---")
+                val bestVoices = targetVoices.filter { 
+                    val n = it.name.lowercase()
+                    n.contains("network") || n.contains("neural") || n.contains("female") || n.contains("male")
+                }.sortedByDescending { it.isNetworkConnectionRequired }
+                
+                bestVoices.forEach { 
+                    Log.d("VoiceManager", "Ses: ${it.name}, Network: ${it.isNetworkConnectionRequired}, Kalite: ${it.quality}")
+                }
+                
+                // Seçim Stratejisi:
+                // Özellikle beğenilen o yüksek kaliteli "koç" sesini (Network/Neural) seç
+                val bestVoice = bestVoices.find { it.isNetworkConnectionRequired && it.name.lowercase().contains("male") }
+                    ?: bestVoices.find { it.isNetworkConnectionRequired }
+                    ?: bestVoices.find { it.quality >= Voice.QUALITY_HIGH }
+                    ?: bestVoices.firstOrNull()
+                
+                bestVoice?.let { targetVoice ->
+                    withContext(Dispatchers.Main) {
+                        tts?.voice = targetVoice
+                    }
+                    Log.d("VoiceManager", "Dinamik Seçilen Yeni Ses: ${targetVoice.name}")
+                }
+            } catch (e: Exception) {
+                Log.e("VoiceManager", "Ses seçimi hatası", e)
             }
-            
-            // Seçim Stratejisi:
-            // Özellikle beğenilen o yüksek kaliteli "koç" sesini (Network/Neural) seç
-            val bestVoice = bestVoices.find { it.isNetworkConnectionRequired && it.name.lowercase().contains("male") }
-                ?: bestVoices.find { it.isNetworkConnectionRequired }
-                ?: bestVoices.find { it.quality >= Voice.QUALITY_HIGH }
-                ?: bestVoices.firstOrNull()
-            
-            bestVoice?.let {
-                tts?.voice = it
-                Log.d("VoiceManager", "Dinamik Seçilen Yeni Ses: ${it.name}")
-            }
-        } catch (e: Exception) {
-            Log.e("VoiceManager", "Ses seçimi hatası", e)
         }
     }
 
