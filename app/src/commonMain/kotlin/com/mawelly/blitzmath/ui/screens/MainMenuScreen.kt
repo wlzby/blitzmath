@@ -63,6 +63,8 @@ import kotlinx.coroutines.delay
 import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.Close
+import com.mawelly.blitzmath.game.DailyTasksManager
 import com.mawelly.blitzmath.ui.components.FloatingSymbolsBackground
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.zIndex
@@ -143,6 +145,7 @@ fun MainMenuScreen(
     var timeLeftToRefill by remember { mutableStateOf("") }
     
     var showRewardDialog by remember { mutableStateOf(false) }
+    var showDailyTasksDialog by remember { mutableStateOf(false) }
     
     // Check for daily reward on launch
     LaunchedEffect(Unit) {
@@ -508,7 +511,7 @@ fun MainMenuScreen(
         // ═══ FLOATING BOTTOM NAV BAR ═══
         FloatingBottomNavBar(
             onStoreClick = onCollectionClick,
-            onTasksClick = { /* Tasks screen */ },
+            onTasksClick = { showDailyTasksDialog = true },
             onPlayClick = {
                 // Başlat = Online Duel modu
                 if (currentLives > 0) { analyticsManager.logModeSelection("VS"); onVsClick() } else showNoLivesDialog = true
@@ -718,6 +721,15 @@ fun MainMenuScreen(
                         Text(Strings.noThanks, color = Color.White.copy(alpha = 0.5f))
                     }
                 }
+            )
+        }
+        
+        if (showDailyTasksDialog) {
+            DailyTasksDialog(
+                dataStore = dataStore,
+                currentTime = platformServices.getCurrentTimeMillis(),
+                onDismiss = { showDailyTasksDialog = false },
+                platformServices = platformServices
             )
         }
     }
@@ -1613,5 +1625,196 @@ private fun AutoSizingText(
             }
         },
         modifier = modifier.alpha(if (readyToDraw) 1f else 0f)
+    )
+}
+
+@Composable
+fun DailyTasksDialog(
+    dataStore: IGameDataStore,
+    currentTime: Long,
+    onDismiss: () -> Unit,
+    platformServices: com.mawelly.blitzmath.core.PlatformServices
+) {
+    val scope = rememberCoroutineScope()
+    val stateStr by dataStore.dailyTasksClaimed.collectAsState(initial = "")
+    val starCount by dataStore.starCount.collectAsState(initial = 0)
+    
+    val state = remember(stateStr, currentTime) {
+        DailyTasksManager.parseState(stateStr, currentTime)
+    }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        containerColor = Color(0xFF131325),
+        shape = RoundedCornerShape(24.dp),
+        modifier = Modifier.border(2.dp, Color(0xFF7C3AED).copy(alpha = 0.5f), RoundedCornerShape(24.dp)),
+        title = {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = if (Strings.currentLanguage == AppLanguage.TURKISH) "GÜNLÜK GÖREVLER" else "DAILY TASKS",
+                    color = Color.White,
+                    fontWeight = FontWeight.Black,
+                    fontSize = 20.sp
+                )
+                IconButton(onClick = onDismiss) {
+                    Icon(
+                        imageVector = Icons.Default.Close,
+                        contentDescription = "Close",
+                        tint = Color.White.copy(alpha = 0.6f)
+                    )
+                }
+            }
+        },
+        text = {
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Text(
+                    text = if (Strings.currentLanguage == AppLanguage.TURKISH) 
+                        "Görevleri tamamla, yıldızları topla! Görevler her gün sıfırlanır." 
+                        else "Complete tasks to earn stars! Tasks reset daily.",
+                    color = Color.White.copy(alpha = 0.7f),
+                    fontSize = 13.sp
+                )
+
+                DailyTasksManager.tasks.forEach { task ->
+                    val progress = DailyTasksManager.getTaskProgress(task, state)
+                    val isCompleted = DailyTasksManager.isTaskCompleted(task, state)
+                    val isClaimed = state.claimedTasks.contains(task.id)
+
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(Color(0xFF1E1E38), RoundedCornerShape(16.dp))
+                            .padding(12.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = if (Strings.currentLanguage == AppLanguage.TURKISH) task.titleTr else task.titleEn,
+                                color = Color.White,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 15.sp
+                            )
+                            Text(
+                                text = if (Strings.currentLanguage == AppLanguage.TURKISH) task.descTr else task.descEn,
+                                color = Color.White.copy(alpha = 0.6f),
+                                fontSize = 12.sp
+                            )
+                            
+                            Spacer(modifier = Modifier.height(6.dp))
+                            
+                            // Progress bar
+                            LinearProgressIndicator(
+                                progress = { progress.toFloat() / task.target.toFloat() },
+                                modifier = Modifier
+                                    .fillMaxWidth(0.8f)
+                                    .height(6.dp)
+                                    .clip(RoundedCornerShape(3.dp)),
+                                color = Color(0xFF00E5FF),
+                                trackColor = Color.White.copy(alpha = 0.1f)
+                            )
+                            
+                            Spacer(modifier = Modifier.height(2.dp))
+                            
+                            Text(
+                                text = "$progress / ${task.target}",
+                                color = Color(0xFF00E5FF),
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 11.sp
+                            )
+                        }
+
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(4.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Star,
+                                    contentDescription = "Star",
+                                    tint = Color(0xFFFFD700),
+                                    modifier = Modifier.size(16.dp)
+                                )
+                                Text(
+                                    text = "+${task.reward}",
+                                    color = Color(0xFFFFD700),
+                                    fontWeight = FontWeight.Black,
+                                    fontSize = 13.sp
+                                )
+                            }
+                            
+                            Spacer(modifier = Modifier.height(8.dp))
+
+                            when {
+                                isClaimed -> {
+                                    Box(
+                                        modifier = Modifier
+                                            .background(Color.White.copy(alpha = 0.1f), RoundedCornerShape(8.dp))
+                                            .padding(horizontal = 8.dp, vertical = 4.dp)
+                                    ) {
+                                        Text(
+                                            text = if (Strings.currentLanguage == AppLanguage.TURKISH) "ALINDI" else "CLAIMED",
+                                            color = Color.White.copy(alpha = 0.4f),
+                                            fontWeight = FontWeight.Bold,
+                                            fontSize = 11.sp
+                                        )
+                                    }
+                                }
+                                isCompleted -> {
+                                    Button(
+                                        onClick = {
+                                            scope.launch {
+                                                // Claim reward
+                                                val newClaimed = state.claimedTasks + task.id
+                                                val newState = state.copy(claimedTasks = newClaimed)
+                                                dataStore.saveDailyTasksClaimed(DailyTasksManager.serializeState(newState))
+                                                dataStore.addStars(task.reward)
+                                                platformServices.soundManager.playSuccess()
+                                            }
+                                        },
+                                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF7C3AED)),
+                                        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp),
+                                        shape = RoundedCornerShape(8.dp),
+                                        modifier = Modifier.height(30.dp)
+                                    ) {
+                                        Text(
+                                            text = if (Strings.currentLanguage == AppLanguage.TURKISH) "AL" else "CLAIM",
+                                            color = Color.White,
+                                            fontWeight = FontWeight.Bold,
+                                            fontSize = 11.sp
+                                        )
+                                    }
+                                }
+                                else -> {
+                                    Box(
+                                        modifier = Modifier
+                                            .background(Color.White.copy(alpha = 0.05f), RoundedCornerShape(8.dp))
+                                            .padding(horizontal = 8.dp, vertical = 4.dp)
+                                    ) {
+                                        Text(
+                                            text = if (Strings.currentLanguage == AppLanguage.TURKISH) "YAPILIYOR" else "IN PROGRESS",
+                                            color = Color.White.copy(alpha = 0.4f),
+                                            fontWeight = FontWeight.Bold,
+                                            fontSize = 10.sp
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        confirmButton = {}
     )
 }

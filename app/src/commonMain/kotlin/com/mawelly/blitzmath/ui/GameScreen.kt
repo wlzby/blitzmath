@@ -2011,6 +2011,16 @@ private fun GameOverScreen(
     LaunchedEffect(gameState.score) {
         if (gameState.score > 0 && leaderboardManager != null) {
             val modeName = gameState.mode.name.lowercase()
+            try {
+                com.mawelly.blitzmath.game.DailyTasksManager.updateProgress(
+                    dataStore = dataStore,
+                    mode = modeName,
+                    score = gameState.score,
+                    currentTime = platformServices.getCurrentTimeMillis()
+                )
+            } catch (e: Exception) {
+                // ignore
+            }
             val result = leaderboardManager.submitScore(
                 playerId = playerId,
                 playerName = playerName,
