@@ -55,7 +55,7 @@ workflows:
           xcode-project use-profiles --project "$XCODE_PROJECT"
       - name: Build and Package Release IPA
         script: |
-          xcode-project build-ipa --project "$XCODE_PROJECT" --scheme "$XCODE_SCHEME" --configuration Release
+          xcode-project build-ipa --project "$XCODE_PROJECT" --scheme "$XCODE_SCHEME"
       - name: Prepare Artifact
         script: |
           # Find exported ipa and copy to root
