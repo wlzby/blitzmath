@@ -36,6 +36,9 @@ workflows:
     integrations:
       app_store_connect: app_store_connect
     environment:
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: com.mawelly.blitzmath
       vars:
         XCODE_PROJECT: "iosApp/iosApp.xcodeproj"
         XCODE_SCHEME: "iosApp"
@@ -47,11 +50,6 @@ workflows:
       - name: Set up local properties
         script: |
           echo "sdk.dir=$HOME/Library/Android/sdk" > local.properties
-      - name: Set up Keychain and Fetch Signing Files
-        script: |
-          keychain initialize
-          app-store-connect fetch-signing-files "$BUNDLE_ID" --type IOS_APP_STORE --create
-          keychain add-certificates
       - name: Update Xcode Project Settings
         script: |
           xcode-project use-profiles --project "$XCODE_PROJECT"
