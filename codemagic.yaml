@@ -36,9 +36,6 @@ workflows:
     integrations:
       app_store_connect: app_store_connect
     environment:
-      ios_signing:
-        distribution_type: app_store
-        bundle_identifier: com.mawelly.blitzmath
       vars:
         XCODE_PROJECT: "iosApp/iosApp.xcodeproj"
         XCODE_SCHEME: "iosApp"
