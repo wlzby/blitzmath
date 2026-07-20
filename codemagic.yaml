@@ -50,7 +50,8 @@ workflows:
       - name: Set up Keychain and Fetch Signing Files
         script: |
           keychain initialize
-          app-store-connect certificates create --type IOS_DISTRIBUTION
+          openssl genrsa -out /tmp/cert_key 2048
+          app-store-connect certificates create --type IOS_DISTRIBUTION --certificate-key /tmp/cert_key
           app-store-connect fetch-signing-files "$BUNDLE_ID" --type IOS_APP_STORE --create
           keychain add-certificates
       - name: Update Xcode Project Settings
