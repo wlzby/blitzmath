@@ -53,6 +53,7 @@ workflows:
       - name: Set up Keychain and Fetch Signing Files
         script: |
           keychain initialize
+          app-store-connect certificates create --type IOS_APP_STORE || true
           app-store-connect fetch-signing-files "$BUNDLE_ID" --type IOS_APP_STORE --create
           keychain add-certificates
       - name: Update Xcode Project Settings
