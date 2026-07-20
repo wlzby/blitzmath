@@ -47,6 +47,11 @@ workflows:
       - name: Set up local properties
         script: |
           echo "sdk.dir=$HOME/Library/Android/sdk" > local.properties
+      - name: Set up Keychain and Fetch Signing Files
+        script: |
+          keychain initialize
+          app-store-connect fetch-signing-files "$BUNDLE_ID" --type IOS_APP_STORE --create
+          keychain add-certificates
       - name: Update Xcode Project Settings
         script: |
           xcode-project use-profiles --project "$XCODE_PROJECT"
