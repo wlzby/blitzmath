@@ -87,12 +87,12 @@ kotlin {
 
 android {
     namespace = "com.mawelly.blitzmath"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.mawelly.blitzmath"
         minSdk = 24
-        targetSdk = 35
+        targetSdk = 36
         versionCode = 25
         versionName = "1.3.9"
 
