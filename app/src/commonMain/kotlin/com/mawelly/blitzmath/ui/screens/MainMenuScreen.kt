@@ -1896,11 +1896,11 @@ fun SurveyRewardDialog(
     val isTr = Strings.currentLanguage == AppLanguage.TURKISH
     var selectedStars by remember { mutableIntStateOf(5) }
 
-    Dialog(onDismissRequest = onDismiss) {
+    androidx.compose.ui.window.Dialog(onDismissRequest = onDismiss) {
         Card(
             shape = RoundedCornerShape(28.dp),
-            backgroundColor = Color(0xFF1E1B4B),
-            elevation = 16.dp,
+            colors = CardDefaults.cardColors(containerColor = Color(0xFF1E1B4B)),
+            elevation = CardDefaults.cardElevation(defaultElevation = 16.dp),
             modifier = Modifier
                 .fillMaxWidth(0.92f)
                 .border(2.dp, Color(0xFF818CF8).copy(alpha = 0.6f), RoundedCornerShape(28.dp))
@@ -1979,7 +1979,7 @@ fun SurveyRewardDialog(
 
                 // Reward Display
                 Card(
-                    backgroundColor = Color(0xFF312E81),
+                    colors = CardDefaults.cardColors(containerColor = Color(0xFF312E81)),
                     shape = RoundedCornerShape(16.dp),
                     modifier = Modifier.fillMaxWidth()
                 ) {
@@ -2015,7 +2015,7 @@ fun SurveyRewardDialog(
                         onClick = onDismiss,
                         modifier = Modifier.weight(1f).height(48.dp),
                         shape = RoundedCornerShape(14.dp),
-                        border = BorderStroke(1.dp, Color.White.copy(alpha = 0.3f))
+                        border = androidx.compose.foundation.BorderStroke(1.dp, Color.White.copy(alpha = 0.3f))
                     ) {
                         Text(
                             text = if (isTr) "Sonra" else "Later",
@@ -2028,7 +2028,7 @@ fun SurveyRewardDialog(
                         onClick = onConfirm,
                         modifier = Modifier.weight(1.3f).height(48.dp),
                         shape = RoundedCornerShape(14.dp),
-                        colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xFF10B981))
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF10B981))
                     ) {
                         Text(
                             text = if (isTr) "DEĞERLENDİR & AL" else "RATE & CLAIM",
