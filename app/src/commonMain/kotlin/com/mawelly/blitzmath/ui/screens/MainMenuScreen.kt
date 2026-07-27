@@ -110,6 +110,10 @@ fun MainMenuScreen(
     val unlockedCards by dataStore.unlockedCards.collectAsState(initial = emptySet())
 
     // Most played mode detection
+    val gamesPlayed by dataStore.gamesPlayed.collectAsState(initial = 0)
+    val isReviewed by dataStore.isReviewed.collectAsState(initial = false)
+    var showSurveyDialog by remember { mutableStateOf(false) }
+
     val classicLevel by dataStore.classicLevel.collectAsState(initial = 1)
     val mixedLevel by dataStore.mixedLevel.collectAsState(initial = 1)
     val classicHighScore by dataStore.highScore.collectAsState(initial = 0)
@@ -268,17 +272,68 @@ fun MainMenuScreen(
                 contentAlignment = Alignment.Center
             ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(
-                        text = "BLITZ MATH",
-                        fontSize = (screenWidthVal * 0.11f).coerceIn(36f, 54f).sp,
-                        fontWeight = FontWeight.Black,
-                        color = Color.White,
-                        letterSpacing = 4.sp,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.graphicsLayer {
-                            shadowElevation = 20f
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        Text(
+                            text = "BLITZ MATH",
+                            fontSize = (screenWidthVal * 0.11f).coerceIn(36f, 54f).sp,
+                            fontWeight = FontWeight.Black,
+                            color = Color.White,
+                            letterSpacing = 4.sp,
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.graphicsLayer {
+                                shadowElevation = 20f
+                            }
+                        )
+
+                        if (gamesPlayed >= 2 && !isReviewed) {
+                            Spacer(modifier = Modifier.width(10.dp))
+                            val infiniteTransition = rememberInfiniteTransition(label = "giftBoxPulse")
+                            val giftScale by infiniteTransition.animateFloat(
+                                initialValue = 0.95f,
+                                targetValue = 1.15f,
+                                animationSpec = infiniteRepeatable(
+                                    animation = tween(600, easing = FastOutSlowInEasing),
+                                    repeatMode = RepeatMode.Reverse
+                                ),
+                                label = "giftScale"
+                            )
+
+                            Box(
+                                modifier = Modifier
+                                    .scale(giftScale)
+                                    .clip(RoundedCornerShape(14.dp))
+                                    .background(
+                                        Brush.linearGradient(
+                                            colors = listOf(Color(0xFFFFD700), Color(0xFFFF8C00))
+                                        )
+                                    )
+                                    .border(2.dp, Color.White, RoundedCornerShape(14.dp))
+                                    .clickable {
+                                        showSurveyDialog = true
+                                    }
+                                    .padding(horizontal = 10.dp, vertical = 6.dp)
+                            ) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                                ) {
+                                    Text(
+                                        text = "🎁",
+                                        fontSize = 18.sp
+                                    )
+                                    Text(
+                                        text = "+1000",
+                                        color = Color.Black,
+                                        fontWeight = FontWeight.Black,
+                                        fontSize = 12.sp
+                                    )
+                                }
+                            }
                         }
-                    )
+                    }
                     
                     Box(
                         modifier = Modifier
@@ -541,6 +596,20 @@ fun MainMenuScreen(
             )
         }
 
+
+        if (showSurveyDialog) {
+            SurveyRewardDialog(
+                onDismiss = { showSurveyDialog = false },
+                onConfirm = {
+                    scope.launch {
+                        dataStore.saveIsReviewed(true)
+                        dataStore.addStars(1000)
+                        platformServices.soundManager.playSound("success")
+                        showSurveyDialog = false
+                    }
+                }
+            )
+        }
 
         var showExitDialog by remember { mutableStateOf(false) }
 
