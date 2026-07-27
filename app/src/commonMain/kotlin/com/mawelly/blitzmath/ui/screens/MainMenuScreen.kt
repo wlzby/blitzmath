@@ -604,7 +604,7 @@ fun MainMenuScreen(
                     scope.launch {
                         dataStore.saveIsReviewed(true)
                         dataStore.addStars(1000)
-                        platformServices.soundManager.playSound("success")
+                        platformServices.soundManager.playSuccess()
                         showSurveyDialog = false
                     }
                 }
@@ -1886,4 +1886,159 @@ fun DailyTasksDialog(
         },
         confirmButton = {}
     )
+}
+
+@Composable
+fun SurveyRewardDialog(
+    onDismiss: () -> Unit,
+    onConfirm: () -> Unit
+) {
+    val isTr = Strings.currentLanguage == AppLanguage.TURKISH
+    var selectedStars by remember { mutableIntStateOf(5) }
+
+    Dialog(onDismissRequest = onDismiss) {
+        Card(
+            shape = RoundedCornerShape(28.dp),
+            backgroundColor = Color(0xFF1E1B4B),
+            elevation = 16.dp,
+            modifier = Modifier
+                .fillMaxWidth(0.92f)
+                .border(2.dp, Color(0xFF818CF8).copy(alpha = 0.6f), RoundedCornerShape(28.dp))
+        ) {
+            Column(
+                modifier = Modifier.padding(24.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                // Header Badge
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(20.dp))
+                        .background(
+                            Brush.linearGradient(
+                                colors = listOf(Color(0xFFFFD700), Color(0xFFFF8C00))
+                            )
+                        )
+                        .padding(horizontal = 16.dp, vertical = 6.dp)
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        Text("🎁", fontSize = 20.sp)
+                        Text(
+                            text = if (isTr) "SÜPRİZ HEDİYE!" else "SURPRISE GIFT!",
+                            color = Color.Black,
+                            fontWeight = FontWeight.Black,
+                            fontSize = 14.sp
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Text(
+                    text = if (isTr) "Blitz Math'i Sevdin mi?" else "Enjoying Blitz Math?",
+                    color = Color.White,
+                    fontSize = 22.sp,
+                    fontWeight = FontWeight.Black,
+                    textAlign = TextAlign.Center
+                )
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Text(
+                    text = if (isTr) 
+                        "Uygulamamızı değerlendirip destek ol, anında 1000 Puan kazan!" 
+                    else 
+                        "Rate our app and get 1000 Bonus Stars instantly!",
+                    color = Color.White.copy(alpha = 0.8f),
+                    fontSize = 14.sp,
+                    textAlign = TextAlign.Center
+                )
+
+                Spacer(modifier = Modifier.height(20.dp))
+
+                // Star Selection
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    for (i in 1..5) {
+                        Icon(
+                            imageVector = Icons.Default.Star,
+                            contentDescription = "Star $i",
+                            tint = if (i <= selectedStars) Color(0xFFFFD700) else Color.Gray.copy(alpha = 0.4f),
+                            modifier = Modifier
+                                .size(36.dp)
+                                .clickable { selectedStars = i }
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(24.dp))
+
+                // Reward Display
+                Card(
+                    backgroundColor = Color(0xFF312E81),
+                    shape = RoundedCornerShape(16.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Row(
+                        modifier = Modifier.padding(12.dp),
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Star,
+                            contentDescription = "Star",
+                            tint = Color(0xFFFFD700),
+                            modifier = Modifier.size(24.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = "+1000 ${if (isTr) "PUAN ÖDÜL" else "BONUS STARS"}",
+                            color = Color(0xFFFFD700),
+                            fontWeight = FontWeight.Black,
+                            fontSize = 16.sp
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(20.dp))
+
+                // Action Buttons
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    OutlinedButton(
+                        onClick = onDismiss,
+                        modifier = Modifier.weight(1f).height(48.dp),
+                        shape = RoundedCornerShape(14.dp),
+                        border = BorderStroke(1.dp, Color.White.copy(alpha = 0.3f))
+                    ) {
+                        Text(
+                            text = if (isTr) "Sonra" else "Later",
+                            color = Color.White.copy(alpha = 0.7f),
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+
+                    Button(
+                        onClick = onConfirm,
+                        modifier = Modifier.weight(1.3f).height(48.dp),
+                        shape = RoundedCornerShape(14.dp),
+                        colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xFF10B981))
+                    ) {
+                        Text(
+                            text = if (isTr) "DEĞERLENDİR & AL" else "RATE & CLAIM",
+                            color = Color.White,
+                            fontWeight = FontWeight.Black,
+                            fontSize = 13.sp
+                        )
+                    }
+                }
+            }
+        }
+    }
 }
