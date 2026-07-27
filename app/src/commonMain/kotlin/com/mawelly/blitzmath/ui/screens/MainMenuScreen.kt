@@ -605,6 +605,7 @@ fun MainMenuScreen(
                         dataStore.saveIsReviewed(true)
                         dataStore.addStars(1000)
                         platformServices.soundManager.playSuccess()
+                        platformServices.showAppReview()
                         showSurveyDialog = false
                     }
                 }

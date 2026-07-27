@@ -685,4 +685,20 @@ class IosPlatformServices(
         val center = platform.UserNotifications.UNUserNotificationCenter.currentNotificationCenter()
         center.removePendingNotificationRequestsWithIdentifiers(listOf("recharge_$cardId"))
     }
+
+    override fun showAppReview() {
+        try {
+            val windowScene = UIApplication.sharedApplication.connectedScenes
+                .filterIsInstance<platform.UIKit.UIWindowScene>()
+                .firstOrNull { it.activationState == platform.UIKit.UISceneActivationStateForegroundActive }
+            
+            if (windowScene != null) {
+                platform.StoreKit.SKStoreReviewController.requestReviewInScene(windowScene)
+            } else {
+                openUrl("https://apps.apple.com/app/id6790209769?action=write-review")
+            }
+        } catch (t: Throwable) {
+            openUrl("https://apps.apple.com/app/id6790209769?action=write-review")
+        }
+    }
 }
