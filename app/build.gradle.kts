@@ -93,8 +93,8 @@ android {
         applicationId = "com.mawelly.blitzmath"
         minSdk = 24
         targetSdk = 36
-        versionCode = 25
-        versionName = "1.3.9"
+        versionCode = 26
+        versionName = "1.4.0"
 
         resourceConfigurations += listOf("en", "tr", "es", "de", "fr", "it", "pt", "hi", "zh", "ru")
     }
