@@ -374,50 +374,23 @@ fun MainMenuScreen(
             // --- Game Modes Grid (Modern Layout) ---
             val cardWidth = if (screenWidth > 600.dp) 450.dp else screenWidth * 0.9f
 
-            // ═══ HERO CARD: En çok oynanan mod dinamik olarak gösterilir ═══
-            val heroConfig = when (mostPlayedMode) {
-                "CLASSIC" -> Triple(
-                    Strings.menuClassic,
-                    "Seviye $classicLevel • ${Strings.menuClassicSubtitle}",
-                    Color(0xFF00C853)
-                )
-                "MIXED" -> Triple(
-                    Strings.menuMixed,
-                    "Seviye $mixedLevel • ${Strings.menuMixedSubtitle}",
-                    Color(0xFFD500F9)
-                )
-                "CHALLENGE" -> Triple(
-                    Strings.menuChallenge,
-                    if (isChallengeAvailable) Strings.menuChallengeSubtitle else Strings.challengeAlreadyPlayed,
-                    Color(0xFFFFAB00)
-                )
-                else -> Triple(
-                    Strings.menuClassic,
-                    Strings.menuClassicSubtitle,
-                    Color(0xFF00C853)
-                )
-            }
-            val heroOnClick: () -> Unit = when (mostPlayedMode) {
-                "CLASSIC" -> ({
-                    if (currentLives > 0) { analyticsManager.logModeSelection("Classic"); onPlayClick() } else showNoLivesDialog = true
-                })
-                "MIXED" -> ({
-                    if (currentLives > 0) { analyticsManager.logModeSelection("Mixed"); onMixedModeClick() } else showNoLivesDialog = true
-                })
-                "CHALLENGE" -> ({
-                    if (isChallengeAvailable) {
-                        if (currentLives > 0) { analyticsManager.logModeSelection("Challenge"); scope.launch { dataStore.saveChallengePlayInfo(actualPlaysToday + 1, todayStr) }; onChallengeClick() } else showNoLivesDialog = true
-                    } else showChallengeLimitDialog = true
-                })
-                else -> ({ if (currentLives > 0) { analyticsManager.logModeSelection("Classic"); onPlayClick() } else showNoLivesDialog = true })
+            val challengeColor = if (isChallengeAvailable) Color(0xFFFFAB00) else Color.Gray
+            val challengeOnClick: () -> Unit = {
+                if (isChallengeAvailable) {
+                    if (currentLives > 0) {
+                        analyticsManager.logModeSelection("Challenge")
+                        scope.launch { dataStore.saveChallengePlayInfo(actualPlaysToday + 1, todayStr) }
+                        onChallengeClick()
+                    } else showNoLivesDialog = true
+                } else showChallengeLimitDialog = true
             }
 
-            // Hero Quick Play Card
+            // Hero Pinned Card: MEYDAN OKUMA (Challenge Mode)
             Card(
                 modifier = Modifier
                     .width(cardWidth)
                     .height(130.dp)
-                    .clickable(onClick = heroOnClick),
+                    .clickable(onClick = challengeOnClick),
                 shape = RoundedCornerShape(28.dp),
                 colors = CardDefaults.cardColors(containerColor = Color.Transparent),
                 elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
@@ -428,8 +401,8 @@ fun MainMenuScreen(
                         .background(
                             Brush.linearGradient(
                                 colors = listOf(
-                                    heroConfig.third.copy(alpha = 0.35f),
-                                    heroConfig.third.copy(alpha = 0.08f),
+                                    challengeColor.copy(alpha = 0.35f),
+                                    challengeColor.copy(alpha = 0.08f),
                                     Color(0xFF0A0A1A).copy(alpha = 0.9f)
                                 )
                             )
@@ -437,7 +410,7 @@ fun MainMenuScreen(
                         .border(
                             width = 1.5.dp,
                             brush = Brush.linearGradient(
-                                listOf(heroConfig.third.copy(alpha = 0.8f), Color.White.copy(alpha = 0.1f), heroConfig.third.copy(alpha = 0.4f))
+                                listOf(challengeColor.copy(alpha = 0.8f), Color.White.copy(alpha = 0.1f), challengeColor.copy(alpha = 0.4f))
                             ),
                             shape = RoundedCornerShape(28.dp)
                         )
@@ -450,33 +423,37 @@ fun MainMenuScreen(
                         Box(
                             modifier = Modifier
                                 .size(72.dp)
-                                .background(heroConfig.third.copy(alpha = 0.15f), CircleShape)
-                                .border(1.5.dp, heroConfig.third.copy(alpha = 0.5f), CircleShape),
+                                .background(challengeColor.copy(alpha = 0.15f), CircleShape)
+                                .border(1.5.dp, challengeColor.copy(alpha = 0.5f), CircleShape),
                             contentAlignment = Alignment.Center
                         ) {
-                            GameModeGraphic(mode = mostPlayedMode, color = heroConfig.third, modifier = Modifier.size(44.dp))
+                            if (!isChallengeAvailable) {
+                                Text(text = "🔒", fontSize = 32.sp)
+                            } else {
+                                GameModeGraphic(mode = "CHALLENGE", color = challengeColor, modifier = Modifier.size(44.dp))
+                            }
                         }
                         Spacer(modifier = Modifier.width(16.dp))
                         Column(modifier = Modifier.weight(1f)) {
                             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                                 Box(
                                     modifier = Modifier
-                                        .background(heroConfig.third.copy(alpha = 0.2f), RoundedCornerShape(6.dp))
+                                        .background(challengeColor.copy(alpha = 0.2f), RoundedCornerShape(6.dp))
                                         .padding(horizontal = 6.dp, vertical = 2.dp)
                                 ) {
-                                    Text("🏆 EN ÇOK", color = heroConfig.third, fontSize = 9.sp, fontWeight = FontWeight.Black, letterSpacing = 1.sp)
+                                    Text("⚡ MEYDAN OKUMA", color = challengeColor, fontSize = 9.sp, fontWeight = FontWeight.Black, letterSpacing = 1.sp)
                                 }
                             }
                             Spacer(modifier = Modifier.height(4.dp))
                             Text(
-                                text = heroConfig.first,
+                                text = Strings.menuChallenge,
                                 color = Color.White,
                                 fontWeight = FontWeight.Black,
                                 fontSize = 22.sp,
                                 letterSpacing = 0.5.sp
                             )
                             Text(
-                                text = heroConfig.second,
+                                text = if (isChallengeAvailable) Strings.menuChallengeSubtitle else Strings.challengeAlreadyPlayed,
                                 color = Color.White.copy(alpha = 0.55f),
                                 fontSize = 12.sp,
                                 maxLines = 1
@@ -485,7 +462,7 @@ fun MainMenuScreen(
                         Icon(
                             imageVector = Icons.Default.Add,
                             contentDescription = null,
-                            tint = heroConfig.third,
+                            tint = challengeColor,
                             modifier = Modifier.size(28.dp).rotate(45f)
                         )
                     }
@@ -525,37 +502,21 @@ fun MainMenuScreen(
                         compact = true
                     )
                 }
-                // Row 2: VS Duel & Challenge
+                // Row 2: VS Duel (Büyük Geniş Buton)
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     ModernGlassButton(
                         title = Strings.menuOnlineVsDuelTitle,
+                        subtitle = "Canlı 1v1 Matematik Düellosu",
                         icon = "VS",
                         mainColor = Color(0xFF00E5FF),
                         onClick = {
                             if (currentLives > 0) { analyticsManager.logModeSelection("VS"); onVsClick() } else showNoLivesDialog = true
                         },
-                        modifier = Modifier.weight(1f),
-                        compact = true
-                    )
-                    ModernGlassButton(
-                        title = Strings.menuChallenge,
-                        icon = "CHALLENGE",
-                        mainColor = if (isChallengeAvailable) Color(0xFFFFAB00) else Color.Gray,
-                        onClick = {
-                            if (isChallengeAvailable) {
-                                if (currentLives > 0) {
-                                    analyticsManager.logModeSelection("Challenge")
-                                    scope.launch { dataStore.saveChallengePlayInfo(actualPlaysToday + 1, todayStr) }
-                                    onChallengeClick()
-                                } else showNoLivesDialog = true
-                            } else showChallengeLimitDialog = true
-                        },
-                        modifier = Modifier.weight(1f),
-                        compact = true,
-                        isLocked = !isChallengeAvailable
+                        modifier = Modifier.fillMaxWidth(),
+                        compact = false
                     )
                 }
             }
