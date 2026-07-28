@@ -67,7 +67,7 @@ class AnalyticsManager private constructor(context: Context) {
                 putString("mode_name", modeName)
             }
             firebaseAnalytics?.logEvent("mode_selection", bundle)
-            huaweiAnalytics?.onEvent("mode_selection", bundle)
+            try { huaweiAnalytics?.onEvent("mode_selection", bundle) } catch (t: Throwable) {}
         } catch (t: Throwable) { t.printStackTrace() }
     }
 
@@ -86,7 +86,7 @@ class AnalyticsManager private constructor(context: Context) {
                 putString("\$LevelName", mode)
                 putString("\$LevelId", level.toString())
             }
-            huaweiAnalytics?.onEvent("\$StartLevel", hmsBundle)
+            try { huaweiAnalytics?.onEvent("\$StartLevel", hmsBundle) } catch (t: Throwable) {}
         } catch (t: Throwable) { t.printStackTrace() }
     }
 
@@ -107,7 +107,7 @@ class AnalyticsManager private constructor(context: Context) {
                 putLong("\$Score", score)
                 putString("success", success.toString())
             }
-            huaweiAnalytics?.onEvent("\$CompleteLevel", hmsBundle)
+            try { huaweiAnalytics?.onEvent("\$CompleteLevel", hmsBundle) } catch (t: Throwable) {}
         } catch (t: Throwable) { t.printStackTrace() }
     }
 
@@ -120,7 +120,7 @@ class AnalyticsManager private constructor(context: Context) {
                 putString("target_game", gameName)
             }
             firebaseAnalytics?.logEvent("more_games_click", bundle)
-            huaweiAnalytics?.onEvent("more_games_click", bundle)
+            try { huaweiAnalytics?.onEvent("more_games_click", bundle) } catch (t: Throwable) {}
         } catch (t: Throwable) { t.printStackTrace() }
     }
 
@@ -134,7 +134,7 @@ class AnalyticsManager private constructor(context: Context) {
                 putFloat("value", value)
             }
             firebaseAnalytics?.logEvent("setting_change", bundle)
-            huaweiAnalytics?.onEvent("setting_change", bundle)
+            try { huaweiAnalytics?.onEvent("setting_change", bundle) } catch (t: Throwable) {}
         } catch (t: Throwable) { t.printStackTrace() }
     }
 
@@ -152,7 +152,7 @@ class AnalyticsManager private constructor(context: Context) {
             val hmsBundle = Bundle().apply {
                 putString("\$ScreenName", screenName)
             }
-            huaweiAnalytics?.onEvent("\$ViewScreen", hmsBundle)
+            try { huaweiAnalytics?.onEvent("\$ViewScreen", hmsBundle) } catch (t: Throwable) {}
         } catch (t: Throwable) { t.printStackTrace() }
     }
 
@@ -165,7 +165,7 @@ class AnalyticsManager private constructor(context: Context) {
                 putString("ad_unit_name", adUnitName)
             }
             firebaseAnalytics?.logEvent("rewarded_ad_click", bundle)
-            huaweiAnalytics?.onEvent("rewarded_ad_click", bundle)
+            try { huaweiAnalytics?.onEvent("rewarded_ad_click", bundle) } catch (t: Throwable) {}
         } catch (t: Throwable) { t.printStackTrace() }
     }
 
@@ -178,7 +178,7 @@ class AnalyticsManager private constructor(context: Context) {
                 putString("ad_unit_name", adUnitName)
             }
             firebaseAnalytics?.logEvent("rewarded_ad_earned", bundle)
-            huaweiAnalytics?.onEvent("rewarded_ad_earned", bundle)
+            try { huaweiAnalytics?.onEvent("rewarded_ad_earned", bundle) } catch (t: Throwable) {}
         } catch (t: Throwable) { t.printStackTrace() }
     }
 
@@ -191,7 +191,7 @@ class AnalyticsManager private constructor(context: Context) {
                 putString("source", source)
             }
             firebaseAnalytics?.logEvent("refill_lives_clicked", bundle)
-            huaweiAnalytics?.onEvent("refill_lives_clicked", bundle)
+            try { huaweiAnalytics?.onEvent("refill_lives_clicked", bundle) } catch (t: Throwable) {}
         } catch (t: Throwable) { t.printStackTrace() }
     }
 
@@ -204,7 +204,7 @@ class AnalyticsManager private constructor(context: Context) {
                 putString("scientist_name", scientistName)
             }
             firebaseAnalytics?.logEvent("ability_refill_clicked", bundle)
-            huaweiAnalytics?.onEvent("ability_refill_clicked", bundle)
+            try { huaweiAnalytics?.onEvent("ability_refill_clicked", bundle) } catch (t: Throwable) {}
         } catch (t: Throwable) { t.printStackTrace() }
     }
 }
