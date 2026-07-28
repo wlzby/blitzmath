@@ -289,13 +289,13 @@ fun MainMenuScreen(
                         )
 
                         if (gamesPlayed >= 3 && !isReviewed) {
-                            Spacer(modifier = Modifier.width(10.dp))
+                            Spacer(modifier = Modifier.width(6.dp))
                             val infiniteTransition = rememberInfiniteTransition(label = "giftBoxPulse")
                             val giftScale by infiniteTransition.animateFloat(
                                 initialValue = 0.95f,
-                                targetValue = 1.15f,
+                                targetValue = 1.08f,
                                 animationSpec = infiniteRepeatable(
-                                    animation = tween(600, easing = FastOutSlowInEasing),
+                                    animation = tween(700, easing = FastOutSlowInEasing),
                                     repeatMode = RepeatMode.Reverse
                                 ),
                                 label = "giftScale"
@@ -304,31 +304,32 @@ fun MainMenuScreen(
                             Box(
                                 modifier = Modifier
                                     .scale(giftScale)
-                                    .shadow(8.dp, RoundedCornerShape(16.dp))
-                                    .clip(RoundedCornerShape(16.dp))
+                                    .shadow(4.dp, RoundedCornerShape(10.dp))
+                                    .clip(RoundedCornerShape(10.dp))
                                     .background(
-                                        Brush.horizontalGradient(
-                                            colors = listOf(Color(0xFFFFD700), Color(0xFFFF8C00), Color(0xFFFF4500))
+                                        Brush.linearGradient(
+                                            colors = listOf(Color(0xFFFFD700), Color(0xFFFF8C00))
                                         )
                                     )
-                                    .border(1.5.dp, Color.White.copy(alpha = 0.9f), RoundedCornerShape(16.dp))
+                                    .border(1.dp, Color.White, RoundedCornerShape(10.dp))
                                     .clickable { showSurveyDialog = true }
-                                    .padding(horizontal = 10.dp, vertical = 5.dp)
+                                    .padding(horizontal = 7.dp, vertical = 3.dp)
                             ) {
                                 Row(
                                     verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                                    horizontalArrangement = Arrangement.spacedBy(2.dp)
                                 ) {
                                     Text(
                                         text = "🎁",
-                                        fontSize = 16.sp
+                                        fontSize = 13.sp
                                     )
                                     Text(
                                         text = "+1000",
-                                        color = Color.White,
-                                        fontWeight = FontWeight.Black,
-                                        fontSize = 12.sp,
-                                        letterSpacing = 0.5.sp
+                                        color = Color.Black,
+                                        fontWeight = FontWeight.ExtraBold,
+                                        fontSize = 11.sp,
+                                        maxLines = 1,
+                                        softWrap = false
                                     )
                                 }
                             }
@@ -1899,23 +1900,31 @@ fun SurveyRewardDialog(
 
     androidx.compose.ui.window.Dialog(onDismissRequest = onDismiss) {
         Card(
-            shape = RoundedCornerShape(28.dp),
-            colors = CardDefaults.cardColors(containerColor = Color(0xFF1E1B4B)),
-            elevation = CardDefaults.cardElevation(defaultElevation = 16.dp),
+            shape = RoundedCornerShape(24.dp),
+            colors = CardDefaults.cardColors(containerColor = Color(0xFF13132B)),
+            elevation = CardDefaults.cardElevation(defaultElevation = 20.dp),
             modifier = Modifier
                 .fillMaxWidth(0.92f)
-                .border(2.dp, Color(0xFF818CF8).copy(alpha = 0.6f), RoundedCornerShape(28.dp))
+                .border(
+                    width = 1.5.dp,
+                    brush = Brush.linearGradient(
+                        colors = listOf(Color(0xFF7C3AED), Color(0xFF00E5FF).copy(alpha = 0.6f))
+                    ),
+                    shape = RoundedCornerShape(24.dp)
+                )
         ) {
             Column(
-                modifier = Modifier.padding(24.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp, vertical = 22.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 // Header Badge
                 Box(
                     modifier = Modifier
-                        .clip(RoundedCornerShape(20.dp))
+                        .clip(RoundedCornerShape(30.dp))
                         .background(
-                            Brush.linearGradient(
+                            Brush.horizontalGradient(
                                 colors = listOf(Color(0xFFFFD700), Color(0xFFFF8C00))
                             )
                         )
@@ -1925,23 +1934,24 @@ fun SurveyRewardDialog(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(6.dp)
                     ) {
-                        Text("🎁", fontSize = 20.sp)
+                        Text("🎁", fontSize = 16.sp)
                         Text(
                             text = if (isTr) "SÜPRİZ HEDİYE!" else "SURPRISE GIFT!",
                             color = Color.Black,
-                            fontWeight = FontWeight.Black,
-                            fontSize = 14.sp
+                            fontWeight = FontWeight.ExtraBold,
+                            fontSize = 13.sp,
+                            letterSpacing = 0.5.sp
                         )
                     }
                 }
 
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(18.dp))
 
                 Text(
                     text = if (isTr) "Blitz Math'i Sevdin mi?" else "Enjoying Blitz Math?",
                     color = Color.White,
-                    fontSize = 22.sp,
-                    fontWeight = FontWeight.Black,
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold,
                     textAlign = TextAlign.Center
                 )
 
@@ -1949,11 +1959,12 @@ fun SurveyRewardDialog(
 
                 Text(
                     text = if (isTr) 
-                        "Uygulamamızı değerlendirip destek ol, anında 1000 Puan kazan!" 
+                        "Uygulamamızı değerlendirip destek ol,\nanında 1000 Puan kazan!" 
                     else 
-                        "Rate our app and get 1000 Bonus Stars instantly!",
-                    color = Color.White.copy(alpha = 0.8f),
-                    fontSize = 14.sp,
+                        "Rate our app and get\n1000 Bonus Stars instantly!",
+                    color = Color.White.copy(alpha = 0.75f),
+                    fontSize = 13.sp,
+                    lineHeight = 18.sp,
                     textAlign = TextAlign.Center
                 )
 
@@ -1968,74 +1979,81 @@ fun SurveyRewardDialog(
                         Icon(
                             imageVector = Icons.Default.Star,
                             contentDescription = "Star $i",
-                            tint = if (i <= selectedStars) Color(0xFFFFD700) else Color.Gray.copy(alpha = 0.4f),
+                            tint = if (i <= selectedStars) Color(0xFFFFD700) else Color.White.copy(alpha = 0.2f),
                             modifier = Modifier
-                                .size(36.dp)
+                                .size(32.dp)
                                 .clickable { selectedStars = i }
-                        )
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(24.dp))
-
-                // Reward Display
-                Card(
-                    colors = CardDefaults.cardColors(containerColor = Color(0xFF312E81)),
-                    shape = RoundedCornerShape(16.dp),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Row(
-                        modifier = Modifier.padding(12.dp),
-                        horizontalArrangement = Arrangement.Center,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Star,
-                            contentDescription = "Star",
-                            tint = Color(0xFFFFD700),
-                            modifier = Modifier.size(24.dp)
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            text = "+1000 ${if (isTr) "PUAN ÖDÜL" else "BONUS STARS"}",
-                            color = Color(0xFFFFD700),
-                            fontWeight = FontWeight.Black,
-                            fontSize = 16.sp
                         )
                     }
                 }
 
                 Spacer(modifier = Modifier.height(20.dp))
 
+                // Reward Display Card
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(14.dp))
+                        .background(Color.White.copy(alpha = 0.06f))
+                        .border(1.dp, Color(0xFFFFD700).copy(alpha = 0.3f), RoundedCornerShape(14.dp))
+                        .padding(vertical = 12.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        Text("⭐", fontSize = 18.sp)
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = "+1000 ${if (isTr) "PUAN ÖDÜL" else "BONUS STARS"}",
+                            color = Color(0xFFFFD700),
+                            fontWeight = FontWeight.ExtraBold,
+                            fontSize = 15.sp,
+                            letterSpacing = 0.5.sp
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(22.dp))
+
                 // Action Buttons
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    horizontalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
                     OutlinedButton(
                         onClick = onDismiss,
-                        modifier = Modifier.weight(1f).height(48.dp),
-                        shape = RoundedCornerShape(14.dp),
-                        border = androidx.compose.foundation.BorderStroke(1.dp, Color.White.copy(alpha = 0.3f))
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(44.dp),
+                        shape = RoundedCornerShape(12.dp),
+                        border = androidx.compose.foundation.BorderStroke(1.dp, Color.White.copy(alpha = 0.25f))
                     ) {
                         Text(
                             text = if (isTr) "Sonra" else "Later",
                             color = Color.White.copy(alpha = 0.7f),
-                            fontWeight = FontWeight.Bold
+                            fontWeight = FontWeight.SemiBold,
+                            fontSize = 13.sp
                         )
                     }
 
                     Button(
                         onClick = onConfirm,
-                        modifier = Modifier.weight(1.3f).height(48.dp),
-                        shape = RoundedCornerShape(14.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF10B981))
+                        modifier = Modifier
+                            .weight(1.35f)
+                            .height(44.dp),
+                        shape = RoundedCornerShape(12.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF10B981)),
+                        contentPadding = PaddingValues(horizontal = 2.dp, vertical = 0.dp)
                     ) {
                         Text(
                             text = if (isTr) "DEĞERLENDİR & AL" else "RATE & CLAIM",
                             color = Color.White,
-                            fontWeight = FontWeight.Black,
-                            fontSize = 13.sp
+                            fontWeight = FontWeight.ExtraBold,
+                            fontSize = 11.sp,
+                            maxLines = 1,
+                            softWrap = false
                         )
                     }
                 }
