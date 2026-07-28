@@ -288,7 +288,7 @@ fun MainMenuScreen(
                             }
                         )
 
-                        if (gamesPlayed >= 2 && !isReviewed) {
+                        if (gamesPlayed >= 3 && !isReviewed) {
                             Spacer(modifier = Modifier.width(10.dp))
                             val infiniteTransition = rememberInfiniteTransition(label = "giftBoxPulse")
                             val giftScale by infiniteTransition.animateFloat(
@@ -304,17 +304,16 @@ fun MainMenuScreen(
                             Box(
                                 modifier = Modifier
                                     .scale(giftScale)
-                                    .clip(RoundedCornerShape(14.dp))
+                                    .shadow(8.dp, RoundedCornerShape(16.dp))
+                                    .clip(RoundedCornerShape(16.dp))
                                     .background(
-                                        Brush.linearGradient(
-                                            colors = listOf(Color(0xFFFFD700), Color(0xFFFF8C00))
+                                        Brush.horizontalGradient(
+                                            colors = listOf(Color(0xFFFFD700), Color(0xFFFF8C00), Color(0xFFFF4500))
                                         )
                                     )
-                                    .border(2.dp, Color.White, RoundedCornerShape(14.dp))
-                                    .clickable {
-                                        showSurveyDialog = true
-                                    }
-                                    .padding(horizontal = 10.dp, vertical = 6.dp)
+                                    .border(1.5.dp, Color.White.copy(alpha = 0.9f), RoundedCornerShape(16.dp))
+                                    .clickable { showSurveyDialog = true }
+                                    .padding(horizontal = 10.dp, vertical = 5.dp)
                             ) {
                                 Row(
                                     verticalAlignment = Alignment.CenterVertically,
@@ -322,13 +321,14 @@ fun MainMenuScreen(
                                 ) {
                                     Text(
                                         text = "🎁",
-                                        fontSize = 18.sp
+                                        fontSize = 16.sp
                                     )
                                     Text(
                                         text = "+1000",
-                                        color = Color.Black,
+                                        color = Color.White,
                                         fontWeight = FontWeight.Black,
-                                        fontSize = 12.sp
+                                        fontSize = 12.sp,
+                                        letterSpacing = 0.5.sp
                                     )
                                 }
                             }
