@@ -227,9 +227,11 @@ class AndroidPlatformServices(
 
     override fun showAppReview() {
         try {
-            val datastoreImpl = com.mawelly.blitzmath.data.GameDataStore(context)
-            com.mawelly.blitzmath.utils.AppReviewManager.showReviewDialog(activity, datastoreImpl) {
-                android.util.Log.d("AndroidPlatformServices", "App review completed.")
+            val packageName = context.packageName
+            try {
+                openUrl("market://details?id=$packageName")
+            } catch (e: Exception) {
+                openUrl("https://play.google.com/store/apps/details?id=$packageName")
             }
         } catch (e: Exception) {
             android.util.Log.e("AndroidPlatformServices", "Error triggering app review: ${e.message}")
