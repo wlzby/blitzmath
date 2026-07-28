@@ -18,49 +18,39 @@ object AppReviewManager {
      */
     fun showReviewDialog(activity: Activity, dataStore: GameDataStore, onComplete: () -> Unit) {
         try {
-            if (!com.mawelly.blitzmath.utils.ServiceChecker.isGmsAvailable(activity)) {
-                Log.w(TAG, "GMS not available, skipping Play Review.")
-                onComplete()
-                return
-            }
-            
-            val manager = ReviewManagerFactory.create(activity)
-            val request = manager.requestReviewFlow()
-            
-            request.addOnCompleteListener { task ->
-                if (task.isSuccessful) {
-                    val reviewInfo = task.result
-                    val flow = manager.launchReviewFlow(activity, reviewInfo)
-                    flow.addOnCompleteListener { _ ->
-                        Log.d(TAG, "Review Flow completed.")
-                    }
-                } else {
-                    Log.e(TAG, "Review Info error: ${task.exception?.message}, redirecting to Play Store URL.")
-                    try {
-                        val packageName = activity.packageName
-                        val intent = android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse("market://details?id=$packageName")).apply {
-                            addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
+            // 1. Önce Google Play In-App Review API'yi dene
+            if (com.mawelly.blitzmath.utils.ServiceChecker.isGmsAvailable(activity)) {
+                val manager = ReviewManagerFactory.create(activity)
+                val request = manager.requestReviewFlow()
+                request.addOnCompleteListener { task ->
+                    if (task.isSuccessful) {
+                        val reviewInfo = task.result
+                        val flow = manager.launchReviewFlow(activity, reviewInfo)
+                        flow.addOnCompleteListener { _ ->
+                            Log.d(TAG, "Review Flow completed.")
                         }
-                        activity.startActivity(intent)
-                    } catch (e: Exception) {
-                        val packageName = activity.packageName
-                        val intent = android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse("https://play.google.com/store/apps/details?id=$packageName")).apply {
-                            addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
-                        }
-                        activity.startActivity(intent)
                     }
                 }
-                onComplete()
             }
-        } catch (e: Exception) {
-            Log.e(TAG, "Exception starting review flow: ${e.message}")
+
+            // 2. HER HALÜKARDA (Test cihazı veya In-App Review açılmama durumunda) doğrudan Play Store Değerlendirme Sayfasını Aç
             try {
+                val packageName = activity.packageName
+                val intent = android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse("market://details?id=$packageName")).apply {
+                    addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
+                }
+                activity.startActivity(intent)
+            } catch (e: Exception) {
                 val packageName = activity.packageName
                 val intent = android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse("https://play.google.com/store/apps/details?id=$packageName")).apply {
                     addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
                 }
                 activity.startActivity(intent)
-            } catch (t: Throwable) {}
+            }
+
+            onComplete()
+        } catch (e: Exception) {
+            Log.e(TAG, "Exception in showReviewDialog: ${e.message}")
             onComplete()
         }
     }
