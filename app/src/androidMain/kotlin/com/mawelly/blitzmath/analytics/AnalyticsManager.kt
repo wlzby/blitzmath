@@ -26,11 +26,14 @@ class AnalyticsManager private constructor(context: Context) {
         // Huawei Analytics Başlatma (HMS varsa)
         try {
             if (ServiceChecker.isHmsAvailable(appContext)) {
+                // Ensure AGConnect Instance is initialized with context safely
+                com.huawei.agconnect.AGConnectInstance.initialize(appContext)
                 huaweiAnalytics = HiAnalytics.getInstance(appContext)
                 huaweiAnalytics?.setAnalyticsEnabled(true)
             }
         } catch (t: Throwable) {
-            android.util.Log.e("AnalyticsManager", "Huawei Analytics initialization failed: ${t.message}")
+            android.util.Log.e("AnalyticsManager", "Huawei Analytics initialization safely skipped: ${t.message}")
+            huaweiAnalytics = null
         }
     }
 
@@ -51,7 +54,7 @@ class AnalyticsManager private constructor(context: Context) {
     fun logAppOpen() {
         try {
             firebaseAnalytics?.logEvent(FirebaseAnalytics.Event.APP_OPEN, null)
-            huaweiAnalytics?.onEvent("\$AppOpen", null)
+            try { huaweiAnalytics?.onEvent("\$AppOpen", null) } catch (t: Throwable) {}
         } catch (t: Throwable) { t.printStackTrace() }
     }
 
