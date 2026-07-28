@@ -28,42 +28,39 @@ object AppReviewManager {
             val request = manager.requestReviewFlow()
             
             request.addOnCompleteListener { task ->
-            if (task.isSuccessful) {
-                // Request_success
-                val reviewInfo = task.result
-                Log.d(TAG, "Review Info successfully gathered.")
-                
-                val flow = manager.launchReviewFlow(activity, reviewInfo)
-                flow.addOnCompleteListener { _ ->
-                    // The flow has finished. API does not indicate whether the user
-                    // reviewed or not, or even whether the review dialog was shown.
-                    Log.d(TAG, "Review Flow completed.")
-                    
-                    // Ödül mantığı için Coroutine çalıştırıp 1000 yıldız verelim
-                    val scope = CoroutineScope(Dispatchers.IO)
-                    scope.launch {
-                        dataStore.addStars(1000)
-                        dataStore.saveIsReviewed(true)
-                        
-                        // Ana thread'de Toast göster
-                        withContext(Dispatchers.Main) {
-                            val msg = if (com.mawelly.blitzmath.localization.Strings.currentLanguage == com.mawelly.blitzmath.localization.AppLanguage.TURKISH) 
-                                "Tebrikler! 1000 Yıldız hesabınıza eklendi!" 
-                                else "Congratulations! 1000 Stars added to your account!"
-                            android.widget.Toast.makeText(activity, msg, android.widget.Toast.LENGTH_LONG).show()
-                        }
+                if (task.isSuccessful) {
+                    val reviewInfo = task.result
+                    val flow = manager.launchReviewFlow(activity, reviewInfo)
+                    flow.addOnCompleteListener { _ ->
+                        Log.d(TAG, "Review Flow completed.")
                     }
-                    
-                    onComplete()
+                } else {
+                    Log.e(TAG, "Review Info error: ${task.exception?.message}, redirecting to Play Store URL.")
+                    try {
+                        val packageName = activity.packageName
+                        val intent = android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse("market://details?id=$packageName")).apply {
+                            addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
+                        }
+                        activity.startActivity(intent)
+                    } catch (e: Exception) {
+                        val packageName = activity.packageName
+                        val intent = android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse("https://play.google.com/store/apps/details?id=$packageName")).apply {
+                            addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
+                        }
+                        activity.startActivity(intent)
+                    }
                 }
-            } else {
-                // There was some problem, log or handle the error code.
-                Log.e(TAG, "Review Info error: ${task.exception?.message}")
-                onComplete() // Her halükarda devam etmesini sağla
+                onComplete()
             }
-        } // Close addOnCompleteListener
         } catch (e: Exception) {
             Log.e(TAG, "Exception starting review flow: ${e.message}")
+            try {
+                val packageName = activity.packageName
+                val intent = android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse("https://play.google.com/store/apps/details?id=$packageName")).apply {
+                    addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
+                }
+                activity.startActivity(intent)
+            } catch (t: Throwable) {}
             onComplete()
         }
     }
