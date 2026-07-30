@@ -1,40 +1,13 @@
 workflows:
-  ios-debug:
-    name: iOS Debug Build (Testing)
-    environment:
-      vars:
-        XCODE_PROJECT: "iosApp/iosApp.xcodeproj"
-        XCODE_SCHEME: "iosApp"
-      xcode: latest
-      cocoapods: default
-      java: 17
-    scripts:
-      - name: Set up local properties
-        script: |
-          echo "sdk.dir=$HOME/Library/Android/sdk" > local.properties
-      - name: Build iOS Simulator App
-        script: |
-          set -o pipefail
-          chmod +x gradlew
-          cd iosApp
-          xcodebuild build -project iosApp.xcodeproj -scheme iosApp -sdk iphonesimulator -derivedDataPath ../build_output CODE_SIGNING_ALLOWED=NO CODE_SIGNING_IDENTITY="" PROVISIONING_PROFILE=""
-      - name: Package App for Simulator (Appetize.io)
-        script: |
-          APP_PATH=$(find build_output/Build/Products/Debug-iphonesimulator -name "*.app" -type d | head -n 1)
-          if [ -z "$APP_PATH" ]; then
-            echo "Error: No .app found! Check xcodebuild logs above."
-            exit 1
-          fi
-          echo "Found app at $APP_PATH"
-          cd "$(dirname "$APP_PATH")"
-          zip -r "$CM_BUILD_DIR/blitzmath_simulator.zip" "$(basename "$APP_PATH")"
-    artifacts:
-      - blitzmath_simulator.zip
 
+  # ─────────────────────────────────────────────
+  # 1) iOS App Store Release → TestFlight / App Store
+  # ─────────────────────────────────────────────
   ios-release:
-    name: iOS App Store Release (TestFlight)
+    name: iOS App Store Release (v1.4.0)
+    max_build_duration: 60
     integrations:
-      app_store_connect: app_store_connect
+      app_store_connect: app_store_connect   # Codemagic > Teams > Integrations'da tanımlı olmalı
     environment:
       ios_signing:
         distribution_type: app_store
@@ -47,36 +20,111 @@ workflows:
       cocoapods: default
       java: 17
     scripts:
-      - name: Set up local properties
+      - name: Set up local.properties
         script: |
           echo "sdk.dir=$HOME/Library/Android/sdk" > local.properties
           chmod +x gradlew
-      - name: Update Xcode Project Settings
+
+      - name: Build shared Kotlin framework (kMMp)
+        script: |
+          ./gradlew :app:assembleXCFramework --stacktrace
+
+      - name: Install CocoaPods
+        script: |
+          cd iosApp
+          pod install --repo-update
+
+      - name: Apply Xcode signing profiles
         script: |
           xcode-project use-profiles --project "$XCODE_PROJECT"
-      - name: Build and Package Release IPA
+
+      - name: Build & export signed IPA
         script: |
-          xcode-project build-ipa --project "$XCODE_PROJECT" --scheme "$XCODE_SCHEME"
-      - name: Prepare Artifact
+          xcode-project build-ipa \
+            --project "$XCODE_PROJECT" \
+            --scheme "$XCODE_SCHEME"
+
+      - name: Copy IPA to artifact dir
         script: |
-          # Find exported ipa and copy to root
-          IPA_PATH=$(find build/ios/ipa -name "*.ipa" -type f | head -n 1)
-          if [ -n "$IPA_PATH" ]; then
-            cp "$IPA_PATH" $CM_BUILD_DIR/blitzmath.ipa
-          else
-            echo "No signed IPA found in build directory, finding elsewhere..."
-            IPA_PATH=$(find . -name "*.ipa" -type f | head -n 1)
-            if [ -n "$IPA_PATH" ]; then
-              cp "$IPA_PATH" $CM_BUILD_DIR/blitzmath.ipa
-            else
-              echo "Error: Could not locate signed IPA!"
-              exit 1
-            fi
+          IPA=$(find . -name "*.ipa" -type f | head -n 1)
+          if [ -z "$IPA" ]; then
+            echo "❌ IPA bulunamadı!"
+            exit 1
           fi
+          cp "$IPA" "$CM_BUILD_DIR/blitzmath_1.4.0.ipa"
+          echo "✅ IPA kopyalandı: $CM_BUILD_DIR/blitzmath_1.4.0.ipa"
+
     artifacts:
-      - blitzmath.ipa
+      - blitzmath_1.4.0.ipa
+      - /tmp/xcodebuild_logs/*.log
+
     publishing:
       app_store_connect:
         auth: integration
-        submit_to_testflight: false
+        submit_to_testflight: true          # TestFlight'a gönder
+        submit_to_app_store: false          # Manuel inceleme için false bırak
+                                            # App Store'a direkt göndermek istersen true yap
+        beta_groups:
+          - App Store Connect Users         # TestFlight beta grubu adı
 
+      email:
+        recipients:
+          - ozbayv@gmail.com               # Build bitince mail gelsin (kendi mailinizi yazın)
+        notify:
+          success: true
+          failure: true
+
+  # ─────────────────────────────────────────────
+  # 2) iOS Simulator (Hızlı Test)
+  # ─────────────────────────────────────────────
+  ios-debug:
+    name: iOS Simulator Debug Build
+    max_build_duration: 30
+    environment:
+      vars:
+        XCODE_PROJECT: "iosApp/iosApp.xcodeproj"
+        XCODE_SCHEME: "iosApp"
+      xcode: latest
+      cocoapods: default
+      java: 17
+    scripts:
+      - name: Set up local.properties
+        script: |
+          echo "sdk.dir=$HOME/Library/Android/sdk" > local.properties
+          chmod +x gradlew
+
+      - name: Build shared Kotlin framework
+        script: |
+          ./gradlew :app:assembleXCFramework --stacktrace
+
+      - name: Install CocoaPods
+        script: |
+          cd iosApp
+          pod install --repo-update
+
+      - name: Build Simulator App
+        script: |
+          set -o pipefail
+          cd iosApp
+          xcodebuild build \
+            -workspace iosApp.xcworkspace \
+            -scheme iosApp \
+            -sdk iphonesimulator \
+            -derivedDataPath ../build_output \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_IDENTITY="" \
+            PROVISIONING_PROFILE=""
+
+      - name: Package .app as zip
+        script: |
+          APP=$(find build_output/Build/Products/Debug-iphonesimulator -name "*.app" -type d | head -n 1)
+          if [ -z "$APP" ]; then
+            echo "❌ .app bulunamadı!"
+            exit 1
+          fi
+          cd "$(dirname "$APP")"
+          zip -r "$CM_BUILD_DIR/blitzmath_simulator.zip" "$(basename "$APP")"
+          echo "✅ Simulator zip hazır"
+
+    artifacts:
+      - blitzmath_simulator.zip
