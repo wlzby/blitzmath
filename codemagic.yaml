@@ -25,10 +25,6 @@ workflows:
           echo "sdk.dir=$HOME/Library/Android/sdk" > local.properties
           chmod +x gradlew
 
-      - name: Build shared Kotlin framework (kMMp)
-        script: |
-          ./gradlew :app:assembleXCFramework --stacktrace
-
       - name: Install CocoaPods
         script: |
           cd iosApp
@@ -41,8 +37,9 @@ workflows:
       - name: Build & export signed IPA
         script: |
           xcode-project build-ipa \
-            --project "$XCODE_PROJECT" \
+            --workspace "iosApp/iosApp.xcworkspace" \
             --scheme "$XCODE_SCHEME"
+
 
       - name: Copy IPA to artifact dir
         script: |
@@ -92,10 +89,6 @@ workflows:
         script: |
           echo "sdk.dir=$HOME/Library/Android/sdk" > local.properties
           chmod +x gradlew
-
-      - name: Build shared Kotlin framework
-        script: |
-          ./gradlew :app:assembleXCFramework --stacktrace
 
       - name: Install CocoaPods
         script: |
