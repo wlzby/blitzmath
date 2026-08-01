@@ -32,7 +32,7 @@ workflows:
       - blitzmath_simulator.zip
 
   ios-release:
-    name: iOS App Store Release (v1.4.0)
+    name: iOS App Store Release (v1.4.1)
     integrations:
       app_store_connect: app_store_connect
     environment:
